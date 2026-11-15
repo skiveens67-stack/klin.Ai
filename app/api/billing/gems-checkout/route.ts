@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getStripeClient } from "@/lib/stripe";
 import { hasTrustedOrigin } from "@/lib/request-security";
+import { getKlinAppOrigin } from "@/lib/app-url";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,10 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    if (!user.email) return NextResponse.json({ error: "A verified email address is required for payment." }, { status: 400 });
+    if (!user.email || !user.email_confirmed_at) return NextResponse.json({ error: "Verify your email address before purchasing Gems." }, { status: 403 });
 
     const stripe = getStripeClient();
-    const origin = new URL(request.url).origin;
+    const origin = getKlinAppOrigin();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
