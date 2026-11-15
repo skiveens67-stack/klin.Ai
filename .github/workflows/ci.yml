@@ -37,5 +37,7 @@ jobs:
           path: package-lock.json
           if-no-files-found: error
           retention-days: 1
+      - name: Lint
+        run: npm run lint
       - name: Build
         run: npm run build
