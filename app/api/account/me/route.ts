@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { hasTrustedOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -149,6 +150,10 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  if (!hasTrustedOrigin(request)) {
+    return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
+  }
+
   try {
     const body: unknown = await request.json();
     const validation = validateProfileUpdate(body);
