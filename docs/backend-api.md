@@ -1,6 +1,6 @@
 # Klin Backend API Contracts
 
-Base URL: the same origin as the Klin web application. All account routes use the signed-in Supabase session cookie. Authenticated responses are marked `Cache-Control: no-store`. Mutating browser routes reject a mismatched Origin header.
+Base URL: the same origin as the Klin web application. All account routes use the signed-in Supabase session cookie. Authenticated responses are marked `Cache-Control: no-store`. Mutating browser routes require an Origin header that exactly matches the request origin; missing or mismatched origins are rejected.
 
 ## Identity and account
 - `GET /api/health` — public liveness.
