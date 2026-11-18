@@ -4,8 +4,9 @@ Base URL: the same origin as the Klin web application. All account routes use th
 
 ## Identity and account
 - `GET /api/health` — public liveness.
-- `GET /api/account/me` — current user's own profile.
-- `PATCH /api/account/me` — update allowlisted profile fields only: full_name, username, display_name, avatar_url, bio.
+- `GET /api/account/me` — canonical current-user profile endpoint.
+- `PATCH /api/account/me` — canonical profile update endpoint; allowlisted fields only: full_name, username, display_name, avatar_url, bio.
+- `GET /api/me` and `PATCH /api/me` — compatibility aliases to the same secured handlers and response contract.
 - `GET /api/account/referrals` — current user's referral activity; no referred users' private details.
 
 Email, phone, verification timestamps, account activation, waitlist position, and referral identifiers cannot be edited through the profile API.
@@ -34,6 +35,7 @@ Conversation persistence is implemented. Model inference, streaming responses, p
 - `GET /api/wallet` — current Gems balance and recent immutable ledger entries.
 - `GET /api/subscriptions` — current user's subscription records.
 - `POST /api/billing/checkout` — create a subscription Checkout Session for an allowlisted plan code: galaxy, studio_pro, ultimate.
+- `POST /api/stripe/checkout` — compatibility alias to the same secured handler. It accepts `plan_code` only; never send a client-controlled Stripe `priceId`.
 - `POST /api/billing/gems-checkout` — create a one-time Gems Checkout Session for an allowlisted pack code.
 - `POST /api/webhooks/stripe` — verify Stripe signature, deduplicate events, sync subscriptions, and credit Gems only after a paid checkout is verified.
 
@@ -47,7 +49,7 @@ Required server-only environment variables:
 - `KLIN_GEMS_AMOUNT_1000`, `KLIN_GEMS_AMOUNT_5000`, `KLIN_GEMS_AMOUNT_10000`
 - `SUPABASE_SERVICE_ROLE_KEY` (server only; never add a NEXT_PUBLIC_ prefix)
 
-No Klin Stripe account credentials were available during implementation. Checkout and webhook routes fail closed until the Klin account's own keys, price IDs, and webhook secret are configured. Do not use credentials from Kai.AI or another Stripe account.
+The connected Stripe account verified for this project is named `Klin.ai` and is currently in test mode. A read-only inspection returned zero products, zero prices, and zero webhook endpoints. Checkout and webhook routes therefore remain fail-closed until the `Klin.ai` account's own server-side keys, approved price IDs, and webhook secret are configured. Do not use credentials from the separate account named `Klin` or from Kai.AI.
 
 ## AI usage, notifications, and integrations
 - `GET /api/usage?since=<ISO date>` — current user's AI usage aggregates and events.
