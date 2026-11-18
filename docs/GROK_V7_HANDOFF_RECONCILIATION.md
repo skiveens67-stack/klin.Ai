@@ -70,3 +70,14 @@ The Grok handoff contains documentation and component inventories, but it does n
 ## Completion boundary
 
 The backend build workflow passes on the inspected SHA. Klin V7 is not complete. The frontend source is not integrated into the accessible repository; core AI execution, dual OTP, real emergency stop, device gateway, media generation, guardian approval engine, 21+ verification, and production operations remain unverified or unimplemented.
+
+
+## Follow-up backend hardening on 2026-11-18
+
+Committed after the initial reconciliation:
+
+- `app/api/devices/[deviceId]/commands/route.ts` now caps request bodies at 8 KiB and parameter JSON at 4 KiB, rejects unknown top-level fields, requires parameters to be an object, and reserves emergency-stop command names so they cannot be submitted through the ordinary approval queue.
+- The route continues to require an authenticated owner, online device, confirmation, a two-minute expiry, and the 1.5 mph Thangie rover speed ceiling.
+- The response explicitly states that the queue does not actuate hardware and that emergency stop requires a separate safety channel.
+
+This is input hardening only. It does not create a hardware gateway, device acknowledgement, or real emergency-stop capability. Automated route tests have not yet been run.
