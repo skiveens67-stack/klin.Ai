@@ -37,7 +37,7 @@ A database table is not proof of a working product feature. An API route that re
 - The repository default branch `main` contains only a README at the time of inspection. PR #1's backend branch intentionally excludes `app/page.tsx` and the frontend. Grok's local frontend folder is not available in this GitHub repository.
 - Vercel project settings, environment variables, domain mappings, and current deployment were not inspected because Vercel management actions were not exposed in this session.
 - No production deployment, secret change, billing change, DNS change, production database migration, or PR merge was performed.
-- The repository's CI workflow runs lint and a Next.js build. It does not currently define a test suite. The combined commit-status lookup returned no status records, so this review does not claim that the latest code has passed CI.
+- GitHub Actions run #29 for commit `93ba0b2b877d1e3e5d60776fcb94c94927400997` completed successfully. Its workflow installed dependencies, ran ESLint, and completed the Next.js production build. The workflow does not define or run an automated test suite.
 - No live end-to-end sign-up, OTP, payment, AI inference, messaging, marketplace settlement, or hardware test was executed.
 
 ## 1. Global Architecture & Infrastructure Foundations
@@ -630,7 +630,7 @@ Own GitHub integration and backend implementation. Review both handoffs, preserv
 - The SQL patch was not applied to the live Supabase project.
 - No production config, secrets, DNS, payment settings, or deployment was changed.
 - No PR was merged.
-- No claim is made that the code has passed CI or runtime tests.
+- The current branch's lint and production build passed in GitHub Actions run #29. No automated integration suite or runtime product test has been run.
 - The V7 frontend was not implemented because the frontend source is not present in the reviewed repository branch.
 
 ## 18. Immediate verification steps after the code change
@@ -643,7 +643,7 @@ Before the change is considered complete:
 4. Verify the normal authenticated GET endpoint never returns `secret_reference`.
 5. Verify one user cannot create or read another user's trusted contact.
 6. Verify missing encryption key or service-role credentials fail closed with a service-unavailable response.
-7. Run lint, production build, and the new integration tests.
-8. Review the resulting GitHub Actions run before considering the patch ready.
+7. Add and run integration tests for the trusted-contact insert path, encryption format, authorization boundary, and failure cases.
+8. Keep the GitHub Actions lint/build workflow green after follow-up changes.
 
 **Final readiness conclusion:** The current repository is a backend foundation, not a completed V1 or V7 Klin product. The live database has meaningful security controls, but the central V7 product workflows, frontend integration, AI execution, external workers, payout system, identity/age verification, physical hardware, and advanced privacy architecture still require implementation and verification.
