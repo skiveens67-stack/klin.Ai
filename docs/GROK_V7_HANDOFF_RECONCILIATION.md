@@ -88,3 +88,14 @@ This is input hardening only. It does not create a hardware gateway, device ackn
 The latest inspected branch head at the time of this update is `7f5b60bb42667b13187a4bfe19e5defb6291e47c`. GitHub reports the configured `Next.js production build` checks completed successfully for this commit. The draft PR remains open and unmerged. This is build evidence only, not end-to-end or safety certification.
 
 A fresh repository-tree inspection still finds no `src/components/layout/AppShell.tsx` or `src/components/chat/KlinieChat.tsx` in the accessible branch. The supplied Grok frontend source therefore remains unintegrated. Grok's handoff documentation is not a substitute for the component source tree.
+
+
+## Backend compatibility work — 2026-11-18
+
+- Added `GET/PATCH /api/me` as a compatibility alias that re-exports the authenticated, validated canonical handlers from `/api/account/me`.
+- Added `POST /api/stripe/checkout` as a compatibility alias that re-exports the canonical server-side billing handler from `/api/billing/checkout`. The contract remains `plan_code` only; browser-supplied Stripe price IDs are not accepted.
+- Commits: `929d9b29266fbc82f39ed1a13559dbf4ac9cd517` and `84849ea10e815290e5a8b6a6c9c1466027a6f363`.
+- GitHub Actions workflow `Klin Backend CI` was observed in progress for the latest compatibility commit; final result must be checked before claiming verification.
+- Current Supabase primary project `Klin.Ai` is active/healthy. A fresh security-advisor query returned no lints. Live migration history contains 16 migrations. Do not infer that migration history matches the repository until the repository migration directory is enumerated and compared.
+- Current Vercel project inspection confirms project `klin` is still linked to GitHub repository `skiveens67-stack/klin`; its latest production deployment is built from the old repository's `main` commit. The project has only the verified `klin-teal.vercel.app` domain. Its listed environment variables are only the public Supabase URL and publishable key, shared across Development, Preview, and Production. This project is not to be repointed or altered as part of backend work; establish a separate reviewed deployment path for `klin.Ai` after the frontend source is integrated.
+- The selected Stripe account `Klin.ai` is `acct_1Uc4xKENLoSrK7qA` in test mode. The separate account named `Klin` was not selected or accessed. Continue to use only the exact `Klin.ai` context for Klin billing review.
