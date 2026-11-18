@@ -65,6 +65,7 @@ export async function POST(request: Request) {
     if (error) {
       // Resolve concurrent duplicate submissions by reading the winner's row.
       const raced = await findPriorBid();
+      if (raced.error) return NextResponse.json({ error: "Unable to verify bid request status." }, { status: 503 });
       if (raced.data) {
         if (raced.data.listing_id !== input.listing_id || raced.data.amount_minor !== input.amount_minor) {
           return NextResponse.json({ error: "This Idempotency-Key was already used for a different bid." }, { status: 409 });
