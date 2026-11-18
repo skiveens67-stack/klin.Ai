@@ -624,17 +624,17 @@ Own GitHub integration and backend implementation. Review both handoffs, preserv
 
 1. `app/api/trusted-contacts/route.ts` now sends new trusted-contact inserts through the server-only Supabase admin client after session authentication. The owner ID comes from the verified session, and the contact destination is encrypted before insert.
 2. `docs/sql/revoke_trusted_contact_client_insert.sql` records the privilege-removal patch required to prevent authenticated clients from bypassing the encryption route.
-3. `app/api/marketplace/bids/route.ts` now rejects invalid `listing_id` filters instead of silently falling back to a broad bid query, rejects unexpected POST fields, and scopes the persisted idempotency key to the authenticated user.
+3. `app/api/marketplace/bids/route.ts` now rejects invalid `listing_id` filters instead of silently falling back to a broad bid query, rejects unexpected POST fields, scopes persisted idempotency keys to the authenticated user, and returns the original bid for same-key/same-payload retries (including a concurrent retry lookup).
 4. `app/api/billing/checkout/route.ts` now rejects unexpected request fields and uses an own-property plan-code check.
 
-**Additional live marketplace finding:** the live `marketplace_bids` table has a globally unique index on `idempotency_key`. The route now prefixes keys with the authenticated user and operation namespace to avoid cross-user collisions. However, duplicate requests still return a conflict instead of replaying the original successful response. Claude should design and review a complete actor-scoped idempotency record/response replay model before this is considered fully idempotent.
+**Additional live marketplace finding:** the live `marketplace_bids` table has a globally unique index on `idempotency_key`. The route now prefixes keys with the authenticated user and operation namespace to avoid cross-user collisions. The API now checks for an existing actor-scoped key and replays the original bid response when the listing and amount match; reusing the same key with a different payload returns 409. This is a route-level replay safeguard, but Claude should still review race behavior, key retention, and whether a dedicated idempotency table/transaction is warranted.
 
 **Not performed:**
 
 - The SQL patch was not applied to the live Supabase project.
 - No production config, secrets, DNS, payment settings, or deployment was changed.
 - No PR was merged.
-- The current branch's lint and production build passed in GitHub Actions run #29 before the latest marketplace/billing hardening commits. GitHub Actions runs #33 and #34 were in progress when this audit text was updated. No automated integration suite or runtime product test has been run.
+- The current branch's lint and production build passed in GitHub Actions run #29 before the latest marketplace/billing hardening commits. Later workflow runs were still in progress or cancelled as additional commits superseded earlier SHAs. No automated integration suite or runtime product test has been run.
 - The V7 frontend was not implemented because the frontend source is not present in the reviewed repository branch.
 
 ## 18. Immediate verification steps after the code change
