@@ -23,8 +23,12 @@ export async function POST(request: Request) {
 
     const body: unknown = await request.json();
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-    const planCode = (body as Record<string, unknown>).plan_code;
-    if (typeof planCode !== "string" || !(planCode in PLAN_PRICE_ENV)) {
+    const input = body as Record<string, unknown>;
+    if (Object.keys(input).some((key) => key !== "plan_code")) {
+      return NextResponse.json({ error: "Unexpected request field." }, { status: 400 });
+    }
+    const planCode = input.plan_code;
+    if (typeof planCode !== "string" || !Object.hasOwn(PLAN_PRICE_ENV, planCode)) {
       return NextResponse.json({ error: "Choose a supported paid plan." }, { status: 400 });
     }
 
