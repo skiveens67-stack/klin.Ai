@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (listingId && !/^[0-9a-f-]{36}$/i.test(listingId)) {
       return NextResponse.json({ error: "Invalid listing_id." }, { status: 400 });
     }
-    let query = supabase.from("marketplace_bids").select("id,listing_id,bidder_user_id,amount_minor,status,created_at").order("amount_minor", { ascending: false }).limit(100);
+    let query = supabase.from("marketplace_bids").select("id,listing_id,amount_minor,status,created_at").order("amount_minor", { ascending: false }).limit(100);
     if (listingId) query = query.eq("listing_id", listingId);
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: "Unable to load bids." }, { status: 500 });
