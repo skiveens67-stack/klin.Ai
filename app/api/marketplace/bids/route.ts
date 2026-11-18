@@ -40,13 +40,40 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    // The database index is globally unique, so namespace the client key by
+    // authenticated actor and operation. Replays return the original result.
+    const scopedIdempotencyKey = `user:${user.id}:bid:${idempotencyKey}`;
+    const findPriorBid = () => supabase.from("marketplace_bids")
+      .select("id,listing_id,amount_minor,status,created_at")
+      .eq("bidder_user_id", user.id)
+      .eq("idempotency_key", scopedIdempotencyKey)
+      .maybeSingle();
+
+    const prior = await findPriorBid();
+    if (prior.error) return NextResponse.json({ error: "Unable to verify bid request status." }, { status: 503 });
+    if (prior.data) {
+      if (prior.data.listing_id !== input.listing_id || prior.data.amount_minor !== input.amount_minor) {
+        return NextResponse.json({ error: "This Idempotency-Key was already used for a different bid." }, { status: 409 });
+      }
+      return NextResponse.json({ bid: prior.data, replayed: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
+    }
+
     const { data, error } = await supabase.from("marketplace_bids").insert({
       listing_id: input.listing_id, bidder_user_id: user.id, amount_minor: input.amount_minor,
-      // Scope the database's globally unique key to the authenticated actor.
-      idempotency_key: `user:${user.id}:bid:${idempotencyKey}`,
+      idempotency_key: scopedIdempotencyKey,
     }).select("id,listing_id,amount_minor,status,created_at").single();
-    if (error) return NextResponse.json({ error: "Bid rejected. Confirm the auction is active and your bid exceeds the current bid." }, { status: 409 });
-    return NextResponse.json({ bid: data }, { status: 201, headers: { "Cache-Control": "no-store" } });
+    if (error) {
+      // Resolve concurrent duplicate submissions by reading the winner's row.
+      const raced = await findPriorBid();
+      if (raced.data) {
+        if (raced.data.listing_id !== input.listing_id || raced.data.amount_minor !== input.amount_minor) {
+          return NextResponse.json({ error: "This Idempotency-Key was already used for a different bid." }, { status: 409 });
+        }
+        return NextResponse.json({ bid: raced.data, replayed: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
+      }
+      return NextResponse.json({ error: "Bid rejected. Confirm the auction is active and your bid exceeds the current bid." }, { status: 409 });
+    }
+    return NextResponse.json({ bid: data, replayed: false }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
