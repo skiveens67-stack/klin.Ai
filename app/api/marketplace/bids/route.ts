@@ -41,7 +41,9 @@ export async function POST(request: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     const { data, error } = await supabase.from("marketplace_bids").insert({
-      listing_id: input.listing_id, bidder_user_id: user.id, amount_minor: input.amount_minor, idempotency_key: idempotencyKey,
+      listing_id: input.listing_id, bidder_user_id: user.id, amount_minor: input.amount_minor,
+      // Scope the database's globally unique key to the authenticated actor.
+      idempotency_key: `user:${user.id}:bid:${idempotencyKey}`,
     }).select("id,listing_id,amount_minor,status,created_at").single();
     if (error) return NextResponse.json({ error: "Bid rejected. Confirm the auction is active and your bid exceeds the current bid." }, { status: 409 });
     return NextResponse.json({ bid: data }, { status: 201, headers: { "Cache-Control": "no-store" } });
