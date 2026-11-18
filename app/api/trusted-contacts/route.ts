@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { encryptContactValue } from "@/lib/contact-crypto";
 import { hasTrustedOrigin } from "@/lib/request-security";
 
@@ -45,15 +46,24 @@ export async function POST(request: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
+    // Insert only through this server route so the stored destination is always
+    // AES-256-GCM ciphertext. The owner ID comes from the verified session,
+    // never from the request body. This allows direct client INSERT grants to
+    // be removed without breaking the supported application flow.
+    const admin = createSupabaseAdminClient();
     const priority = Number.isInteger(input.priority) ? Math.max(1, Math.min(1000, Number(input.priority))) : 100;
-    const { data, error } = await supabase.from("trusted_contacts").insert({
+    const { data, error } = await admin.from("trusted_contacts").insert({
       user_id: user.id, display_name: displayName.trim(), channel, secret_reference: encrypted,
       priority, is_emergency: input.is_emergency === true,
     }).select("id,display_name,channel,priority,is_emergency,verified_at,created_at").single();
     if (error) return NextResponse.json({ error: "Unable to save trusted contact." }, { status: 500 });
     return NextResponse.json({ contact: data, verified: false }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const missingKey = error instanceof Error && error.message.includes("encryption");
-    return NextResponse.json({ error: missingKey ? "Trusted contact encryption is not configured." : "Invalid request." }, { status: missingKey ? 503 : 400 });
+    const message = error instanceof Error ? error.message : "";
+    const unavailable = message.includes("encryption is not configured") || message.includes("credentials are not configured");
+    return NextResponse.json(
+      { error: unavailable ? "Trusted contact security is not configured on this deployment." : "Invalid request." },
+      { status: unavailable ? 503 : 400 },
+    );
   }
 }
