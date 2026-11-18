@@ -81,3 +81,10 @@ Committed after the initial reconciliation:
 - The response explicitly states that the queue does not actuate hardware and that emergency stop requires a separate safety channel.
 
 This is input hardening only. It does not create a hardware gateway, device acknowledgement, or real emergency-stop capability. Automated route tests have not yet been run.
+
+
+## CI follow-up — 2026-11-18
+
+The latest inspected branch head at the time of this update is `7f5b60bb42667b13187a4bfe19e5defb6291e47c`. GitHub reports the configured `Next.js production build` checks completed successfully for this commit. The draft PR remains open and unmerged. This is build evidence only, not end-to-end or safety certification.
+
+A fresh repository-tree inspection still finds no `src/components/layout/AppShell.tsx` or `src/components/chat/KlinieChat.tsx` in the accessible branch. The supplied Grok frontend source therefore remains unintegrated. Grok's handoff documentation is not a substitute for the component source tree.
