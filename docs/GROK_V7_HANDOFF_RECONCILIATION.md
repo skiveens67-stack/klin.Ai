@@ -99,3 +99,34 @@ A fresh repository-tree inspection still finds no `src/components/layout/AppShel
 - Current Supabase primary project `Klin.Ai` is active/healthy. A fresh security-advisor query returned no lints. Live migration history contains 16 migrations. Do not infer that migration history matches the repository until the repository migration directory is enumerated and compared.
 - Current Vercel project inspection confirms project `klin` is still linked to GitHub repository `skiveens67-stack/klin`; its latest production deployment is built from the old repository's `main` commit. The project has only the verified `klin-teal.vercel.app` domain. Its listed environment variables are only the public Supabase URL and publishable key, shared across Development, Preview, and Production. This project is not to be repointed or altered as part of backend work; establish a separate reviewed deployment path for `klin.Ai` after the frontend source is integrated.
 - The selected Stripe account `Klin.ai` is `acct_1Uc4xKENLoSrK7qA` in test mode. The separate account named `Klin` was not selected or accessed. Continue to use only the exact `Klin.ai` context for Klin billing review.
+
+
+## Additional live-service security review — 2026-11-18
+
+### Supabase privilege verification
+
+- Primary project `Klin.Ai` (`jkujzqvxzkzgpdlntoek`) is active and healthy. Security advisor returned no lints at the time of inspection.
+- All inspected public tables have RLS enabled; this statement is based on the current live table listing, not an assumption about future tables.
+- `post_wallet_transaction` is SECURITY DEFINER but its EXECUTE privilege is restricted to `service_role`; `anon` and `authenticated` cannot execute it. The same role restriction was verified for `add_family_owner_member`, `create_wallet_for_new_profile`, and `rls_auto_enable`.
+- `trusted_contacts` has no anon table grants. Authenticated users have DELETE only, and the only policy is owner-scoped. The application uses the server-side path for inserts.
+- Live grants are broader than necessary on `wallets`, `wallet_transactions`, `marketplace_orders`, and `creator_payouts`: anon and authenticated have some or all table-level privileges even though the observed RLS policies only grant authenticated owner-scoped SELECT. A proposed least-privilege SQL patch is saved at `docs/sql/financial_table_least_privilege_after_migration_reconciliation.sql`. It has NOT been applied. Convert it into a tracked migration only after migration-history reconciliation.
+- Live Supabase migration history contains 16 records; the repository tree contains 11 SQL migration files. Do not apply migrations or direct DDL until every live migration is mapped to the repository and a clean replay/diff is reviewed.
+
+### Stripe account verification
+
+- Account selected: exact account name `Klin.ai`, context `acct_1Uc4xKENLoSrK7qA`, test mode (`livemode=false`).
+- Read-only GET checks returned zero products, zero prices, and zero webhook endpoints in that account at inspection time.
+- The separate account named `Klin` and both Kai.AI accounts were not selected or accessed. No Stripe writes, charges, refunds, or payouts were performed.
+
+### CI and API compatibility
+
+- Added `app/api/me/route.ts` and `app/api/stripe/checkout/route.ts` as re-export aliases to the canonical secured handlers. Checkout continues to accept only `plan_code`, never an arbitrary client price ID.
+- Added `npm run typecheck` and a TypeScript check step to `.github/workflows/ci.yml`.
+- GitHub Actions run 64 completed successfully for commit `e048f05122a7d51d767bfa46cd25dfb15a4025bf`: dependency install, lint, TypeScript check, and Next.js production build all passed.
+- A subsequent documentation/SQL-patch commit is `deb573d78f827bad876d8111658e597e3266a8d4`; its CI run was still in progress at the time of this update.
+
+### Deployment boundary
+
+- Vercel project `klin` is still associated with the old `skiveens67-stack/klin` repository. Its latest production deployment references that repository's `main` commit, not the current `klin.Ai` backend branch.
+- Only `klin-teal.vercel.app` was returned as a verified project domain. The environment listing returned only the public Supabase URL and publishable key, shared across Development, Preview, and Production.
+- No Vercel project settings, domains, environment variables, deployments, or production traffic were changed. Do not repoint the old project. A separate preview/deployment plan for `klin.Ai` is still required after the frontend source is supplied and secrets are configured.
