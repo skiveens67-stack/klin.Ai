@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
-
-const MAX_CREATE_BODY_BYTES = 4 * 1024;
 
 export async function GET(request: Request) {
   try {
@@ -37,11 +35,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
   try {
-    const rawBody = await request.text();
-    if (new TextEncoder().encode(rawBody).byteLength > MAX_CREATE_BODY_BYTES) {
-      return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
-    }
-    const body: unknown = JSON.parse(rawBody);
+    const parsed = await readLimitedJson(request, 4 * 1024);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body = parsed.value;
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const input = body as Record<string, unknown>;
     const title = typeof input.title === "string" ? input.title.trim() : "New conversation";
