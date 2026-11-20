@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 const channels = ["sms","email","whatsapp","discord","slack","phone"];
@@ -24,7 +24,9 @@ export async function GET() {
 export async function PUT(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
   try {
-    const body: unknown = await request.json();
+    const parsed = await readLimitedJson(request, 8192);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body: unknown = parsed.value;
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const input = body as Record<string, unknown>;
     if (typeof input.channel !== "string" || !channels.includes(input.channel)) return NextResponse.json({ error: "Unsupported communication channel." }, { status: 400 });
