@@ -41,7 +41,11 @@ export async function readLimitedJson(
       if (done) break;
       totalBytes += value.byteLength;
       if (totalBytes > maxBytes) {
-        await reader.cancel();
+        try {
+          await reader.cancel();
+        } catch {
+          // Preserve the 413 result even if the stream cannot be cancelled.
+        }
         return { ok: false, status: 413, error: "Request body is too large." };
       }
       chunks.push(value);
