@@ -37,3 +37,10 @@ The service-role key remains server-only and is not used by browser authenticati
 - `app/not-found.tsx` provides the application 404 page.
 - `app/icon.svg` provides the app icon.
 - `app/robots.ts` disallows indexing while the product is in pre-launch development.
+
+## Settings and support entry points
+
+- `/settings` is a server-protected account page showing the signed-in email.
+- `components/settings/SettingsPanel.tsx` supports password updates through the authenticated Supabase browser session, with validation and user-visible success/error states.
+- The AppShell Settings item links to the protected settings route.
+- Help & Support opens the configured support domain `https://klin.help`.
