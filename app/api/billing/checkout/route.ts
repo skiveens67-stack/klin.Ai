@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getStripeClient } from "@/lib/stripe";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { getKlinAppOrigin } from "@/lib/app-url";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "A valid Idempotency-Key header is required." }, { status: 400 });
     }
 
-    const body: unknown = await request.json();
+    const parsed = await readLimitedJson(request, 4096);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body: unknown = parsed.value;
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const input = body as Record<string, unknown>;
     if (Object.keys(input).some((key) => key !== "plan_code")) {
