@@ -1,10 +1,11 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function requireAuthenticatedUser() {
-  let user: Awaited<ReturnType<Awaited<ReturnType<typeof createSupabaseServerClient>>["auth"]["getUser"]>>["data"]["user"] = null;
+  let user: User | null = null;
   try {
     const supabase = await createSupabaseServerClient();
     const result = await supabase.auth.getUser();
