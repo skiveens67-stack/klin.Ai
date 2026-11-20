@@ -29,3 +29,11 @@ The service-role key remains server-only and is not used by browser authenticati
 - Browser/mobile end-to-end testing still requires a configured preview deployment and test account.
 - Klinie model inference and streaming remain unimplemented; conversation storage is connected but the assistant provider is not.
 - Other AppShell destinations remain marked as coming soon until their actual feature pages exist.
+
+## Route resilience and crawler policy
+
+- `app/loading.tsx` provides an accessible route loading state.
+- `app/error.tsx` and `app/global-error.tsx` provide route and root-level recovery screens.
+- `app/not-found.tsx` provides the application 404 page.
+- `app/icon.svg` provides the app icon.
+- `app/robots.ts` disallows indexing while the product is in pre-launch development.
