@@ -50,7 +50,7 @@ Project: `Klin.Ai` (`jkujzqvxzkzgpdlntoek`)
 
 1. Retrieve the authoritative SQL/source for every one of the 16 live migration records.
 2. Match each live record to exact repository SQL by content, not by approximate name.
-3. Identify the five live records without an obvious one-to-one repository filename match and determine whether their effects are represented in later repository files.
+3. Identify every live record that cannot be matched to exact repository SQL content, and determine whether its effects are represented in another repository migration. Do not infer a mapping from similar names or migration counts.
 4. Compare live schema, constraints, triggers, functions, grants, RLS policies, storage policies, and indexes against a clean replay in a disposable Supabase project.
 5. Record the approved canonical migration order and source commit.
 6. Only after independent review, add a forward-only migration for approved privilege fixes.
