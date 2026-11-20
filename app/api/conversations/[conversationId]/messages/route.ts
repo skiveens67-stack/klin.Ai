@@ -21,7 +21,7 @@ export async function POST(request: Request, context: { params: Promise<{ conver
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
     const { data: conversation } = await supabase.from("conversations")
-      .select("id").eq("id", conversationId).eq("user_id", user.id).maybeSingle();
+      .select("id,title").eq("id", conversationId).eq("user_id", user.id).maybeSingle();
     if (!conversation) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
 
     const { data: message, error } = await supabase.from("messages")
@@ -29,7 +29,17 @@ export async function POST(request: Request, context: { params: Promise<{ conver
       .select("id,conversation_id,role,content,status,created_at").single();
     if (error) return NextResponse.json({ error: "Unable to save message." }, { status: 500 });
 
-    await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", user.id);
+    const firstMessageTitle = content.trim().replace(/\\s+/g, " ").slice(0, 80);
+    const conversationUpdates: { updated_at: string; title?: string } = {
+      updated_at: new Date().toISOString(),
+    };
+    if (conversation.title === "New conversation") {
+      conversationUpdates.title = firstMessageTitle;
+    }
+    await supabase.from("conversations")
+      .update(conversationUpdates)
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
     return NextResponse.json({
       message,
       assistant: { status: "not_connected", detail: "Conversation storage is ready. The Klinie model provider and streaming worker still need credentials and provider selection." },
