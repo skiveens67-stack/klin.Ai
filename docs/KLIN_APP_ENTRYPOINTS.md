@@ -68,3 +68,5 @@ These screens use the existing authenticated API routes and do not bypass server
 - `/creative-studio` now provides a private media library using the existing signed-upload and asset-confirmation APIs. It enforces the API's MIME allowlist and 100 MB limit in the UI and clearly warns that malware scanning, signature inspection, media re-encoding, and moderation are not yet available.
 - `/settings` now loads and updates the allowlisted profile fields through `/api/account/me`, in addition to changing the authenticated user's password.
 - `/billing/success`, `/billing/cancel`, `/wallet/success`, and `/wallet/cancel` provide safe checkout-return screens. A return URL is not treated as proof of payment; the page explicitly relies on verified Stripe webhook processing.
+
+- `/integrations` now provides an authenticated status dashboard for AI providers, messaging, private storage, payments, and developer/cloud services. It is explicitly informational until OAuth callbacks, secret storage, and provider workers are ready.
