@@ -62,3 +62,9 @@ The shared protected shell now wraps these route pages:
 - `/trusted-contacts` — add and view encrypted trusted contacts; new contacts are unverified.
 
 These screens use the existing authenticated API routes and do not bypass server-side authorization. They intentionally display backend limitations instead of implying that draft publishing, payments, external messaging, device actuation, or automated escalation are live.
+
+## Additional feature screens
+
+- `/creative-studio` now provides a private media library using the existing signed-upload and asset-confirmation APIs. It enforces the API's MIME allowlist and 100 MB limit in the UI and clearly warns that malware scanning, signature inspection, media re-encoding, and moderation are not yet available.
+- `/settings` now loads and updates the allowlisted profile fields through `/api/account/me`, in addition to changing the authenticated user's password.
+- `/billing/success`, `/billing/cancel`, `/wallet/success`, and `/wallet/cancel` provide safe checkout-return screens. A return URL is not treated as proof of payment; the page explicitly relies on verified Stripe webhook processing.
