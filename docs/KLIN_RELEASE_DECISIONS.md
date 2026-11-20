@@ -9,7 +9,7 @@
 | Area | Current evidence | Remaining work |
 |---|---|---|
 | Chat history | Conversation tables and owner-scoped APIs exist. APIs now list, open, rename, archive, restore, and save user messages. | Integrate the frontend history UI; connect a real Klinie model/streaming provider; persist assistant replies server-side; add browser tests. |
-| Request security | Shared bounded JSON parser is used by mutating JSON APIs. Six unit tests cover parser and origin behavior. | Wait for CI test run; add API integration and RLS tests. |
+| Request security | Shared bounded JSON and raw-text readers cap all JSON mutation bodies and the signed Stripe webhook body. Eight unit tests cover parsing, limits, and origin behavior. Latest CI passed lint, type check, all unit tests, and production build. | Add API integration, abuse/rate-limit, and RLS tests. |
 | Media upload | Private bucket is configured with a 100 MiB limit and MIME allowlist; storage RLS restricts read/write/delete to each user's own folder. Signed upload URLs and asset records exist. Confirmation checks stored size and content type. | Add file-signature inspection, malware scanning, image/video re-encoding, quota enforcement, and moderation pipeline. |
 | Profile/account | Session-authenticated profile APIs and allowlisted profile updates exist. | Add route integration tests and verify real auth flows with test accounts. |
 | Marketplace | Draft listings and auction bids exist with owner checks and idempotency. | Add verified-age authorization, checkout, settlement, refunds, disputes, seller verification, and payouts before enabling transactions. |
