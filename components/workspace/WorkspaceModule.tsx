@@ -214,7 +214,8 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
     setError("");
     setNotice("");
     try {
-      const formElement = event.currentTarget;\n    const form = new FormData(formElement);
+      const formElement = event.currentTarget;
+    const form = new FormData(formElement);
       const body: Record<string, unknown> = {};
       for (const field of config.fields) {
         const raw = form.get(field.name);
