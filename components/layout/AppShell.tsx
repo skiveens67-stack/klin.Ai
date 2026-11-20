@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Blocks, ChevronDown, CircleHelp, Compass, FolderKanban, Home,
   LogOut, Menu, MessageCircle, Settings, ShieldCheck, Sparkles, X,
@@ -66,8 +67,8 @@ export default function AppShell({ userEmail }: { userEmail: string }) {
         <div className="space-y-1 border-t border-white/[0.07] p-3">
           <button onClick={() => void signOut()} disabled={signingOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><LogOut size={15} /> {signingOut ? "Signing out…" : "Sign out"}</button>
           {signOutError && <p role="alert" className="px-3 text-[10px] text-rose-300">{signOutError}</p>}
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><Settings size={15} /> Settings</button>
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><CircleHelp size={15} /> Help & support</button>
+          <Link href="/settings" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><Settings size={15} /> Settings</Link>
+          <a href="https://klin.help" target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><CircleHelp size={15} /> Help &amp; support</a>
           <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/[0.035] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold">K</div><div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-slate-200">{userEmail || "Klin account"}</div><div className="text-[10px] text-slate-500">Signed-in workspace</div></div><ChevronDown size={14} className="text-slate-600" /></div>
         </div>
       </aside>
