@@ -15,16 +15,27 @@ export async function POST(request: Request, context: { params: Promise<{ assetI
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
     const { data: asset, error: assetError } = await supabase.from("media_assets")
-      .select("id,storage_bucket,storage_path,status").eq("id", assetId).eq("user_id", user.id).maybeSingle();
+      .select("id,storage_bucket,storage_path,status,size_bytes,content_type").eq("id", assetId).eq("user_id", user.id).maybeSingle();
     if (assetError || !asset) return NextResponse.json({ error: "Media asset not found." }, { status: 404 });
 
-    const parts = asset.storage_path.split("/");
-    const filename = parts.pop();
-    const folder = parts.join("/");
-    const { data: objects, error: listError } = await supabase.storage.from(asset.storage_bucket)
-      .list(folder, { search: filename, limit: 10 });
-    if (listError || !objects?.some((object) => object.name === filename)) {
+    const { data: fileInfo, error: infoError } = await supabase.storage
+      .from(asset.storage_bucket)
+      .info(asset.storage_path);
+    if (infoError || !fileInfo) {
       return NextResponse.json({ error: "Uploaded file was not found. Finish uploading before confirming." }, { status: 409 });
+    }
+
+    const actualSize = Number(fileInfo.size);
+    if (
+      !Number.isSafeInteger(actualSize) ||
+      actualSize < 1 ||
+      actualSize > 104857600 ||
+      actualSize !== asset.size_bytes
+    ) {
+      return NextResponse.json({ error: "Uploaded file size does not match the registered asset." }, { status: 409 });
+    }
+    if (fileInfo.contentType !== asset.content_type) {
+      return NextResponse.json({ error: "Uploaded file content type does not match the registered asset." }, { status: 415 });
     }
 
     const admin = createSupabaseAdminClient();
