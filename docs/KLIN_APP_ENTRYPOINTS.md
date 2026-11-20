@@ -44,3 +44,21 @@ The service-role key remains server-only and is not used by browser authenticati
 - `components/settings/SettingsPanel.tsx` supports password updates through the authenticated Supabase browser session, with validation and user-visible success/error states.
 - The AppShell Settings item links to the protected settings route.
 - Help & Support opens the configured support domain `https://klin.help`.
+
+## API-backed workspace pages
+
+The shared protected shell now wraps these route pages:
+
+- `/projects` — create private creator-project drafts and review saved projects.
+- `/marketplace` — create draft listings tied to owned projects; public activation remains blocked.
+- `/social` — create social-post drafts and review moderation status.
+- `/learning` — read and update course progress.
+- `/wallet` — read Gems balance, ledger transactions, and subscription records.
+- `/notifications` — review notifications and mark all as read.
+- `/family` — create and view the account's family and managed membership records.
+- `/devices` — register supported devices; hardware commands remain disabled.
+- `/communications` — save channel permission tiers; no external messaging workers are active.
+- `/checkins` — create and review stored check-in schedules; automatic escalation is not active.
+- `/trusted-contacts` — add and view encrypted trusted contacts; new contacts are unverified.
+
+These screens use the existing authenticated API routes and do not bypass server-side authorization. They intentionally display backend limitations instead of implying that draft publishing, payments, external messaging, device actuation, or automated escalation are live.
