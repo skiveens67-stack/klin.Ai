@@ -4,15 +4,27 @@ import { hasTrustedOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    const { data, error } = await supabase.from("conversations")
+    const archivedFilter = new URL(request.url).searchParams.get("archived") ?? "false";
+    if (!["true", "false", "all"].includes(archivedFilter)) {
+      return NextResponse.json({ error: "archived must be true, false, or all." }, { status: 400 });
+    }
+
+    let conversationsQuery = supabase.from("conversations")
       .select("id,title,assistant_key,archived_at,created_at,updated_at")
-      .eq("user_id", user.id).is("archived_at", null)
-      .order("updated_at", { ascending: false }).limit(100);
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(100);
+    if (archivedFilter === "true") {
+      conversationsQuery = conversationsQuery.not("archived_at", "is", null);
+    } else if (archivedFilter === "false") {
+      conversationsQuery = conversationsQuery.is("archived_at", null);
+    }
+    const { data, error } = await conversationsQuery;
     if (error) return NextResponse.json({ error: "Unable to load conversations." }, { status: 500 });
     return NextResponse.json({ conversations: data ?? [] }, { headers: { "Cache-Control": "no-store" } });
   } catch {
