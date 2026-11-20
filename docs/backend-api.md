@@ -26,7 +26,8 @@ Important: permission settings and approved actions are stored, but no external 
 
 ## Klinie conversation data
 - `GET|POST /api/conversations` — list/create private conversations.
-- `GET /api/conversations/:conversationId` — retrieve the current user's conversation and messages.
+- `GET /api/conversations/:conversationId` — retrieve the current user's conversation and messages, including archived conversations.
+- `PATCH /api/conversations/:conversationId` — rename a conversation (`title`) and/or archive or restore it (`archived: true|false`). Only the owning account can update it; unknown fields are rejected.
 - `POST /api/conversations/:conversationId/messages` — persist a user message.
 
 Conversation persistence is implemented. Model inference, streaming responses, provider selection, and AI worker execution still require provider credentials and an approved runtime configuration; the API does not fabricate an assistant answer.
