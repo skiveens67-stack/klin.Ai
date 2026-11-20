@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ actio
   try {
     const { actionId } = await context.params;
     if (!/^[0-9a-f-]{36}$/i.test(actionId)) return NextResponse.json({ error: "Invalid action id." }, { status: 400 });
-    const body: unknown = await request.json();
+    const parsed = await readLimitedJson(request, 4096);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body: unknown = parsed.value;
     const status = body && typeof body === "object" ? (body as Record<string, unknown>).status : null;
     if (status !== "approved" && status !== "canceled") return NextResponse.json({ error: "Status must be approved or canceled." }, { status: 400 });
 
