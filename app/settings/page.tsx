@@ -7,14 +7,16 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   let email = "";
+  let authenticated = false;
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) redirect("/login");
-    email = user.email ?? "";
+    authenticated = !error && Boolean(user);
+    email = user?.email ?? "";
   } catch {
     redirect("/login?error=configuration");
   }
+  if (!authenticated) redirect("/login");
 
   return (
     <div className="settings-shell">
