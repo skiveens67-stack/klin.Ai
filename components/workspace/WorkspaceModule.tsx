@@ -214,7 +214,7 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
     setError("");
     setNotice("");
     try {
-      const form = new FormData(event.currentTarget);
+      const formElement = event.currentTarget;\n    const form = new FormData(formElement);
       const body: Record<string, unknown> = {};
       for (const field of config.fields) {
         const raw = form.get(field.name);
@@ -233,7 +233,7 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
       const data = await response.json() as ApiPayload;
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Unable to save this item.");
       setNotice(typeof data.note === "string" ? data.note : "Saved.");
-      event.currentTarget.reset();
+      formElement.reset();
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to save this item.");
