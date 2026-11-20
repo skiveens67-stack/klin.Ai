@@ -27,7 +27,7 @@ const navigation: NavigationItem[] = [
   { label: "Trusted Contacts", href: "/trusted-contacts", icon: Contact },
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Creative Studio", href: "/creative-studio", icon: Sparkles },
-  { label: "Integrations", icon: Blocks, soon: true },
+  { label: "Integrations", href: "/integrations", icon: Blocks },
 ];
 
 export default function AppShell({ userEmail, children }: { userEmail: string; children: ReactNode }) {
