@@ -26,7 +26,7 @@ const navigation: NavigationItem[] = [
   { label: "Safety Check-ins", href: "/checkins", icon: ClipboardCheck },
   { label: "Trusted Contacts", href: "/trusted-contacts", icon: Contact },
   { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Creative Studio", icon: Sparkles, soon: true },
+  { label: "Creative Studio", href: "/creative-studio", icon: Sparkles },
   { label: "Integrations", icon: Blocks, soon: true },
 ];
 
