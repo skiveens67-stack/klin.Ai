@@ -130,3 +130,23 @@ A fresh repository-tree inspection still finds no `src/components/layout/AppShel
 - Vercel project `klin` is still associated with the old `skiveens67-stack/klin` repository. Its latest production deployment references that repository's `main` commit, not the current `klin.Ai` backend branch.
 - Only `klin-teal.vercel.app` was returned as a verified project domain. The environment listing returned only the public Supabase URL and publishable key, shared across Development, Preview, and Production.
 - No Vercel project settings, domains, environment variables, deployments, or production traffic were changed. Do not repoint the old project. A separate preview/deployment plan for `klin.Ai` is still required after the frontend source is supplied and secrets are configured.
+
+
+## Read-only verification and chat-history update — 2026-11-20
+
+### Chat history API
+- The conversations and messages tables exist in the live Supabase project, both with RLS enabled. The current table listing reported zero rows at inspection time.
+- Existing endpoints list/create conversations, retrieve a conversation and up to 500 messages, and save user messages.
+- Added owner-scoped `PATCH /api/conversations/:conversationId` to rename a conversation and archive/restore it. Unknown fields are rejected and mutating requests require a trusted origin.
+- Updated `docs/backend-api.md` with the new contract.
+- Commits: `ef538557647f6385f6179c2a630f427f5b5b2bc5` (route) and `5e9a54c19d9ae79e643d2b4f10f5f98ea6177bea` (API docs).
+- GitHub Actions run #74 on `5e9a54c19d9ae79e643d2b4f10f5f98ea6177bea` completed successfully: dependency install, ESLint, TypeScript check, and Next.js production build.
+- The UI history sidebar and frontend wiring are still blocked by the absence of the Grok frontend source in this repository. Assistant-message persistence still requires a server-side provider/worker; the browser role policy only permits authenticated users to insert their own `user` messages.
+
+### Fresh live Supabase checks (read-only)
+- Project `Klin.Ai` (`jkujzqvxzkzgpdlntoek`) returned 16 applied migration records; the repository contains 11 SQL migration files. Exact source-to-live reconciliation is still required. No migrations or DDL were applied.
+- Security advisor: zero lints. Health advisor: zero lints.
+- Performance advisor: 52 unused-index notices. These are informational and are not sufficient evidence to delete indexes from a new project.
+- `conversations` and `messages` both have RLS enabled. The active policies restrict reads to the owner; the authenticated insert policy on `messages` permits only `role='user'`.
+- **Open security issue confirmed:** authenticated users still have column-level INSERT privilege on `trusted_contacts.secret_reference`. The owner-only RLS policy prevents cross-user row access, but a user can bypass the application route's AES-256-GCM encryption and store plaintext in their own row. The proposed revoke SQL is present at `docs/sql/revoke_trusted_contact_client_insert.sql`, but it has not been applied. Do not apply it until migration reconciliation is complete and the product owner approves the production database change.
+- `wallets`, `wallet_transactions`, `marketplace_orders`, and `creator_payouts` have broad table-level grants for `anon` and/or `authenticated`. The currently observed RLS policies limit application-visible reads to authenticated owners and do not provide client write policies for those financial tables. Least-privilege grants should still be tightened in a forward-only migration after reconciliation; no live change was made.
