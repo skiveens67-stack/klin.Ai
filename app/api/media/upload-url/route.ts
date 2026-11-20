@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,9 @@ const MIME_TYPES: Record<string, { assetType: string; extension: string }> = {
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
   try {
-    const body: unknown = await request.json();
+    const parsed = await readLimitedJson(request, 4096);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body: unknown = parsed.value;
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const input = body as Record<string, unknown>;
     const mime = input.content_type;
