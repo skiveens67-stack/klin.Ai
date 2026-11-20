@@ -27,6 +27,7 @@
 8. **Hardware safety:** Device commands are queued for a future gateway. No authenticated gateway, device acknowledgements, firmware watchdog, physical stop, or real emergency-stop path was verified. Hardware control must remain unavailable.
 9. **Moderation and background workers:** No running moderation, communications, media-generation, or general integration worker was verified.
 10. **Production operations:** Backup restoration, monitoring/alerting, distributed rate limiting, incident runbooks, and full end-to-end tests still need evidence.
+11. **Vercel source binding:** The current Vercel project named `klin` is still linked to GitHub repository `skiveens67-stack/klin`, not `skiveens67-stack/klin.Ai`. Its attached domains are Vercel-generated preview/production hostnames; no custom domain was returned for this project. Do not repoint or deploy until the frontend source and intended hosting/domain arrangement are confirmed.
 
 ## C. Product roadmap decisions for the owner
 
