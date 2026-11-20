@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -14,7 +15,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       <h1>Something went wrong.</h1>
       <p>Klin could not load this part of your workspace.</p>
       <button className="app-state-button" onClick={() => reset()}>Try again</button>
-      <a href="/login">Return to sign in</a>
+      <Link href="/login">Return to sign in</Link>
     </main>
   );
 }
