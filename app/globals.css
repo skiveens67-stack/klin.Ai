@@ -408,3 +408,9 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .checkout-return-page p{max-width:510px;color:#94a3b8;font-size:13px;line-height:1.75}
 .checkout-return-page .checkout-return-note{color:#64748b;font-size:11px}
 .checkout-return-page a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;margin-top:14px;padding:0 16px;border:1px solid #67e8f966;border-radius:10px;background:#0891b222;color:#cffafe;font-size:12px;text-decoration:none}
+
+.settings-form textarea{width:100%;min-height:88px;padding:10px 12px;border:1px solid #263348;border-radius:10px;background:#080f1d;color:#f8fafc;font:inherit;font-size:12px;resize:vertical;outline:none}
+.settings-form textarea:focus{border-color:#22d3ee88;box-shadow:0 0 0 3px #22d3ee12}
+.settings-form small.settings-help{margin-top:-5px;color:#64748b;font-size:10px}
+.settings-form button{display:inline-flex;align-items:center;gap:8px}
+.settings-muted{color:#64748b;font-size:12px}
