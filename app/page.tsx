@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
+import KlinieChat from "@/components/chat/KlinieChat";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -18,5 +19,5 @@ export default async function HomePage() {
   }
 
   if (!authenticated) redirect("/login");
-  return <AppShell userEmail={email} />;
+  return <AppShell userEmail={email}><KlinieChat /></AppShell>;
 }
