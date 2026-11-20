@@ -78,7 +78,7 @@ export async function readLimitedText(
   }
 
   const contentLength = request.headers.get("content-length");
-  if (contentLength && /^\\d+$/.test(contentLength) && Number(contentLength) > maxBytes) {
+  if (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > maxBytes) {
     return { ok: false, status: 413, error: "Request body is too large." };
   }
 
