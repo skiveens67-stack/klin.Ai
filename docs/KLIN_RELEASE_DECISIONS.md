@@ -46,7 +46,15 @@ These are not code deletions. Decide whether each capability remains in the Klin
 - Dignity Shield financial assistance.
 - Zero-knowledge encryption claims and any feature that requires broader end-to-end encryption.
 
-## D. Explicit non-actions
+## D. Additional live security controls verified
+
+- All four public SECURITY DEFINER functions checked are not executable by `anon` or `authenticated`.
+- Their `search_path` is pinned (`public` for application functions, `pg_catalog` for the RLS auto-enable function).
+- `anon`, `authenticated`, and `PUBLIC` do not have `CREATE` privilege on the `public` schema.
+- No active `anon` policies were found on application tables other than explicit deny-client policies for audit logs, integration jobs, and payment events.
+- The trusted-contact INSERT privilege remains the exception described above and must be revoked in a reviewed forward migration.
+
+## E. Explicit non-actions
 
 - No feature or user data was deleted.
 - No production Supabase migration or DDL was applied.
