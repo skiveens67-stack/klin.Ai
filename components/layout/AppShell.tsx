@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,7 +11,9 @@ import {
   ShieldCheck, Sparkles, Users, WalletCards, X,
 } from "lucide-react";
 
-const navigation = [
+type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
+
+const navigation: NavigationItem[] = [
   { label: "Klinie Chat", href: "/", icon: MessageCircle },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Marketplace", href: "/marketplace", icon: Compass },
