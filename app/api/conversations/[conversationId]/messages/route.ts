@@ -4,12 +4,18 @@ import { hasTrustedOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
+const MAX_BODY_BYTES = 80 * 1024;
+
 export async function POST(request: Request, context: { params: Promise<{ conversationId: string }> }) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
   try {
     const { conversationId } = await context.params;
     if (!/^[0-9a-f-]{36}$/i.test(conversationId)) return NextResponse.json({ error: "Invalid conversation id." }, { status: 400 });
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
+    }
+    const body: unknown = JSON.parse(rawBody);
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const content = (body as Record<string, unknown>).content;
     if (typeof content !== "string" || content.trim().length < 1 || content.length > 20000) {
