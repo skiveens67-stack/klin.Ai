@@ -4,6 +4,8 @@ import { hasTrustedOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
+const MAX_CREATE_BODY_BYTES = 4 * 1024;
+
 export async function GET(request: Request) {
   try {
     const supabase = await createSupabaseServerClient();
@@ -35,7 +37,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
   try {
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_CREATE_BODY_BYTES) {
+      return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
+    }
+    const body: unknown = JSON.parse(rawBody);
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     const input = body as Record<string, unknown>;
     const title = typeof input.title === "string" ? input.title.trim() : "New conversation";
