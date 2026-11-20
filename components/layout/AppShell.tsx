@@ -18,7 +18,22 @@ const navigation = [
 
 export default function AppShell({ userEmail }: { userEmail: string }) {
   const [active, setActive] = useState("Klinie Chat");
-  const [sidebarOpen, setSidebarOpen] = useState(false);\n  const [signingOut, setSigningOut] = useState(false);\n  const [signOutError, setSignOutError] = useState("");\n\n  const signOut = async () => {\n    setSigningOut(true);\n    setSignOutError("");\n    try {\n      const response = await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });\n      if (!response.ok) throw new Error("Sign out failed. Please try again.");\n      window.location.assign("/login");\n    } catch (error) {\n      setSignOutError(error instanceof Error ? error.message : "Sign out failed.");\n      setSigningOut(false);\n    }\n  };
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+
+  const signOut = async () => {
+    setSigningOut(true);
+    setSignOutError("");
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      if (!response.ok) throw new Error("Sign out failed. Please try again.");
+      window.location.assign("/login");
+    } catch (error) {
+      setSignOutError(error instanceof Error ? error.message : "Sign out failed.");
+      setSigningOut(false);
+    }
+  };
 
   return (
     <div className="flex h-[100dvh] min-h-[560px] w-full overflow-hidden bg-[#060913] text-slate-100">
@@ -48,7 +63,9 @@ export default function AppShell({ userEmail }: { userEmail: string }) {
           })}
         </nav>
 
-        <div className="space-y-1 border-t border-white/[0.07] p-3">\n          <button onClick={() => void signOut()} disabled={signingOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><LogOut size={15} /> {signingOut ? "Signing out…" : "Sign out"}</button>\n          {signOutError && <p role="alert" className="px-3 text-[10px] text-rose-300">{signOutError}</p>}
+        <div className="space-y-1 border-t border-white/[0.07] p-3">
+          <button onClick={() => void signOut()} disabled={signingOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><LogOut size={15} /> {signingOut ? "Signing out…" : "Sign out"}</button>
+          {signOutError && <p role="alert" className="px-3 text-[10px] text-rose-300">{signOutError}</p>}
           <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><Settings size={15} /> Settings</button>
           <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><CircleHelp size={15} /> Help & support</button>
           <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/[0.035] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold">K</div><div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-slate-200">{userEmail || "Klin account"}</div><div className="text-[10px] text-slate-500">Signed-in workspace</div></div><ChevronDown size={14} className="text-slate-600" /></div>
