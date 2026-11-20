@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import {
-  Archive, ArrowDown, ArrowUp, Check, ChevronDown, Menu, MessageSquare,
-  MoreHorizontal, Plus, RefreshCw, Send, Sparkles, SquarePen, X,
+  Archive, Menu, MessageSquare, Plus, RefreshCw, Send, Sparkles, SquarePen, X,
 } from "lucide-react";
 
 type Conversation = {
@@ -30,7 +30,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: { "Content-Type": "application/json", ...(init?.headers as Record<string, string> | undefined) },
     cache: "no-store",
   });
   const payload = await response.json().catch(() => ({})) as T & ApiError;
