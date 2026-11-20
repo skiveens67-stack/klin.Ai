@@ -67,7 +67,7 @@ The connected Stripe account verified for this project is named `Klin.ai` and is
 - `GET|PUT /api/learning/progress` — read/update the current user's progress.
 - `GET /api/media/assets` — list private media metadata.
 - `POST /api/media/upload-url` — create a signed upload URL for the private `klin-user-assets` bucket (100 MB per file).
-- `POST /api/media/assets/:assetId/confirm` — verify that the uploaded object exists and mark it uploaded.
+- `POST /api/media/assets/:assetId/confirm` — verify that the uploaded object exists and that its stored size and content type match the registered asset before marking it uploaded.
 
 Public publishing and listing activation are intentionally blocked pending moderation. Marketplace orders, payouts, Stripe Connect, and charity disbursements are not enabled. The schema records the proposed 85/10/5 distribution, but actual payout logic requires legal/compliance review and a dedicated Connect account.
 
@@ -83,6 +83,7 @@ The command route only records requests; it does not actuate hardware. Thangie r
 - Trusted contact destinations are encrypted using AES-256-GCM and cannot be selected directly by authenticated clients.
 - Social posts and creator projects are drafts until a moderation service approves publication.
 - No service-role key or Stripe secret is shipped to browser code.
+- Mutating JSON API routes use route-specific request-body byte limits before JSON parsing.
 
 ## Required next integrations
 1. Configure Klin's own Stripe keys, product/price IDs, webhook endpoint, and Supabase service-role key in Vercel.
