@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripeClient } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { readLimitedText } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Stripe webhook is not configured." }, { status: 503 });
   }
 
-  const rawBody = await request.text();
+  const rawBodyResult = await readLimitedText(request, 1024 * 1024);
+  if (!rawBodyResult.ok) {
+    return NextResponse.json({ error: rawBodyResult.error }, { status: rawBodyResult.status });
+  }
+  const rawBody = rawBodyResult.value;
   let event: Stripe.Event;
   try {
     event = getStripeClient().webhooks.constructEvent(rawBody, signature, webhookSecret);
