@@ -28,6 +28,8 @@
 9. **Moderation and background workers:** No running moderation, communications, media-generation, or general integration worker was verified.
 10. **Production operations:** Backup restoration, monitoring/alerting, distributed rate limiting, incident runbooks, and full end-to-end tests still need evidence.
 11. **Vercel source binding:** The current Vercel project named `klin` is still linked to GitHub repository `skiveens67-stack/klin`, not `skiveens67-stack/klin.Ai`. Its attached domains are Vercel-generated preview/production hostnames; no custom domain was returned for this project. Do not repoint or deploy until the frontend source and intended hosting/domain arrangement are confirmed.
+12. **Primary-domain delegation:** Cloudflare lists `klin.website` as `pending`. Its observed authoritative nameservers are still GoDaddy's `ns65.domaincontrol.com` and `ns66.domaincontrol.com`, while Cloudflare assigned `ganz.ns.cloudflare.com` and `kira.ns.cloudflare.com`. Cloudflare's zone records are therefore not yet authoritative. Do not change registrar nameservers without owner approval.
+13. **Support email receiving:** Resend confirms `klin.help` is verified and outbound sending is enabled, but inbound receiving is disabled. If `klin.help` is meant to receive support tickets, its inbound-mail workflow still needs to be selected and configured. If it is only for sending support replies, no change is needed.
 
 ## C. Product roadmap decisions for the owner
 
