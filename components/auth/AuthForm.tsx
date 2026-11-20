@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Sparkles } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -58,7 +59,7 @@ export default function AuthForm({ mode, initialError }: Props) {
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <a className="auth-brand" href="/" aria-label="Klin home">
+        <Link className="auth-brand" href="/" aria-label="Klin home">
           <span className="auth-brand-mark"><Sparkles size={19} /></span>
           <span>Klin<span className="auth-brand-dot">.</span></span>
         </a>
@@ -77,7 +78,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         </form>
 
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <a href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</a></p>
-        <p className="auth-footnote">Your account is protected by Klin's authenticated session and private conversation access controls.</p>
+        <p className="auth-footnote">Your account is protected by Klin&apos;s authenticated session and private conversation access controls.</p>
       </section>
       <aside className="auth-side">
         <div className="auth-orb auth-orb-one" /><div className="auth-orb auth-orb-two" />
