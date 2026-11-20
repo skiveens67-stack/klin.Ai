@@ -29,7 +29,7 @@ export async function POST(request: Request, context: { params: Promise<{ conver
       .select("id,conversation_id,role,content,status,created_at").single();
     if (error) return NextResponse.json({ error: "Unable to save message." }, { status: 500 });
 
-    const firstMessageTitle = content.trim().replace(/\\s+/g, " ").slice(0, 80);
+    const firstMessageTitle = content.trim().replace(/\s+/g, " ").slice(0, 80);
     const conversationUpdates: { updated_at: string; title?: string } = {
       updated_at: new Date().toISOString(),
     };
