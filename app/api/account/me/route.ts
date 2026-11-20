@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasTrustedOrigin } from "@/lib/request-security";
+import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
@@ -155,7 +155,9 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const body: unknown = await request.json();
+    const parsed = await readLimitedJson(request, 4096);
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+    const body: unknown = parsed.value;
     const validation = validateProfileUpdate(body);
 
     if (validation.error || !validation.value) {
