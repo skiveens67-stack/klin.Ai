@@ -4,6 +4,8 @@ import { hasTrustedOrigin } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
 
+const MAX_UPDATE_BODY_BYTES = 4 * 1024;
+
 type RouteContext = { params: Promise<{ conversationId: string }> };
 
 function isConversationId(value: string) {
@@ -69,7 +71,11 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid conversation id." }, { status: 400 });
     }
 
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_UPDATE_BODY_BYTES) {
+      return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
+    }
+    const body: unknown = JSON.parse(rawBody);
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
