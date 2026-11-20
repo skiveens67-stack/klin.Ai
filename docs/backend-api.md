@@ -25,7 +25,7 @@ Email, phone, verification timestamps, account activation, waitlist position, an
 Important: permission settings and approved actions are stored, but no external SMS, email, WhatsApp, Discord, Slack, phone, or emergency-escalation worker is enabled yet. Approval does not send a message by itself.
 
 ## Klinie conversation data
-- `GET|POST /api/conversations` — list/create private conversations.
+- `GET|POST /api/conversations` — list/create private conversations. GET accepts `?archived=false` (default), `?archived=true`, or `?archived=all`.
 - `GET /api/conversations/:conversationId` — retrieve the current user's conversation and messages, including archived conversations.
 - `PATCH /api/conversations/:conversationId` — rename a conversation (`title`) and/or archive or restore it (`archived: true|false`). Only the owning account can update it; unknown fields are rejected.
 - `POST /api/conversations/:conversationId/messages` — persist a user message, update the conversation's activity timestamp, and create an initial title from the first message when the title is still `New conversation`.
