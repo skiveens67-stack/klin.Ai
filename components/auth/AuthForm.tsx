@@ -77,7 +77,7 @@ export default function AuthForm({ mode, initialError }: Props) {
           <button className="auth-submit" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"} <ArrowRight size={17} /></button>
         </form>
 
-        <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <a href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</a></p>
+        <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</Link></p>
         <p className="auth-footnote">Your account is protected by Klin&apos;s authenticated session and private conversation access controls.</p>
       </section>
       <aside className="auth-side">
