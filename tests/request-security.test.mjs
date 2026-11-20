@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hasTrustedOrigin, readLimitedJson } from "../lib/request-security.ts";
+import { hasTrustedOrigin, readLimitedJson, readLimitedText } from "../lib/request-security.ts";
 
 test("readLimitedJson parses a valid object within the byte limit", async () => {
   const request = new Request("https://klin.test/api", {
@@ -75,4 +75,34 @@ test("hasTrustedOrigin accepts only the exact request origin", () => {
     false,
   );
   assert.equal(hasTrustedOrigin(new Request("https://klin.test/api")), false);
+});
+
+
+test("readLimitedText preserves a valid raw webhook body", async () => {
+  const raw = '{"type":"payment_intent.succeeded","id":"evt_test"}';
+  const request = new Request("https://klin.test/api/webhook", {
+    method: "POST",
+    body: raw,
+  });
+
+  const result = await readLimitedText(request, 1024);
+  assert.deepEqual(result, { ok: true, value: raw });
+});
+
+test("readLimitedText rejects an oversized raw webhook body", async () => {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode("123456789"));
+      controller.close();
+    },
+  });
+  const request = new Request("https://klin.test/api/webhook", {
+    method: "POST",
+    body: stream,
+    duplex: "half",
+  });
+
+  const result = await readLimitedText(request, 8);
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.status, 413);
 });
