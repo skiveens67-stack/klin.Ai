@@ -38,7 +38,7 @@ Conversation persistence is implemented. Model inference, streaming responses, p
 - `POST /api/billing/checkout` — create a subscription Checkout Session for an allowlisted plan code: galaxy, studio_pro, ultimate.
 - `POST /api/stripe/checkout` — compatibility alias to the same secured handler. It accepts `plan_code` only; never send a client-controlled Stripe `priceId`.
 - `POST /api/billing/gems-checkout` — create a one-time Gems Checkout Session for an allowlisted pack code.
-- `POST /api/webhooks/stripe` — verify Stripe signature, deduplicate events, sync subscriptions, and credit Gems only after a paid checkout is verified.
+- `POST /api/webhooks/stripe` — verify the raw Stripe signature (request body capped at 1 MiB), deduplicate events, sync subscriptions, and credit Gems only after a paid checkout is verified.
 
 The wallet ledger is server-write-only. `post_wallet_transaction` is atomic, locks the wallet row, prevents negative balances, and uses a per-user idempotency key. Never credit Gems from a browser response or redirect.
 
