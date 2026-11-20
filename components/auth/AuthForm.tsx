@@ -62,7 +62,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         <Link className="auth-brand" href="/" aria-label="Klin home">
           <span className="auth-brand-mark"><Sparkles size={19} /></span>
           <span>Klin<span className="auth-brand-dot">.</span></span>
-        </a>
+        </Link>
         <div className="auth-kicker">YOUR AI WORKSPACE</div>
         <h1>{mode === "login" ? "Welcome back." : "Create your Klin account."}</h1>
         <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : "Set up your account to access your personal AI workspace."}</p>
