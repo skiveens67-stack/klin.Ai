@@ -27,3 +27,18 @@ The chat component uses the existing authenticated endpoints:
 ## Integration step
 
 Add the application's root layout and page after confirming the intended auth/session gate. The page should render `AppShell`; the root layout should include the global Tailwind stylesheet and metadata. Do not expose private environment variables to the browser.
+
+## App entry points and authentication (added after the initial component commit)
+
+The missing App Router integration is now present:
+
+- `app/layout.tsx` — root document, metadata, viewport, global stylesheet.
+- `app/page.tsx` — server-side authenticated gate; redirects signed-out users to `/login`.
+- `app/globals.css` — auth screen styles and a compiled utility subset for the current shell/chat components. The repository has no Tailwind package dependency, so no unresolved Tailwind PostCSS directives are used.
+- `middleware.ts` — refreshes Supabase SSR auth cookies before route execution.
+- `app/login/page.tsx`, `app/signup/page.tsx`, `components/auth/AuthForm.tsx` — email/password authentication and confirmation UX.
+- `app/auth/callback/route.ts` — PKCE callback exchange with a safe local redirect.
+- `app/api/auth/logout/route.ts` — origin-checked server-side sign-out.
+- `lib/supabase/browser.ts` — browser-only Supabase client.
+
+See `docs/KLIN_APP_ENTRYPOINTS.md` for configuration requirements and remaining verification boundaries.
