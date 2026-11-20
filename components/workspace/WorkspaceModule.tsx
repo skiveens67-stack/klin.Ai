@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { CheckCheck, Plus, RefreshCw } from "lucide-react";
 
-type ModuleKey =
+export type ModuleKey =
   | "projects" | "marketplace" | "social" | "learning" | "wallet"
   | "notifications" | "family" | "devices" | "communications"
   | "checkins" | "trusted-contacts";
