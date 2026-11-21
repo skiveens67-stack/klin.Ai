@@ -51,7 +51,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         redirectAfterLoading = true;
       } else if (verificationPending) {
         const supabase = createSupabaseBrowserClient();
-        const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "signup" });
+        const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "email" });
         if (verifyError) {
           const code = (verifyError as { code?: string }).code || "";
           const messageText = verifyError.message.toLowerCase();
