@@ -461,3 +461,18 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .offline-pending-tag{flex-shrink:0;padding:5px 7px;border-radius:6px;background:#f59e0b15;color:#fcd34d!important}
 .offline-clear-button{display:inline-flex;align-items:center;gap:6px;justify-self:start;border:0;background:transparent;color:#fca5a5;font-size:10px}
 .offline-privacy-note{margin:14px 0 0;color:#64748b;font-size:9px;line-height:1.6}
+
+
+/* Autonomous Builder */
+.module-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin:16px 0; }
+.module-list-item { display:flex; align-items:flex-start; gap:10px; padding:13px; border:1px solid rgba(148,163,184,.13); border-radius:12px; background:rgba(15,23,42,.45); color:#cbd5e1; font-size:13px; }
+.module-list-item svg { flex:none; color:#67e8f9; }
+.module-plan-card { display:flex; min-height:150px; flex-direction:column; align-items:flex-start; gap:8px; padding:15px; text-align:left; border:1px solid rgba(148,163,184,.16); border-radius:14px; background:rgba(15,23,42,.55); color:#cbd5e1; transition:border-color .15s,background .15s; }
+.module-plan-card:hover,.module-plan-card-selected { border-color:rgba(103,232,249,.65); background:rgba(8,145,178,.10); }
+.module-plan-card strong { color:#f8fafc; font-size:15px; }
+.module-plan-card b { color:#67e8f9; font-size:21px; }
+.module-plan-card span { color:#cbd5e1; font-size:12px; }
+.module-plan-card small { color:#94a3b8; font-size:11px; line-height:1.45; }
+.module-ordered-list { display:grid; gap:10px; padding-left:22px; color:#cbd5e1; font-size:13px; line-height:1.6; }
+.module-card-title h3 { margin:0; color:#e2e8f0; font-size:14px; font-weight:650; }
+@media (max-width:640px) { .module-grid { grid-template-columns:1fr; } .module-plan-card { min-height:0; } }
