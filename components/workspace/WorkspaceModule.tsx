@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import OfflineProjectDrafts from "@/components/offline/OfflineProjectDrafts";
+import BuildEstimator from "@/components/projects/BuildEstimator";
 import { CheckCheck, Plus, RefreshCw } from "lucide-react";
 
 export type ModuleKey =
@@ -282,7 +283,7 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
       </header>
 
       {config.note && <div className="module-note">{config.note}</div>}
-      {module === "projects" && <OfflineProjectDrafts />}
+      {module === "projects" && <><BuildEstimator /><OfflineProjectDrafts /></>}
       {error && <div className="module-alert module-alert-error" role="alert">{error}</div>}
       {notice && <div className="module-alert module-alert-info" role="status">{notice}</div>}
 
