@@ -32,3 +32,10 @@ test("canceled, trial and legacy memberships do not grant builder agents", () =>
   ]);
   assert.equal(result.max_agents, 4);
 });
+
+test("builder plans gate Klin intelligence levels", () => {
+  assert.equal(calculateAgentCapacity([]).max_module_level, "v1");
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_starter", status: "active" }]).max_module_level, "v3");
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_pro", status: "active" }]).max_module_level, "v5");
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_business", status: "active" }]).max_module_level, "v7");
+});
