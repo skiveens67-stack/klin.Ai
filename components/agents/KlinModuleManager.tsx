@@ -51,6 +51,14 @@ export default function KlinModuleManager() {
       }
       const state = localStorage.getItem(BUILD_KEY);
       if (state === "paused" || state === "running") setBuildState(state);
+      const teamPending = localStorage.getItem(PENDING_TEAM_KEY);
+      if (teamPending) {
+        const parsedTeam = JSON.parse(teamPending) as { task?: unknown; projectId?: unknown; workerIds?: unknown };
+        if (typeof parsedTeam.task === "string" && typeof parsedTeam.projectId === "string" &&
+            Array.isArray(parsedTeam.workerIds) && parsedTeam.workerIds.every((id) => typeof id === "string")) {
+          setPendingTeamRun({ task: parsedTeam.task, projectId: parsedTeam.projectId, workerIds: parsedTeam.workerIds });
+        }
+      }
       const pending = localStorage.getItem(PENDING_RUN_KEY);
       if (pending) {
         const parsedPending = JSON.parse(pending) as { moduleId?: unknown; task?: unknown };
