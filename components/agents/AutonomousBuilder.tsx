@@ -178,9 +178,7 @@ export default function AutonomousBuilder() {
           {["Klin Tester — QA, security and functionality", "Klin Builder — websites, apps and software", "Klin Animator — animation and video workflows", "Klin Calculator — estimates, deposits and invoices", "Klin Helper — user support and coordination", "Klin Safety & Law — privacy, safety and compliance review"].map((role) => <div className="module-list-item" key={role}><CheckCircle2 size={16} /><span>{role}</span></div>)}
         </div>
         <Link href="/agents/modules" className="mt-3 inline-flex rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100">Configure and copy Klin Modules</Link>
-        <div>
-        </div>
-        <p className="offline-privacy-note">Builder concurrency, agent isolation and plan enforcement are not live yet. This plan table is a product specification, not an active entitlement grant.</p>
+        <p className="offline-privacy-note">Plan capacity and module-level ceilings are verified by the server for individual module requests. Parallel worker scheduling and isolated project execution are not connected yet.</p>
       </section>
 
       <section className="module-card">
