@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Props = { mode: "login" | "signup"; initialError?: string };
@@ -70,8 +70,7 @@ export default function AuthForm({ mode, initialError }: Props) {
     <main className="auth-page">
       <section className="auth-panel">
         <Link className="auth-brand" href="/" aria-label="Klin home">
-          <span className="auth-brand-mark"><Sparkles size={19} /></span>
-          <span>Klin<span className="auth-brand-dot">.</span></span>
+          <img src="/klin-logo.svg" alt="Klin" className="h-10 w-auto" />
         </Link>
         <div className="auth-kicker">YOUR AI WORKSPACE</div>
         <h1>{mode === "login" ? "Welcome back." : verificationPending ? "Check your email." : "Create your Klin account."}</h1>
