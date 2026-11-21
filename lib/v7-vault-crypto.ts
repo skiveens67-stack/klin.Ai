@@ -19,6 +19,12 @@ export type KlinVaultEnvelope = {
 
 const ITERATIONS = 600_000;
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
   for (let index = 0; index < bytes.length; index += 1) binary += String.fromCharCode(bytes[index]);
@@ -48,9 +54,9 @@ function isVaultEnvelope(value: unknown): value is KlinVaultEnvelope {
 }
 
 async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
-  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+  const material = await crypto.subtle.importKey("raw", toArrayBuffer(new TextEncoder().encode(passphrase)), "PBKDF2", false, ["deriveKey"]);
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: ITERATIONS, hash: "SHA-256" },
+    { name: "PBKDF2", salt: toArrayBuffer(salt), iterations: ITERATIONS, hash: "SHA-256" },
     material,
     { name: "AES-GCM", length: 256 },
     false,
@@ -65,7 +71,7 @@ export async function encryptKlinVault(records: KlinVaultRecord[], passphrase: s
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(passphrase, salt);
   const plaintext = new TextEncoder().encode(JSON.stringify(records));
-  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv: toArrayBuffer(iv) }, key, toArrayBuffer(plaintext));
   return {
     format: "klin-v7-vault",
     version: 1,
@@ -87,7 +93,7 @@ export async function decryptKlinVault(envelopeValue: unknown, passphrase: strin
     const ciphertext = fromBase64(envelopeValue.ciphertext);
     if (salt.length !== 16 || iv.length !== 12 || ciphertext.length > 5_000_000) throw new Error("Invalid vault payload.");
     const key = await deriveKey(passphrase, salt);
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: toArrayBuffer(iv) }, key, toArrayBuffer(ciphertext));
     const records: unknown = JSON.parse(new TextDecoder().decode(plaintext));
     if (!Array.isArray(records) || records.length > 500 || !records.every(isVaultRecord)) throw new Error("Invalid vault records.");
     return records;
