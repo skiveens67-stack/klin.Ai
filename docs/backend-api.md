@@ -128,3 +128,6 @@ The current module execution endpoint returns a specialist model response only. 
 - `POST /api/agents/team-run` — launches a bounded parallel batch of enabled specialist module requests. The server verifies the active builder plan, batch size and each worker's maximum allowed model level. If the Builder role is included, it also requires a project owned by the user with a Stripe-webhook-verified paid deposit.
 - Team results return per-worker status, model ID and token usage. Each worker is an independent model request; duplicated profiles of the same role can run in the same batch.
 - Team execution is request-scoped and bounded to one Vercel function invocation. It is not a durable background job, does not edit files or package a product, and does not enforce a global per-user concurrency lock across separate browser sessions.
+
+
+**Abuse-control limitation:** Module endpoints cap tokens per worker and enforce the verified plan limit within each team batch, but a durable per-user rate limit, daily usage quota and global concurrency lock across separate browser sessions are not implemented yet. Set AI Gateway account spending limits before enabling module execution for public users.
