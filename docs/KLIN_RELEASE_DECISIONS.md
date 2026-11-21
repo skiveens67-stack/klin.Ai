@@ -1,14 +1,14 @@
 # Klin release decision register
 
 **Status:** Working checklist for the product owner. No product features were deleted or disabled by this document.
-**Scope:** Accessible repository and live-service evidence reviewed through 2026-11-20.
+**Scope:** Accessible repository and live-service evidence reviewed through 2026-11-21.
 **Rule:** Keep unfinished capabilities hidden, unavailable, or explicitly marked as planned until their implementation and acceptance tests exist. Do not represent a schema, UI concept, or queued record as a working feature.
 
 ## A. Work that can continue without product deletion decisions
 
 | Area | Current evidence | Remaining work |
 |---|---|---|
-| Chat history | Conversation tables and owner-scoped APIs exist. APIs now list, open, rename, archive, restore, and save user messages. | Integrate the frontend history UI; connect a real Klinie model/streaming provider; persist assistant replies server-side; add browser tests. |
+| Chat history | Conversation tables, owner-scoped APIs, frontend history UI, and assistant-message persistence path exist. A Vercel AI Gateway adapter is implemented. | Verify provider credentials/model in the deployment, add streaming, and run browser tests. |
 | Request security | Shared bounded JSON and raw-text readers cap all JSON mutation bodies and the signed Stripe webhook body. Eight unit tests cover parsing, limits, and origin behavior. Latest CI passed lint, type check, all unit tests, and production build. | Add API integration, abuse/rate-limit, and RLS tests. |
 | Media upload | Private bucket is configured with a 100 MiB limit and MIME allowlist; storage RLS restricts read/write/delete to each user's own folder. Signed upload URLs and asset records exist. Confirmation checks stored size and content type. | Add file-signature inspection, malware scanning, image/video re-encoding, quota enforcement, and moderation pipeline. |
 | Profile/account | Session-authenticated profile APIs and allowlisted profile updates exist. | Add route integration tests and verify real auth flows with test accounts. |
@@ -17,8 +17,8 @@
 
 ## B. Critical release blockers — do not enable until fixed and verified
 
-1. **Frontend source integration:** The accessible GitHub repository's `main` branch contains only a README. The backend branch does not contain the Grok frontend component tree. The live Klin interface cannot be fully reviewed, wired to the new chat history APIs, or browser-tested from this source.
-2. **Klinie inference:** Conversation storage exists, but no approved model provider, streaming endpoint, provider credentials, worker, or assistant-message persistence flow is connected.
+1. **Frontend source integration:** The backend branch now contains a standalone App Router interface, authenticated workspace pages, and the chat-history UI. It is not a merge of Grok's original local frontend because those source files were not available in the repository. Browser end-to-end tests against a configured preview are still outstanding.
+2. **Klinie inference:** A server-side Vercel AI Gateway adapter and assistant-message persistence path exist. The model/provider credentials and selected model are not verified in the deployment, responses are currently non-streaming, and no independent inference worker is configured.
 3. **Migration reconciliation:** Live Supabase history has 16 records; the repository has 11 SQL files. Exact source reconciliation is required before any production DDL.
 4. **Trusted-contact encryption invariant:** Authenticated still has direct INSERT privilege on `trusted_contacts.secret_reference`. The proposed revoke SQL exists but is not applied. This allows a user to bypass the app encryption route for their own row.
 5. **Financial table least privilege:** Broad grants remain on financial tables. Current RLS policies limit observed user access, but grants should be tightened in a reconciled forward migration.
@@ -62,3 +62,14 @@ These are not code deletions. Decide whether each capability remains in the Klin
 - No Vercel project, domain, environment variable, or deployment was changed.
 - The draft backend pull request remains open and unmerged.
 - Kai.AI was not accessed or modified.
+
+
+## F. Product requirements added 2026-11-20 and implementation status
+
+- **Agent capacity policy:** the source now calculates 3 agents for Free and adds 5 for each distinct active paid plan. Unit tests cover Free, paid-plan stacking, duplicate subscription rows, and inactive/unknown plans. This is an entitlement calculation only; the agent scheduler and concurrency enforcement are not connected.
+- **Project estimate policy:** the source estimates up to 25 working days (200 active hours), calculates a $10–$35 rate per 10-hour block, and estimates the number of blocks and total. The estimate API request mismatch was corrected so complexity is calculated server-side. This is still a quote only.
+- **Payment pause policy:** product rules now specify a 30-minute payment window after each 10 billable active hours, no charge for idle/paused/provider-wait time, idempotent block accounting, verified Stripe payment confirmation, and checkpoint-preserving pause/resume. The timer, notification, checkout-per-block, worker lease, checkpoint persistence, and resume runtime are NOT IMPLEMENTED.
+- **Offline policy:** the PWA supports local draft storage and offline status. It does not currently pause an active cloud build because the cloud build scheduler and durable checkpoint runner are not connected. A production implementation needs worker heartbeats/leases and a persistent job state machine.
+- **Test-before-delivery policy:** the required test matrix and delivery states are documented. CI tests this repository itself; there is not yet an isolated project runner that tests each user's generated website, app, game, or video before delivery.
+
+The latest source commit reviewed for this update is `22f231ef085d07d74791fe7b0641b00b44469342`. GitHub Actions run #396 passed dependency installation, lint, TypeScript checking, unit tests, and the Next.js production build. This is CI evidence for the repository, not generated-project QA or launch certification.
