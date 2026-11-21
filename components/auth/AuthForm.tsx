@@ -13,6 +13,8 @@ export default function AuthForm({ mode, initialError }: Props) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationPending, setVerificationPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(initialError === "configuration"
@@ -34,6 +36,16 @@ export default function AuthForm({ mode, initialError }: Props) {
         if (authError) throw authError;
         router.replace("/");
         router.refresh();
+      } else if (verificationPending) {
+        const supabase = createSupabaseBrowserClient();
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token: verificationCode.trim(),
+          type: "signup",
+        });
+        if (verifyError) throw verifyError;
+        router.replace("/");
+        router.refresh();
       } else {
         const response = await fetch("/api/auth/signup", {
           method: "POST",
@@ -43,7 +55,8 @@ export default function AuthForm({ mode, initialError }: Props) {
         });
         const data = await response.json() as { message?: string; error?: string };
         if (!response.ok) throw new Error(data.error || "Unable to create your account.");
-        setMessage(data.message || "Check your email for a verification link from Klin.");
+        setVerificationPending(true);
+        setMessage(data.message || "Check your email for a six-digit verification code from Klin.");
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
@@ -60,17 +73,27 @@ export default function AuthForm({ mode, initialError }: Props) {
           <span>Klin<span className="auth-brand-dot">.</span></span>
         </Link>
         <div className="auth-kicker">YOUR AI WORKSPACE</div>
-        <h1>{mode === "login" ? "Welcome back." : "Create your Klin account."}</h1>
-        <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : "Set up your account to access your personal AI workspace."}</p>
+        <h1>{mode === "login" ? "Welcome back." : verificationPending ? "Check your email." : "Create your Klin account."}</h1>
+        <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the six-digit code we sent to your email to activate your account." : "Set up your account to access your personal AI workspace."}</p>
 
         <form onSubmit={submit} className="auth-form">
           <label htmlFor="email">Email address</label>
-          <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div>
-          <label htmlFor="password">Password</label>
-          <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+          <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" readOnly={mode === "signup" && verificationPending} /></div>
+          {mode === "signup" && verificationPending ? (
+            <>
+              <label htmlFor="verification-code">Six-digit email code</label>
+              <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="verification-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} minLength={6} required value={verificationCode} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" /></div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="password">Password</label>
+              <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+            </>
+          )}
           {error && <p className="auth-alert auth-error" role="alert">{error}</p>}
           {message && <p className="auth-alert auth-message" role="status">{message}</p>}
-          <button className="auth-submit" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"} <ArrowRight size={17} /></button>
+          <button className="auth-submit" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "login" ? "Sign in" : verificationPending ? "Verify email and continue" : "Create account"} <ArrowRight size={17} /></button>
+          {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); }}>Use a different email address</button>}
         </form>
 
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</Link></p>
