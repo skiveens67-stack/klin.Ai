@@ -222,7 +222,7 @@ export default function KlinModuleManager() {
       setPendingTeamRun(null);
       try { localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* State is also cleared in memory. */ }
       setBuildState("idle");
-      setNotice(`Team finished: ${data.completed_workers ?? 0} of ${data.requested_workers ?? selected.length} modules completed. Results are shown under each module.`);
+      const totalTokens = (data.results ?? []).reduce((sum, item) => sum + (item.usage?.total_tokens ?? 0), 0);\n      setNotice(`Team finished: ${data.completed_workers ?? 0} of ${data.requested_workers ?? selected.length} modules completed${totalTokens ? ` · ${totalTokens} tokens total` : ""}. Results are shown under each module.`);
     } catch (caught) {
       if (controller.signal.aborted || !navigator.onLine) {
         setBuildState("paused");
