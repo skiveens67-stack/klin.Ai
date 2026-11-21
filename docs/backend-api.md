@@ -107,7 +107,7 @@ The command route only records requests; it does not actuate hardware. Thangie r
 
 ## Klin specialist modules
 - `GET /api/agents/limits` — returns the signed-in user's active builder plan and agent capacity.
-- `POST /api/agents/run` — runs one authenticated specialist module request. Allowed roles: tester, builder, animator, calculator, helper, safety. Allowed levels: v1–v7. Initial verified-plan ceilings: Free V1, Starter V3, Pro V5, Business V7. V1 uses `KLINIE_MODEL`; V2–V7 require `KLIN_MODULE_V2_MODEL` through `KLIN_MODULE_V7_MODEL`. All model IDs are server-only Vercel AI Gateway configuration.
+- `POST /api/agents/run` — runs one authenticated specialist module request. The Builder role requires a project owned by the user with a Stripe-webhook-verified deposit; other specialist roles can run without a build deposit. Allowed roles: tester, builder, animator, calculator, helper, safety. Allowed levels: v1–v7. Initial verified-plan ceilings: Free V1, Starter V3, Pro V5, Business V7. V1 uses `KLINIE_MODEL`; V2–V7 require `KLIN_MODULE_V2_MODEL` through `KLIN_MODULE_V7_MODEL`. All model IDs are server-only Vercel AI Gateway configuration.
 - The V7 request adds a stricter safety instruction set. A module request returns text only; it cannot modify files or call external integrations.
 - The Klin Modules UI stores cloned module profiles and a pending retry task in browser local storage. If the browser goes offline it aborts the active request where possible and marks the task paused; the user must press Continue after reconnecting to retry.
 - Local module profiles and client-side plan limits are not a substitute for server-side concurrent worker admission. The persistent agent scheduler is not yet connected.
