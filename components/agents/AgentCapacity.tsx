@@ -5,9 +5,9 @@ import { Bot, RefreshCw, ShieldAlert } from "lucide-react";
 
 type Capacity = {
   free_agent_limit: number;
-  active_paid_plan_count: number;
-  agents_per_paid_plan: number;
+  active_builder_plan: string;
   max_agents: number;
+  enforcement: string;
   agent_runtime: string;
   note: string;
 };
@@ -47,11 +47,11 @@ export default function AgentCapacity() {
           <section className="module-balance-card">
             <span>Maximum agents on this account</span>
             <strong>{capacity.max_agents} <small>AGENTS</small></strong>
-            <p>{capacity.free_agent_limit} included on Free · {capacity.agents_per_paid_plan} additional per active paid plan</p>
+            <p>{capacity.active_builder_plan.replace("builder_", "").replace("_", " ")} plan · verified from active subscription records</p>
           </section>
           <section className="module-card">
-            <div className="module-card-title"><Bot size={17} /><h2>How your limit is calculated</h2></div>
-            <p className="module-empty">{capacity.free_agent_limit} base agents + ({capacity.active_paid_plan_count} active paid plan(s) × {capacity.agents_per_paid_plan}) = {capacity.max_agents} maximum agents.</p>
+            <div className="module-card-title"><Bot size={17} /><h2>Builder plan limits</h2></div>
+            <p className="module-empty">Free: 4 agents · Starter: 10 · Pro: 20 · Business: 30+ agents. Your active plan currently allows {capacity.max_agents} agents.</p>
           </section>
           <section className="module-card">
             <div className="module-card-title"><ShieldAlert size={17} /><h2>Agent runtime status</h2></div>
