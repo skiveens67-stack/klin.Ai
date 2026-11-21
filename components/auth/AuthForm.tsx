@@ -67,7 +67,7 @@ export default function AuthForm({ mode, initialError }: Props) {
   };
 
   return (
-    <main className="auth-page">
+    <main className={`auth-page ${mode === "signup" ? "auth-page-signup" : "auth-page-login"}`}>
       <section className="auth-panel">
         <Link className="auth-brand" href="/" aria-label="Klin home">
           <img src="/klin-logo.svg" alt="Klin" className="h-10 w-auto" />
@@ -96,7 +96,7 @@ export default function AuthForm({ mode, initialError }: Props) {
           {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); }}>Use a different email address</button>}
         </form>
 
-        <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</Link></p>
+        {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}\n        <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Create an account" : "Sign in"}</Link></p>
         <p className="auth-footnote">Your account is protected by Klin&apos;s authenticated session and private conversation access controls.</p>
       </section>
       <aside className="auth-side">
