@@ -9,6 +9,7 @@ type BuildState = "idle" | "running" | "paused";
 const STORAGE_KEY = "klin.module-roster.v1";
 const BUILD_KEY = "klin.build-session.v1";
 const PENDING_RUN_KEY = "klin.pending-module-run.v1";
+const PENDING_TEAM_KEY = "klin.pending-module-team.v1";
 const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role, index) => ({ id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: index < 4 }));
 
 export default function KlinModuleManager() {
@@ -19,6 +20,9 @@ export default function KlinModuleManager() {
   const [buildState, setBuildState] = useState<BuildState>("idle");
   const [notice, setNotice] = useState("");
   const [task, setTask] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [teamRunning, setTeamRunning] = useState(false);
+  const [pendingTeamRun, setPendingTeamRun] = useState<{ task: string; projectId: string; workerIds: string[] } | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, string>>({});
   const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string } | null>(null);
@@ -75,10 +79,16 @@ export default function KlinModuleManager() {
   }, [pendingRun, ready]);
 
   useEffect(() => {
+    if (!ready) return;
+    if (pendingTeamRun) localStorage.setItem(PENDING_TEAM_KEY, JSON.stringify(pendingTeamRun));
+    else localStorage.removeItem(PENDING_TEAM_KEY);
+  }, [pendingTeamRun, ready]);
+
+  useEffect(() => {
     const pauseOnDisconnect = () => {
       activeRequest.current?.abort();
       setBuildState("paused");
-      setNotice("Connection lost. The current module request was cancelled where possible. Reconnect, then choose Continue to retry the saved task.");
+      setNotice("Connection lost. The active module request was cancelled where possible. Reconnect, then choose Continue to retry the saved task or team.");
     };
     window.addEventListener("offline", pauseOnDisconnect);
     return () => window.removeEventListener("offline", pauseOnDisconnect);
