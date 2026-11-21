@@ -10,8 +10,11 @@ const PLAN_PRICE_ENV: Record<string, string> = {
   galaxy: "STRIPE_PRICE_GALAXY",
   studio_pro: "STRIPE_PRICE_STUDIO_PRO",
   ultimate: "STRIPE_PRICE_ULTIMATE",
-  starter: "STRIPE_PRICE_STARTER",
+
   plus: "STRIPE_PRICE_PLUS",
+  pro: "STRIPE_PRICE_PRO",
+  family_fortress: "STRIPE_PRICE_FAMILY_FORTRESS",
+  merchant_enterprise: "STRIPE_PRICE_MERCHANT_ENTERPRISE",
   creator: "STRIPE_PRICE_CREATOR",
   developer: "STRIPE_PRICE_DEVELOPER",
   business: "STRIPE_PRICE_BUSINESS",
