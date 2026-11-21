@@ -55,6 +55,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         });
         const data = await response.json() as { message?: string; error?: string };
         if (!response.ok) throw new Error(data.error || "Unable to create your account.");
+        setPassword("");
         setVerificationPending(true);
         setMessage(data.message || "Check your email for a six-digit verification code from Klin.");
       }
