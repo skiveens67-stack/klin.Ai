@@ -58,7 +58,7 @@ export default function PricingPlans() {
             <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>
           </article>)}
         </div>
-        <p className="offline-privacy-note">Published prices are the current proposed catalogue. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin's Stripe account.</p>
+        <p className="offline-privacy-note">Published prices are the current proposed catalogue. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin&apos;s Stripe account.</p>
       </section>
       <section className="module-card">
         <div className="module-card-title"><CreditCard size={18} /><h2>Autonomous Builder plans</h2></div>
@@ -71,7 +71,7 @@ export default function PricingPlans() {
       </section>
       <section className="module-card">
         <div className="module-card-title"><ShieldCheck size={18} /><h2>Klin V6 Ultra intelligence</h2></div>
-        <p className="offline-drafts-copy">V6 Ultra is its own paid intelligence plan. It unlocks the V6 model level while keeping worker count governed by the user's Builder plan.</p>
+        <p className="offline-drafts-copy">V6 Ultra is its own paid intelligence plan. It unlocks the V6 model level while keeping worker count governed by the user&apos;s Builder plan.</p>
         <button type="button" className="module-submit" disabled={busy !== ""} onClick={() => void checkout("klin_v6_ultra")}>{busy === "klin_v6_ultra" ? "Opening checkout…" : "Subscribe to V6 Ultra"}</button>
         <p className="offline-privacy-note">V6 Ultra pricing and its Stripe Price ID must be configured before checkout can complete. Klin V7 Ultra Safe is free and automatically active for every account; it is never an upgrade.</p>
       </section>
