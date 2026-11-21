@@ -167,7 +167,7 @@ export default function KlinModuleManager() {
   return (
     <section className="module-card">
       <div className="module-card-title"><Users size={18} /><h2>Klin Modules · AI worker roster</h2></div>
-      <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more worker configurations; assign each copy a Klin intelligence level. Model requests run through Klin's server-side AI Gateway configuration.</p>
+      <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more worker configurations; assign each copy a Klin intelligence level. Model requests run through Klin&apos;s server-side AI Gateway configuration.</p>
       <div className="module-grid">
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
       </div>
