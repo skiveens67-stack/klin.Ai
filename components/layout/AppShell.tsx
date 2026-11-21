@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -41,6 +41,16 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
+  const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/account/profile", { credentials: "same-origin", cache: "no-store" })
+      .then(async response => response.ok ? await response.json() as { profile?: { username: string; account_number: string } } : null)
+      .then(result => { if (active && result?.profile) setAccountProfile(result.profile); })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   const activeLabel = navigation.find((item) => item.href === pathname)?.label ?? "Klin";
   const signOut = async () => {
@@ -94,7 +104,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
           <a href="https://klin.help" target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><CircleHelp size={15} /> Help &amp; support</a>
           <button onClick={() => void signOut()} disabled={signingOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><LogOut size={15} /> {signingOut ? "Signing out…" : "Sign out"}</button>
           {signOutError && <p role="alert" className="px-3 text-[10px] text-rose-300">{signOutError}</p>}
-          <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/[0.035] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold">K</div><div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-slate-200">{userEmail || "Klin account"}</div><div className="text-[10px] text-slate-500">Signed-in workspace</div></div><ChevronDown size={14} className="text-slate-600" /></div>
+          <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/[0.035] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold">K</div><div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-slate-200">{accountProfile?.username ? "@" + accountProfile.username : userEmail || "Klin account"}</div><div className="text-[10px] text-slate-500">{accountProfile?.account_number ? "Klin ID: " + accountProfile.account_number : "Signed-in workspace"}</div></div><ChevronDown size={14} className="text-slate-600" /></div>
         </div>
       </aside>
 
