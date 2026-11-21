@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import OfflineProjectDrafts from "@/components/offline/OfflineProjectDrafts";
 import { CheckCheck, Plus, RefreshCw } from "lucide-react";
 
 export type ModuleKey =
@@ -207,6 +208,12 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
 
   useEffect(() => { void load(); }, [load]);
 
+  useEffect(() => {
+    const onSynced = () => { void load(); };
+    window.addEventListener("klin:projects-synced", onSynced);
+    return () => window.removeEventListener("klin:projects-synced", onSynced);
+  }, [load]);
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!config.fields || busy) return;
@@ -275,6 +282,7 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
       </header>
 
       {config.note && <div className="module-note">{config.note}</div>}
+      {module === "projects" && <OfflineProjectDrafts />}
       {error && <div className="module-alert module-alert-error" role="alert">{error}</div>}
       {notice && <div className="module-alert module-alert-info" role="status">{notice}</div>}
 
