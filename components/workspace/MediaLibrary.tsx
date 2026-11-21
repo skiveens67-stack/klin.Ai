@@ -31,6 +31,12 @@ export default function MediaLibrary() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [imageProvider, setImageProvider] = useState<"klin" | "gemini">("klin");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<{ image: string; provider: string; model?: string; note?: string } | null>(null);
+  const [imageError, setImageError] = useState("");
 
   const loadAssets = useCallback(async () => {
     setLoading(true);
@@ -96,14 +102,58 @@ export default function MediaLibrary() {
     }
   };
 
+  const generateImage = async () => {
+    if (!imagePrompt.trim() || generatingImage) return;
+    setGeneratingImage(true);
+    setImageError("");
+    setGeneratedImage(null);
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (imageProvider === "gemini") headers["x-gemini-api-key"] = geminiApiKey.trim();
+      const response = await fetch("/api/creative/image", {
+        method: "POST",
+        credentials: "same-origin",
+        headers,
+        body: JSON.stringify({ prompt: imagePrompt.trim(), provider: imageProvider }),
+      });
+      const data = await response.json() as { image?: string; provider?: string; model?: string; note?: string; error?: string };
+      if (!response.ok || !data.image) throw new Error(data.error || "Image generation failed.");
+      setGeneratedImage({ image: data.image, provider: data.provider ?? imageProvider, model: data.model, note: data.note });
+    } catch (caught) {
+      setImageError(caught instanceof Error ? caught.message : "Image generation failed.");
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
   return (
     <main className="module-page">
       <header className="module-header">
-        <div><div className="module-eyebrow">KLIN WORKSPACE</div><h1>Creative Studio</h1><p>Manage private media assets for your projects. AI image and video generation are not connected yet.</p></div>
+        <div><div className="module-eyebrow">KLIN WORKSPACE</div><h1>Creative Studio</h1><p>Manage private media assets for your projects. AI image generation is available through Klin or your Gemini API key. Video generation is coming soon.</p></div>
         <button type="button" className="module-refresh" onClick={() => void loadAssets()} disabled={loading || uploading}><RefreshCw size={15} /> Refresh</button>
       </header>
 
       <div className="module-note">Private uploads only. Supported types: JPEG, PNG, WebP, GIF, MP4, WebM, MP3, WAV, M4A, and PDF. Maximum file size: 100 MB.</div>
+
+      <section className="module-card">
+        <div className="module-card-title"><FileImage size={18} /><h2>AI Image Creator</h2></div>
+        <p className="offline-drafts-copy">Create a new picture with Klin's configured image model, or use your own Gemini API key. Gemini keys are sent only for the current request and are not saved in Klin.</p>
+        <div className="module-form">
+          <div className="module-field"><label htmlFor="image-provider">Image provider</label><select id="image-provider" value={imageProvider} onChange={(event) => { setImageProvider(event.target.value as "klin" | "gemini"); setGeneratedImage(null); setImageError(""); }}><option value="klin">Klin Image Creator</option><option value="gemini">Use my Gemini API key</option></select></div>
+          {imageProvider === "gemini" && <div className="module-field"><label htmlFor="gemini-api-key">Gemini API key (used once, not saved)</label><input id="gemini-api-key" type="password" autoComplete="off" value={geminiApiKey} onChange={(event) => setGeminiApiKey(event.target.value)} placeholder="Paste your Gemini API key" /></div>}
+          <div className="module-field"><label htmlFor="image-prompt">Describe the picture</label><textarea id="image-prompt" rows={4} maxLength={3000} value={imagePrompt} onChange={(event) => setImagePrompt(event.target.value)} placeholder="Describe the image, art style, colors, lighting and composition…" /></div>
+          <button className="module-submit" type="button" disabled={generatingImage || imagePrompt.trim().length < 4 || (imageProvider === "gemini" && geminiApiKey.trim().length < 20)} onClick={() => void generateImage()}>{generatingImage ? "Drawing your picture…" : "Generate image"}</button>
+        </div>
+        {imageError && <div className="module-alert module-alert-error" role="alert">{imageError}</div>}
+        {generatedImage && <div className="mt-4"><img src={generatedImage.image} alt="Image generated with Klin" className="w-full rounded-xl border border-white/10" /><div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-slate-400">Created with {generatedImage.provider}{generatedImage.model ? ` · ${generatedImage.model}` : ""}</span><a className="rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100" href={generatedImage.image} download="klin-image.png">Download picture</a></div>{generatedImage.note && <p className="offline-privacy-note">{generatedImage.note}</p>}</div>}
+      </section>
+
+      <section className="module-card">
+        <div className="module-card-title"><span className="module-count">COMING SOON</span><h2>AI Video Creator</h2></div>
+        <p className="offline-drafts-copy">Video generation is being prepared for Klin early access. Video creation stays unavailable until a video provider, pricing controls and safety checks are connected.</p>
+      </section>
+
+
       <div className="module-alert module-alert-warning">Upload confirmation checks the stored size and content type. File-signature inspection, malware scanning, media re-encoding, and moderation are not yet enabled. Do not upload sensitive or untrusted files.</div>
       {error && <div className="module-alert module-alert-error" role="alert">{error}</div>}
       {notice && <div className="module-alert module-alert-info" role="status">{notice}</div>}
