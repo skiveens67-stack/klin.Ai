@@ -45,7 +45,8 @@ export default function AutonomousBuilder() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
 
-  const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];\n  const verifiedPlan = estimate ? plans.find((item) => item.code === estimate.active_builder_plan) ?? plans[0] : plans[0];
+  const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
+  const verifiedPlan = estimate ? plans.find((item) => item.code === estimate.active_builder_plan) ?? plans[0] : plans[0];
   const quote = useMemo(() => {
     if (!estimate) return null;
     const discount = estimate.build_discount_percent / 100;
