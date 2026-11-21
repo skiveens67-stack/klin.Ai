@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Pause, Play, RotateCcw, ShieldCheck, Trash2, Users } from "lucide-react";
 import { KLIN_MODULE_LEVELS, KLIN_MODULE_MAX_INSTANCES, KLIN_MODULE_ROLES, type KlinModuleLevelId, type KlinModuleRoleId } from "@/lib/klin-module-catalog";
 
@@ -9,6 +9,7 @@ type BuildState = "idle" | "running" | "paused";
 
 const STORAGE_KEY = "klin.module-roster.v1";
 const BUILD_KEY = "klin.build-session.v1";
+const PENDING_RUN_KEY = "klin.pending-module-run.v1";
 
 function makeModule(roleId: KlinModuleRoleId, index = 1): ModuleInstance {
   const role = KLIN_MODULE_ROLES.find((item) => item.id === roleId) ?? KLIN_MODULE_ROLES[0];
@@ -27,6 +28,8 @@ export default function KlinModuleManager() {
   const [task, setTask] = useState("");
   const [runningId, setRunningId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, string>>({});
+  const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string } | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
 
   useEffect(() => {
     try {
@@ -65,7 +68,7 @@ export default function KlinModuleManager() {
     return () => window.removeEventListener("offline", pauseOnDisconnect);
   }, []);
 
-  const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
+  useEffect(() => {\n    if (!ready) return;\n    if (pendingRun) localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pendingRun));\n    else localStorage.removeItem(PENDING_RUN_KEY);\n  }, [pendingRun, ready]);\n\n  const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
 
   function cloneModule(source: ModuleInstance) {
     if (modules.length >= KLIN_MODULE_MAX_INSTANCES) {
@@ -95,7 +98,7 @@ export default function KlinModuleManager() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: task.trim() }),
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim() }),\n        signal: controller.signal,
       });
       const data = await response.json() as { result?: string; error?: string; model?: string };
       if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
