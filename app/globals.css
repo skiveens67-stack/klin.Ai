@@ -595,3 +595,71 @@ body {
 [class~="to-indigo-500"]{--klin-to:#22c55e!important}
 [class~="from-indigo-500"]{--klin-from:#14532d!important}
 [class~="to-cyan-400"]{--klin-to:#4ade80!important}
+
+
+/* Klin monochrome visual system: green is reserved for the brand mark only. */
+:root {
+  --klin-bg:#050505;
+  --klin-surface:#101010;
+  --klin-surface-raised:#181818;
+  --klin-border:rgba(255,255,255,.12);
+  --klin-text:#f5f5f5;
+  --klin-muted:#a3a3a3;
+  --klin-cyan:#ffffff;
+  --klin-blue:#d4d4d4;
+  --klin-violet:#a3a3a3;
+  --klin-purple:#ffffff;
+}
+body,.app-shell,.app-sidebar,.module-page,.settings-page,.auth-page {
+  background:#050505 !important;
+  color:#f5f5f5 !important;
+}
+.app-sidebar,.app-shell header,.settings-topbar { background:#090909 !important; }
+.app-sidebar,.app-shell header,.settings-card,.module-card,.integration-card,
+.module-record,.auth-input-wrap,.settings-form input,.settings-form textarea,
+.module-field input,.module-field select,.module-field textarea {
+  border-color:#292929 !important;
+  background:#101010 !important;
+}
+.app-shell [class*="bg-gradient"],.auth-side,.auth-orb,.auth-side:before,
+.module-balance-card,.billing-portal-card,.offline-page,.checkout-return-page {
+  background:#080808 !important;
+  box-shadow:none !important;
+}
+.auth-side { border-left-color:#222 !important; }
+.auth-side:before { opacity:.08 !important; }
+.auth-orb { border-color:#292929 !important; }
+.auth-kicker,.auth-switch a,.auth-side-label,.module-eyebrow,
+.module-card-title,.module-balance-card span,.module-balance-card strong small,
+.module-plan-card b,.settings-eyebrow,.settings-card-heading {
+  color:#d4d4d4 !important;
+}
+.auth-submit,.settings-form button,.module-submit,.module-secondary-action,
+.checkout-return-page a,.offline-page a {
+  color:#080808 !important;
+  background:#f5f5f5 !important;
+  border:1px solid #f5f5f5 !important;
+  box-shadow:none !important;
+}
+.auth-input-wrap:focus-within,.settings-form input:focus,.settings-form textarea:focus,
+.module-field input:focus,.module-field select:focus,.module-field textarea:focus {
+  border-color:#bdbdbd !important;
+  box-shadow:0 0 0 2px #ffffff12 !important;
+}
+.auth-message,.module-alert-info,.module-note,.module-secondary-action {
+  color:#e5e5e5 !important;
+  border-color:#333 !important;
+  background:#141414 !important;
+}
+[class*="text-cyan-"],[class*="text-green-"],[class*="text-emerald-"],
+[class*="text-indigo-"],[class*="text-violet-"] { color:#e5e5e5 !important; }
+[class*="border-cyan-"],[class*="border-green-"],[class*="border-emerald-"],
+[class*="border-indigo-"],[class*="border-violet-"] { border-color:#333 !important; }
+[class*="bg-cyan-"],[class*="bg-green-"],[class*="bg-emerald-"],
+[class*="bg-indigo-"],[class*="bg-violet-"] { background-color:#151515 !important; }
+[class*="shadow-"] { box-shadow:none !important; }
+.module-plan-card:hover,.module-plan-card-selected {
+  border-color:#777 !important;
+  background:#171717 !important;
+}
+.module-list-item svg,.offline-status.is-online svg { color:#d4d4d4 !important; }
