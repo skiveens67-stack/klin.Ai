@@ -6,11 +6,12 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 - Klin is installable as a progressive web app.
 - The service worker may cache the offline fallback and versioned static application assets only.
 - Never cache authenticated HTML, private API responses, conversation history, account data, wallet balances, payment data, or credentials in the service worker cache.
-- If Klin or the user's connection becomes unavailable during a cloud build, the build scheduler must stop assigning new work, mark the job paused, and retain the last durable checkpoint, project files, logs, and completed work.
+- For a short, browser-initiated module request, listen for the browser offline event, abort the active fetch, save the task and module ID locally, and mark the request paused. When online again, wait for the user to press Continue, then retry the saved task. Do not silently resume or double-submit.
+- For a long-running autonomous cloud build, stop dispatching new work when connectivity or the user session is lost. Preserve the last durable checkpoint, project files, logs and completed work; resume only after the user chooses Continue.
 - A paused job must resume from its last verified checkpoint after service and authentication recover. It must not restart from zero or delete project data.
-- Use worker heartbeats and expiring execution leases so a crashed worker cannot continue consuming billable time. On lease expiry, mark the job interrupted/paused and reconcile its last checkpoint before resuming.
+- A future persistent worker service must use leases or equivalent crash recovery so abandoned workers do not keep consuming billable time.
 - Offline mode supports local draft capture and access to the offline screen. It does not run cloud AI models, remote agents, payments, publishing, integrations, or account operations.
-- Offline project drafts are stored in browser IndexedDB and sync only after the user reconnects and is authenticated. Sync uses a per-draft idempotency key and must retain unsynced drafts after a network or server error. The `creator_projects.idempotency_key` migration must be applied before this API path is deployed.
+- Offline project drafts and the module retry task are stored locally in the browser and sync/retry only after the user reconnects and is authenticated. Sync uses a per-draft idempotency key and must retain unsynced drafts after a network or server error. The `creator_projects.idempotency_key` migration must be applied before this API path is deployed.
 - Local browser drafts are currently not encrypted by Klin. Users must not save passwords, payment details, or highly sensitive data in them. A future encrypted local vault requires a separate threat model and recovery design.
 
 ## Project estimates, deposit and final payment
