@@ -23,5 +23,5 @@ test("Klin V7 vault rejects an incorrect passphrase", async () => {
 });
 
 test("Klin V7 vault requires a strong passphrase", async () => {
-  await assert.rejects(() => encryptKlinVault([], "short"), /at least 12 characters/);
+  await assert.rejects(() => encryptKlinVault([], "short"), /between 12 and 256 characters/);
 });
