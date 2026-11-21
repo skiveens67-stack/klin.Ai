@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         max_agents: entitlement.max_agents,
         build_discount_percent: buildDiscountPercent,
       },
-      billing_notice: "Estimate only. Klin must disclose the $7–$35 price for each 10 active-hour block and obtain your approval before paid work starts. At each block boundary, Klin will notify you and allow 30 minutes to pay. If payment is not confirmed, the project pauses with its saved checkpoint. Idle and paused time are not billable.",
+      billing_notice: "Estimate only. Before any build, Klin must present a locked quote and collect a $20 deposit, or 15% for a multi-day build estimated above $150. The deposit is credited in full against the final invoice. No agents start before verified payment. At completion, the remaining balance must be paid before source export, watermark removal or publishing.",
       execution_status: "builder_not_connected",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
