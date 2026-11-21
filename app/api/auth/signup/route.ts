@@ -24,8 +24,8 @@ export async function POST(request: Request) {
   const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
   const password = typeof input.password === "string" ? input.password : "";
   const username = typeof input.username === "string" ? input.username.trim() : "";
-  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
-    return NextResponse.json({ error: "Username must be 3–20 characters and use only letters, numbers, or underscores." }, { status: 400 });
+  if (username.length <= 3 || username.length >= 50) {
+    return NextResponse.json({ error: "Username must be more than 3 and fewer than 50 characters." }, { status: 400 });
   }
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
