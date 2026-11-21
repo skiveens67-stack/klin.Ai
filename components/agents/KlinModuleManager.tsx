@@ -19,6 +19,7 @@ export default function KlinModuleManager() {
   const [maxModuleLevel, setMaxModuleLevel] = useState<KlinModuleLevelId>("v1");
   const [buildState, setBuildState] = useState<BuildState>("idle");
   const [notice, setNotice] = useState("");
+  const [resumeCommand, setResumeCommand] = useState("");
   const [task, setTask] = useState("");
   const [projectId, setProjectId] = useState("");
   const [teamRunning, setTeamRunning] = useState(false);
@@ -98,8 +99,13 @@ export default function KlinModuleManager() {
       setBuildState("paused");
       setNotice("Connection lost. The active module request was cancelled where possible. Reconnect, then choose Continue to retry the saved task or team.");
     };
+    const onReconnect = () => setNotice("Connection restored. Type continue below to retry the saved task; Klin will not restart it automatically.");
     window.addEventListener("offline", pauseOnDisconnect);
-    return () => window.removeEventListener("offline", pauseOnDisconnect);
+    window.addEventListener("online", onReconnect);
+    return () => {
+      window.removeEventListener("offline", pauseOnDisconnect);
+      window.removeEventListener("online", onReconnect);
+    };
   }, []);
 
   function cloneModule(source: ModuleInstance) {
@@ -250,6 +256,15 @@ export default function KlinModuleManager() {
     setNotice("Module request cancellation sent. If the connection is unavailable, reconnect and choose Continue to retry the saved task.");
   }
 
+  function submitResumeCommand() {
+    if (resumeCommand.trim().toLowerCase() !== "continue") {
+      setNotice("Type continue to retry the saved task.");
+      return;
+    }
+    setResumeCommand("");
+    continueBuild();
+  }
+
   function continueBuild() {
     if (!navigator.onLine) { setNotice("Klin is still offline. Reconnect before continuing."); return; }
     if (pendingTeamRun) { void runTeam(pendingTeamRun.task, pendingTeamRun.projectId, pendingTeamRun.workerIds); return; }
@@ -266,7 +281,7 @@ export default function KlinModuleManager() {
   return (
     <section className="module-card">
       <div className="module-card-title"><Users size={18} /><h2>Klin Modules · AI worker roster</h2></div>
-      <div className="module-alert module-alert-info"><strong>V7 Ultra Safe · Always on · Free</strong><br />Klin applies its safety and Dignity Shield policy to every module and every plan automatically. It cannot be disabled and does not use a paid worker slot. V6 Ultra is a separate paid intelligence add-on.</div>
+      <div className="module-alert module-alert-info"><strong>V7 Ultra Safe · Always on · Free</strong><br />Klin V7 safety rules apply to every module and every plan automatically. The local vault is available; Dignity Shield assistance and 21+ restricted services remain gated until their systems are ready. V7 cannot be disabled and uses no paid worker slot.</div>
       <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more worker configurations; assign each copy a Klin intelligence level. Model requests run through Klin&apos;s server-side AI Gateway configuration.</p>
       <div className="module-grid">
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
@@ -310,6 +325,7 @@ export default function KlinModuleManager() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={pauseBuild} disabled={buildState === "paused" || buildState === "idle"} className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"><Pause size={14} /> Pause</button>
           <button type="button" onClick={continueBuild} disabled={buildState === "running"} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40"><Play size={14} /> Continue</button>
+          <input aria-label="Resume command" value={resumeCommand} onChange={(event) => setResumeCommand(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitResumeCommand(); }} placeholder="Type continue and press Enter" className="min-w-[190px] flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-slate-500" />
           <button type="button" onClick={() => { activeRequest.current?.abort(); setPendingRun(null); setPendingTeamRun(null); setBuildState("idle"); try { localStorage.removeItem(PENDING_RUN_KEY); localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* Ignore local cleanup errors. */ } setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
         </div>
       </div>
