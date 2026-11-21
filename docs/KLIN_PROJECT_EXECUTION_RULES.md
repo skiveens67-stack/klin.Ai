@@ -32,6 +32,7 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 - Starter: 10 agents and up to 24 hours.
 - Pro: 20 agents and up to 5 days, with a 10% build discount.
 - Business: 30+ agents and up to 10 days, with a 20% build discount.
+- Initial Klin module intelligence ceilings: Free V1, Starter V3, Pro V5, Business V7 Ultra Safe. The server checks the active builder subscription before each module request. Each V2–V7 model ID must be explicitly configured and tested.
 - Verify active builder subscription codes server-side: `builder_starter`, `builder_pro`, and `builder_business`. A user cannot grant capacity by changing browser state.
 - Do not count canceled, expired, trial, unknown, or duplicate subscriptions. Higher active tier determines capacity; subscriptions do not stack.
 - Enforce the limit inside the server-side agent scheduler at job admission and during long-running work. The current API reports entitlements only; it does not launch agents or enforce concurrent execution because the orchestration runtime is not connected.
