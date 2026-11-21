@@ -88,10 +88,10 @@ const configs: Record<ModuleKey, ModuleConfig> = {
   },
   wallet: {
     title: "Klin Wallet",
-    description: "Review your Gems balance, ledger history, and subscription status.",
+    description: "Review your Klin Gems balance, ledger history, and subscription status. Seller earnings and payouts will use Stripe Connect when enabled.",
     endpoint: "/api/wallet",
     collection: "transactions",
-    note: "Wallet balances and ledger entries are read-only here. Credits are issued only by verified server-side payment events.",
+    note: "This page currently displays Klin Gems and subscription records, not a bank account or cash balance. Marketplace seller onboarding, earnings transfers and withdrawals require Stripe Connect and are not active yet. Credits are issued only by verified server-side payment events.",
   },
   notifications: {
     title: "Notifications",
