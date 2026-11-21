@@ -7,7 +7,7 @@ Project: `Klin.Ai` (`jkujzqvxzkzgpdlntoek`)
 ## Observed counts
 
 - Live Supabase migration history: 16 applied records.
-- Repository branch `chatgpt/backend-foundation`: 11 SQL migration files.
+- Repository branch `chatgpt/backend-foundation`: 12 SQL migration files.
 - The live history uses 14-digit timestamp versions and descriptive names. Repository filenames use the shorter `20261114_NN_...` pattern.
 - The counts and naming do not prove a one-to-one mapping. Do not run `db push`, `apply_migration`, direct DDL, reset, or historical migration edits until source SQL for all live records is reconciled.
 
@@ -32,7 +32,7 @@ Project: `Klin.Ai` (`jkujzqvxzkzgpdlntoek`)
 | 20261114164738 | klin_backend_idempotency_and_privacy_fix |
 | 20261114164853 | klin_allow_moderation_service_activation |
 
-## Repository migration files
+The twelfth local file, `20261121_12_project_draft_idempotency.sql`, was added after this audit. It is not applied to the live project; do not apply it until the recorded history is reconciled.\n\n## Repository migration files
 
 - `20261114_01_core_platform_backend.sql`
 - `20261114_02_family_device_guards.sql`

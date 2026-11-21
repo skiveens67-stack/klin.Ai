@@ -19,7 +19,7 @@
 
 1. **Frontend source integration:** The backend branch now contains a standalone App Router interface, authenticated workspace pages, and the chat-history UI. It is not a merge of Grok's original local frontend because those source files were not available in the repository. Browser end-to-end tests against a configured preview are still outstanding.
 2. **Klinie inference:** A server-side Vercel AI Gateway adapter and assistant-message persistence path exist. The model/provider credentials and selected model are not verified in the deployment, responses are currently non-streaming, and no independent inference worker is configured.
-3. **Migration reconciliation:** Live Supabase history has 16 records; the repository has 11 SQL files. Exact source reconciliation is required before any production DDL.
+3. **Migration reconciliation:** Live Supabase history has 16 records; the repository has 12 SQL files. Exact source reconciliation is required before any production DDL.
 4. **Trusted-contact encryption invariant:** Authenticated still has direct INSERT privilege on `trusted_contacts.secret_reference`. The proposed revoke SQL exists but is not applied. This allows a user to bypass the app encryption route for their own row.
 5. **Financial table least privilege:** Broad grants remain on financial tables. Current RLS policies limit observed user access, but grants should be tightened in a reconciled forward migration.
 6. **Age and guardian enforcement:** No verified age-assurance system, 18–20/21+ distinction, or complete server-side guardian authorization engine is present. Self-declared age bands are not proof.

@@ -63,7 +63,7 @@ A database table is not proof of a working product feature. An API route that re
 - No production/preview/development separation was verified during this session.
 - No deployed Supabase Edge Functions were found (`list_edge_functions` returned an empty list).
 - No production backup/restore exercise was performed.
-- The live Supabase project has 16 recorded migrations, while the inspected backend branch contains 11 migration files whose `20261114_01...` style names do not match the 14-digit versions in live migration history. This may represent a source-history mismatch. Do not run a blanket migration push until the local and remote histories have been reconciled.
+- The live Supabase project has 16 recorded migrations, while the inspected backend branch contains 12 migration files whose `20261114_01...` style names do not match the 14-digit versions in live migration history. This may represent a source-history mismatch. Do not run a blanket migration push until the local and remote histories have been reconciled.
 - The performance advisor reported 52 unused indexes. The project is very new; do not delete them automatically. Review after representative workload and query-plan evidence exist.
 
 ### Required work
@@ -550,7 +550,7 @@ These are decision gates, not assumed facts. Recommended defaults are identified
 
 ### P0 — Resolve before accepting sensitive production workloads
 
-1. Reconcile the 16 live migration records with the 11 local migration files. Do not run broad migration pushes until reconciled.
+1. Reconcile the 16 live migration records with the 12 local migration files. Do not run broad migration pushes until reconciled.
 2. Complete the trusted-contact insert privilege restriction. The API code change is on the backend branch; the SQL patch is documented but not applied.
 3. Verify every security-definer function's owner, ACL, search_path, and body-level authorization. The wallet function currently appears restricted to service_role based on live privilege checks.
 4. Add automated tests for RLS isolation, wallet debit/credit idempotency, webhook replay, action approvals, and device command ownership.
