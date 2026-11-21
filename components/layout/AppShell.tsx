@@ -8,7 +8,7 @@ import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer,
-  Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings,
+  Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
   ShieldCheck, Sparkles, Users, WalletCards, X,
 } from "lucide-react";
 
@@ -24,6 +24,7 @@ const navigation: NavigationItem[] = [
   { label: "Social", href: "/social", icon: Users },
   { label: "Learning", href: "/learning", icon: BookOpen },
   { label: "Wallet", href: "/wallet", icon: WalletCards },
+  { label: "Plans & Pricing", href: "/plans", icon: CreditCard },
   { label: "Family Hub", href: "/family", icon: ShieldCheck },
   { label: "Devices", href: "/devices", icon: Cpu },
   { label: "Communication Rules", href: "/communications", icon: Radio },
