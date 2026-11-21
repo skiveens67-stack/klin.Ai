@@ -70,7 +70,7 @@ export async function POST(request: Request) {
           max_tokens: 1400,
           stream: false,
         }),
-        signal: AbortSignal.timeout(50000),
+        signal: AbortSignal.any([request.signal, AbortSignal.timeout(50000)]),
         cache: "no-store",
       });
     } catch {
