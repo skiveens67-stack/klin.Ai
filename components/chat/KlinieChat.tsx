@@ -343,7 +343,7 @@ export default function KlinieChat() {
             {(historyError || notice) && <div role="status" className={`mb-3 rounded-xl border px-3 py-2 text-xs leading-5 ${historyError ? "border-rose-400/20 bg-rose-400/[0.06] text-rose-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-100"}`}>{historyError || notice}</div>}
             <form onSubmit={(event) => void sendMessage(event)} className="relative rounded-2xl border border-white/[0.12] bg-[#101827] p-2 shadow-xl shadow-black/20 transition focus-within:border-cyan-300/35">
               <textarea ref={textareaRef} value={input} onChange={(event) => onInputChange(event.target.value)} onKeyDown={onComposerKeyDown}
-                placeholder="Message Klinie…" rows={1} disabled={sending}
+                placeholder="Message Klinie…" rows={1}
                 style={{ height: composerHeight }}
                 className="block max-h-40 min-h-6 w-full resize-none bg-transparent px-3 py-2.5 text-sm leading-6 text-white outline-none placeholder:text-slate-600 disabled:opacity-60"
                 aria-label="Message Klinie" />
