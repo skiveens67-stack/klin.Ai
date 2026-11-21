@@ -32,7 +32,7 @@ export default function BillingPortalButton() {
     <section className="billing-portal-card">
       <div className="billing-portal-copy">
         <div className="billing-portal-icon"><CreditCard size={17} /></div>
-        <div><h2>Manage subscription</h2><p>Update your payment method, view invoices, or cancel a subscription through Stripe's secure billing portal.</p></div>
+        <div><h2>Manage subscription</h2><p>Update your payment method, view invoices, or cancel a subscription through Stripe&apos;s secure billing portal.</p></div>
       </div>
       <button type="button" onClick={() => void openPortal()} disabled={busy}>
         <span>{busy ? "Opening…" : "Open billing portal"}</span><ExternalLink size={14} />
