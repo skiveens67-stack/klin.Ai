@@ -17,6 +17,9 @@ test("paid intelligence levels run from V1 through V6; V7 is not a paid model le
 test("V7 Ultra Safe is a free always-on policy, not an agent slot", () => {
   assert.match(KLIN_V7_SAFETY_POLICY, /FREE, ALWAYS ACTIVE/);
   assert.match(KLIN_V7_SAFETY_POLICY, /DIGNITY SHIELD/);
+  assert.match(KLIN_V7_SAFETY_POLICY, /no public badge/);
+  assert.match(KLIN_V7_SAFETY_POLICY, /21\+ COMPLIANCE FIREWALL/);
+  assert.match(KLIN_V7_SAFETY_POLICY, /Never sell, rent, trade/);
   assert.match(KLIN_V7_SAFETY_POLICY, /does not consume a paid worker slot/);
 });
 
