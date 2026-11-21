@@ -44,6 +44,7 @@ export default function AutonomousBuilder() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [v6CheckoutLoading, setV6CheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [savingQuote, setSavingQuote] = useState(false);
   const [depositLoading, setDepositLoading] = useState(false);
@@ -82,6 +83,25 @@ export default function AutonomousBuilder() {
     } catch (caught) {
       setCheckoutError(caught instanceof Error ? caught.message : "Checkout could not be started.");
       setCheckoutLoading(false);
+    }
+  }
+
+  async function subscribeToV6Ultra() {
+    setV6CheckoutLoading(true);
+    setCheckoutError("");
+    try {
+      const response = await fetch("/api/billing/checkout", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+        body: JSON.stringify({ plan_code: "klin_v6_ultra" }),
+      });
+      const data = await response.json() as { checkout_url?: string; error?: string };
+      if (!response.ok || !data.checkout_url) throw new Error(data.error || "Klin V6 Ultra checkout is not configured yet.");
+      window.location.assign(data.checkout_url);
+    } catch (caught) {
+      setCheckoutError(caught instanceof Error ? caught.message : "V6 Ultra checkout could not be started.");
+      setV6CheckoutLoading(false);
     }
   }
 
@@ -194,6 +214,8 @@ export default function AutonomousBuilder() {
           ))}
         </div>
         <button type="button" className="module-submit" disabled={checkoutLoading || selectedPlan.code === "free"} onClick={() => void subscribeToSelectedPlan()}>{checkoutLoading ? "Opening secure checkout…" : selectedPlan.code === "free" ? "Free plan selected" : `Subscribe to ${selectedPlan.name} · ${selectedPlan.price}`}</button>
+        <div className="module-alert module-alert-info mt-3"><strong>Klin V6 Ultra — separate paid intelligence plan</strong><br />Unlocks the V6 Ultra model level as an add-on to your current builder capacity. Its price is controlled by Klin&apos;s Stripe configuration and is not guessed here. <button type="button" className="mt-2 rounded-lg border border-cyan-300/30 px-3 py-2 text-xs text-cyan-100" disabled={v6CheckoutLoading} onClick={() => void subscribeToV6Ultra()}>{v6CheckoutLoading ? "Opening V6 checkout…" : "Subscribe to V6 Ultra"}</button></div>
+        <div className="module-alert module-alert-info mt-2"><strong>Klin V7 Ultra Safe — Free and always active</strong><br />Automatic privacy, safety and Dignity Shield checks apply to every module and every plan. No upgrade or activation is required.</div>
         {checkoutError && <div className="module-alert module-alert-error" role="alert">{checkoutError}</div>}
         <div className="module-card-title"><ShieldCheck size={17} /><h3>Specialist roles</h3></div>
         <div className="module-grid">
