@@ -12,6 +12,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
+  if (process.env.KLIN_BUILDER_RUNTIME_ENABLED !== "true") return NextResponse.json({ error: "Klin is not accepting build deposits yet because the autonomous build runtime is not ready. Your saved quote is safe; no payment has been taken." }, { status: 503 });
   const idempotencyKey = request.headers.get("idempotency-key");
   if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 128 || !/^[a-zA-Z0-9._:-]+$/.test(idempotencyKey)) {
     return NextResponse.json({ error: "A valid Idempotency-Key header is required." }, { status: 400 });
