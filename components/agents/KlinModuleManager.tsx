@@ -25,7 +25,7 @@ export default function KlinModuleManager() {
   const [pendingTeamRun, setPendingTeamRun] = useState<{ task: string; projectId: string; workerIds: string[] } | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, string>>({});
-  const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string } | null>(null);
+  const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string; projectId: string } | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
 
@@ -61,8 +61,8 @@ export default function KlinModuleManager() {
       }
       const pending = localStorage.getItem(PENDING_RUN_KEY);
       if (pending) {
-        const parsedPending = JSON.parse(pending) as { moduleId?: unknown; task?: unknown };
-        if (typeof parsedPending.moduleId === "string" && typeof parsedPending.task === "string") setPendingRun({ moduleId: parsedPending.moduleId, task: parsedPending.task });
+        const parsedPending = JSON.parse(pending) as { moduleId?: unknown; task?: unknown; projectId?: unknown };
+        if (typeof parsedPending.moduleId === "string" && typeof parsedPending.task === "string") setPendingRun({ moduleId: parsedPending.moduleId, task: parsedPending.task, projectId: typeof parsedPending.projectId === "string" ? parsedPending.projectId : "" });
       }
     } catch {
       setNotice("Saved local module settings could not be read. Default modules are loaded.");
@@ -122,14 +122,14 @@ export default function KlinModuleManager() {
     setModules((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
   }
 
-  async function runModule(instance: ModuleInstance, requestedTask = task) {
+  async function runModule(instance: ModuleInstance, requestedTask = task, requestedProjectId = projectId) {
     if (!requestedTask.trim()) {
       setNotice("Enter a task before running a module.");
       return;
     }
     const controller = new AbortController();
     activeRequest.current = controller;
-    const pending = { moduleId: instance.id, task: requestedTask.trim() };
+    const pending = { moduleId: instance.id, task: requestedTask.trim(), projectId: requestedProjectId.trim() };
     setPendingRun(pending);
     setPendingTeamRun(null);
     try { localStorage.removeItem(PENDING_TEAM_KEY); localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pending)); } catch { /* Continue with in-memory retry if storage is unavailable. */ }
@@ -142,7 +142,7 @@ export default function KlinModuleManager() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim(), project_id: instance.roleId === "builder" ? projectId.trim() : undefined }),
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim(), project_id: instance.roleId === "builder" ? requestedProjectId.trim() : undefined }),
         signal: controller.signal,
       });
       const data = await response.json() as { result?: string; error?: string; model?: string; usage?: { total_tokens?: number } | null };
@@ -254,7 +254,7 @@ export default function KlinModuleManager() {
     if (pendingTeamRun) { void runTeam(pendingTeamRun.task, pendingTeamRun.projectId, pendingTeamRun.workerIds); return; }
     if (pendingRun) {
       const instance = modules.find((item) => item.id === pendingRun.moduleId);
-      if (instance) { void runModule(instance, pendingRun.task); return; }
+      if (instance) { void runModule(instance, pendingRun.task, pendingRun.projectId); return; }
       setNotice("The saved module was removed. Select a module and submit the task again.");
       return;
     }
