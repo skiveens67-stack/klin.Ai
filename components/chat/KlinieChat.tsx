@@ -174,17 +174,18 @@ export default function KlinieChat() {
 
       const saved = await api<{
         message: ChatMessage;
-        assistant?: { status?: string; detail?: string };
+        assistant?: { status?: string; detail?: string; message?: ChatMessage };
       }>(`/api/conversations/${conversationId}/messages`, {
         method: "POST",
         body: JSON.stringify({ content }),
       });
 
-      setMessages((current) => current.map((message) =>
-        message.id === optimistic.id ? saved.message : message,
-      ));
-      if (saved.assistant?.status === "not_connected") {
-        setNotice("Your message was saved to chat history. Klinie's AI response service has not been connected yet.");
+      setMessages((current) => [
+        ...current.map((message) => message.id === optimistic.id ? saved.message : message),
+        ...(saved.assistant?.message ? [saved.assistant.message] : []),
+      ]);
+      if (saved.assistant?.status === "not_connected" || saved.assistant?.status === "failed") {
+        setNotice(saved.assistant.detail || "Your message was saved, but Klinie could not generate a reply.");
       }
       await loadHistory(showArchived);
       requestAnimationFrame(() => {
