@@ -6,19 +6,10 @@ import { KLIN_MODULE_LEVELS, KLIN_MODULE_MAX_INSTANCES, KLIN_MODULE_ROLES, type 
 
 type ModuleInstance = { id: string; roleId: KlinModuleRoleId; name: string; level: KlinModuleLevelId; enabled: boolean };
 type BuildState = "idle" | "running" | "paused";
-
 const STORAGE_KEY = "klin.module-roster.v1";
 const BUILD_KEY = "klin.build-session.v1";
 const PENDING_RUN_KEY = "klin.pending-module-run.v1";
-
-function makeModule(roleId: KlinModuleRoleId, index = 1): ModuleInstance {
-  const role = KLIN_MODULE_ROLES.find((item) => item.id === roleId) ?? KLIN_MODULE_ROLES[0];
-  return { id: crypto.randomUUID(), roleId, name: index > 1 ? role.name + " " + index : role.name, level: "v1", enabled: true };
-}
-
-const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role) => ({
-  id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: true,
-}));
+const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role) => ({ id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: true }));
 
 export default function KlinModuleManager() {
   const [modules, setModules] = useState<ModuleInstance[]>(initialModules);
@@ -30,6 +21,7 @@ export default function KlinModuleManager() {
   const [results, setResults] = useState<Record<string, string>>({});
   const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string } | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
+  const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
 
   useEffect(() => {
     try {
@@ -43,6 +35,11 @@ export default function KlinModuleManager() {
       }
       const state = localStorage.getItem(BUILD_KEY);
       if (state === "paused" || state === "running") setBuildState(state);
+      const pending = localStorage.getItem(PENDING_RUN_KEY);
+      if (pending) {
+        const parsedPending = JSON.parse(pending) as { moduleId?: unknown; task?: unknown };
+        if (typeof parsedPending.moduleId === "string" && typeof parsedPending.task === "string") setPendingRun({ moduleId: parsedPending.moduleId, task: parsedPending.task });
+      }
     } catch {
       setNotice("Saved local module settings could not be read. Default modules are loaded.");
     }
@@ -60,36 +57,45 @@ export default function KlinModuleManager() {
   }, [buildState, ready]);
 
   useEffect(() => {
+    if (!ready) return;
+    if (pendingRun) localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pendingRun));
+    else localStorage.removeItem(PENDING_RUN_KEY);
+  }, [pendingRun, ready]);
+
+  useEffect(() => {
     const pauseOnDisconnect = () => {
+      activeRequest.current?.abort();
       setBuildState("paused");
-      setNotice("Connection lost. Build marked paused locally. Reconnect, then choose Continue when ready.");
+      setNotice("Connection lost. The current module request was cancelled where possible. Reconnect, then choose Continue to retry the saved task.");
     };
     window.addEventListener("offline", pauseOnDisconnect);
     return () => window.removeEventListener("offline", pauseOnDisconnect);
   }, []);
 
-  useEffect(() => {\n    if (!ready) return;\n    if (pendingRun) localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pendingRun));\n    else localStorage.removeItem(PENDING_RUN_KEY);\n  }, [pendingRun, ready]);\n\n  const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
-
   function cloneModule(source: ModuleInstance) {
     if (modules.length >= KLIN_MODULE_MAX_INSTANCES) {
-      setNotice("The local roster reached its 30-module design limit. The active subscription must be checked by the server before real workers can run.");
+      setNotice("The local roster reached its 30-module design limit. The active subscription must be checked by the server before real concurrent workers can run.");
       return;
     }
     const role = KLIN_MODULE_ROLES.find((item) => item.id === source.roleId);
     const count = modules.filter((item) => item.roleId === source.roleId).length + 1;
     setModules((current) => [...current, { ...source, id: crypto.randomUUID(), name: (role?.name ?? source.name) + " " + count }]);
-    setNotice("Module copy added to this device's roster. It is a configuration copy, not a running AI worker.");
+    setNotice("Module copy added to this device's roster. It is a configuration copy, not a separately running worker.");
   }
 
   function updateModule(id: string, patch: Partial<Pick<ModuleInstance, "name" | "level" | "enabled">>) {
     setModules((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
   }
 
-  async function runModule(instance: ModuleInstance) {
-    if (!task.trim()) {
+  async function runModule(instance: ModuleInstance, requestedTask = task) {
+    if (!requestedTask.trim()) {
       setNotice("Enter a task before running a module.");
       return;
     }
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setPendingRun({ moduleId: instance.id, task: requestedTask.trim() });
+    setBuildState("running");
     setRunningId(instance.id);
     setNotice("");
     setResults((current) => ({ ...current, [instance.id]: "" }));
@@ -98,37 +104,53 @@ export default function KlinModuleManager() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim() }),\n        signal: controller.signal,
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim() }),
+        signal: controller.signal,
       });
       const data = await response.json() as { result?: string; error?: string; model?: string };
       if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
       setResults((current) => ({ ...current, [instance.id]: data.result! }));
+      setPendingRun(null);
+      setBuildState("idle");
       setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}. It did not modify project files.`);
     } catch (caught) {
-      setNotice(caught instanceof Error ? caught.message : "Module run failed.");
+      if (controller.signal.aborted || !navigator.onLine) {
+        setBuildState("paused");
+        setNotice("Module request paused. Reconnect and press Continue to retry the saved task.");
+      } else {
+        setNotice(caught instanceof Error ? caught.message : "Module run failed.");
+      }
     } finally {
+      if (activeRequest.current === controller) activeRequest.current = null;
       setRunningId(null);
     }
   }
 
   function pauseBuild() {
+    activeRequest.current?.abort();
     setBuildState("paused");
-    setNotice("Local build status set to paused. No cloud worker is currently connected to this control.");
+    setNotice("Module request cancellation sent. If the connection is unavailable, reconnect and choose Continue to retry the saved task.");
   }
 
   function continueBuild() {
-    setBuildState("running");
-    setNotice("Local build status set to continue. A real build can resume only when its server-side job runtime is connected.");
+    if (pendingRun) {
+      const instance = modules.find((item) => item.id === pendingRun.moduleId);
+      if (instance) { void runModule(instance, pendingRun.task); return; }
+      setNotice("The saved module was removed. Select a module and submit the task again.");
+      return;
+    }
+    setBuildState("idle");
+    setNotice("No interrupted task was saved. Select a module and start a task.");
   }
 
   return (
     <section className="module-card">
       <div className="module-card-title"><Users size={18} /><h2>Klin Modules · AI worker roster</h2></div>
-      <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more workers; assign each copy a Klin intelligence level. These settings are saved on this device and do not yet start model requests.</p>
+      <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more worker configurations; assign each copy a Klin intelligence level. Model requests run through Klin's server-side AI Gateway configuration.</p>
       <div className="module-grid">
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
       </div>
-      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled locally: {activeCount}</span></div>
+      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount}</span></div>
       <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
       <div className="space-y-3">
         {modules.map((instance) => {
@@ -161,15 +183,15 @@ export default function KlinModuleManager() {
         })}
       </div>
       <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><strong className="text-sm">Build pause control</strong><p className="mt-1 text-xs text-slate-400">If offline, stop dispatching work. When back online, the user can choose Continue.</p></div><span className="rounded-full bg-white/5 px-3 py-1 text-xs">{buildState === "running" ? "Marked running" : buildState === "paused" ? "Paused" : "Idle"}</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><strong className="text-sm">Build pause control</strong><p className="mt-1 text-xs text-slate-400">If offline, cancel the active module request where possible. When back online, press Continue to retry the saved task.</p></div><span className="rounded-full bg-white/5 px-3 py-1 text-xs">{buildState === "running" ? "Running" : buildState === "paused" ? "Paused" : "Idle"}</span></div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={pauseBuild} disabled={buildState === "paused"} className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"><Pause size={14} /> Pause</button>
+          <button type="button" onClick={pauseBuild} disabled={buildState === "paused" || buildState === "idle"} className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"><Pause size={14} /> Pause</button>
           <button type="button" onClick={continueBuild} disabled={buildState === "running"} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40"><Play size={14} /> Continue</button>
-          <button type="button" onClick={() => { setBuildState("idle"); setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
+          <button type="button" onClick={() => { activeRequest.current?.abort(); setPendingRun(null); setBuildState("idle"); setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
         </div>
       </div>
       {notice && <p className="mt-3 text-xs text-slate-300" role="status">{notice}</p>}
-      <p className="mt-3 text-[10px] text-slate-500">Important: module copies and pause controls are local configuration only. Klin's actual AI Gateway model routing, cloud worker dispatch, build persistence and online resume are not connected yet.</p>
+      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. One module can execute one AI Gateway request at a time. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
     </section>
   );
 }
