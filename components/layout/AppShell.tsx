@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, ChevronDown, CircleHelp, ClipboardCheck, Compass,
@@ -94,6 +95,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <OfflineSupport />
         <header className="flex h-[56px] shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#080D18] px-4 lg:hidden">
           <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5"><Menu size={18} /></button>
           <span className="text-sm font-semibold">Klin<span className="text-cyan-300">.</span></span>
