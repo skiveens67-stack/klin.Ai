@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 88" role="img" aria-labelledby="title">
+  <title id="title">Klin</title>
+  <g fill="#20E65A">
+    <path d="M10 8h24v72H10z"/>
+    <path d="M31 43 73 8h31L57 47l48 33H73L31 52z"/>
+  </g>
+  <text x="111" y="68" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="70" font-weight="700" letter-spacing="-4">lin</text>
+</svg>
