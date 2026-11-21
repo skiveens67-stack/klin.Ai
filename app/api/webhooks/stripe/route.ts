@@ -111,10 +111,11 @@ export async function POST(request: Request) {
       if (mode === "payment" && purchaseType === "builder_deposit" && paymentStatus === "paid") {
         const projectId = typeof metadata.project_id === "string" ? metadata.project_id : null;
         const quoteVersion = Number(metadata.quote_version);
+        const depositAttempt = Number(metadata.deposit_attempt);
         const depositCents = Number(metadata.deposit_amount_cents);
         const paidCents = Number(object.amount_total);
         const currency = typeof object.currency === "string" ? object.currency.toLowerCase() : null;
-        if (!userId || !sessionId || !projectId || !Number.isSafeInteger(quoteVersion) || !Number.isSafeInteger(depositCents) || depositCents < 1 || paidCents !== depositCents || currency !== "usd") {
+        if (!userId || !sessionId || !projectId || !Number.isSafeInteger(quoteVersion) || !Number.isSafeInteger(depositAttempt) || !Number.isSafeInteger(depositCents) || depositCents < 1 || paidCents !== depositCents || currency !== "usd") {
           throw new Error("Builder deposit payment is missing validated quote metadata or amount.");
         }
 
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
           // Duplicate payment notification for the already-recorded deposit.
         } else {
           const expectedDepositCents = Math.round(Number(quote.deposit_high_usd) * 100);
-          if (quote.status !== "awaiting_deposit" || quote.quote_version !== quoteVersion || expectedDepositCents !== depositCents) {
+          if (quote.status !== "awaiting_deposit" || quote.quote_version !== quoteVersion || Number(quote.deposit_attempt ?? 0) !== depositAttempt || quote.deposit_checkout_session_id !== sessionId || expectedDepositCents !== depositCents) {
             throw new Error("Builder deposit does not match the current saved quote.");
           }
           const updatedQuote = {
@@ -142,6 +143,36 @@ export async function POST(request: Request) {
           };
           const { error: quoteUpdateError } = await admin.from("creator_projects")
             .update({ metadata: { ...projectMetadata, builder_quote: updatedQuote, builder_execution_status: "deposit_paid_waiting_for_builder_runtime" } })
+            .eq("id", projectId).eq("owner_user_id", userId);
+          if (quoteUpdateError) throw quoteUpdateError;
+        }
+      }
+    }
+
+    if (event.type === "checkout.session.async_payment_failed" || event.type === "checkout.session.expired") {
+      const purchaseType = metadata.purchase_type;
+      const userId = typeof metadata.user_id === "string" ? metadata.user_id : null;
+      const projectId = typeof metadata.project_id === "string" ? metadata.project_id : null;
+      const sessionId = typeof object.id === "string" ? object.id : null;
+      const quoteVersion = Number(metadata.quote_version);
+      const depositAttempt = Number(metadata.deposit_attempt);
+      if (purchaseType === "builder_deposit" && userId && projectId && sessionId) {
+        const { data: project, error: projectError } = await admin.from("creator_projects")
+          .select("id,owner_user_id,metadata").eq("id", projectId).eq("owner_user_id", userId).maybeSingle();
+        if (projectError || !project) throw new Error("Failed builder deposit ownership check.");
+        const projectMetadata = asRecord(project.metadata);
+        const quote = asRecord(projectMetadata.builder_quote);
+        if (quote.status === "awaiting_deposit" && quote.quote_version === quoteVersion &&
+            Number(quote.deposit_attempt ?? 0) === depositAttempt && quote.deposit_checkout_session_id === sessionId) {
+          const updatedQuote = {
+            ...quote,
+            deposit_checkout_session_id: null,
+            deposit_attempt: depositAttempt + 1,
+            deposit_checkout_failed_at: new Date().toISOString(),
+            deposit_checkout_failure_event: event.type,
+          };
+          const { error: quoteUpdateError } = await admin.from("creator_projects")
+            .update({ metadata: { ...projectMetadata, builder_quote: updatedQuote } })
             .eq("id", projectId).eq("owner_user_id", userId);
           if (quoteUpdateError) throw quoteUpdateError;
         }
