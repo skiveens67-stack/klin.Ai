@@ -18,6 +18,7 @@ const navigation: NavigationItem[] = [
   { label: "Klinie Chat", href: "/", icon: MessageCircle },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Agent capacity", href: "/agents", icon: Bot },
+  { label: "Klin Modules", href: "/agents/modules", icon: Blocks },
   { label: "Autonomous Builder", href: "/builder", icon: Hammer },
   { label: "Marketplace", href: "/marketplace", icon: Compass },
   { label: "Social", href: "/social", icon: Users },
