@@ -126,13 +126,13 @@ export default function KlinModuleManager() {
         body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim() }),
         signal: controller.signal,
       });
-      const data = await response.json() as { result?: string; error?: string; model?: string };
+      const data = await response.json() as { result?: string; error?: string; model?: string; usage?: { total_tokens?: number } | null };
       if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
       setResults((current) => ({ ...current, [instance.id]: data.result! }));
       setPendingRun(null);
       try { localStorage.removeItem(PENDING_RUN_KEY); } catch { /* State is also cleared in memory. */ }
       setBuildState("idle");
-      setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}. It did not modify project files.`);
+      setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}${data.usage?.total_tokens ? ` · ${data.usage.total_tokens} tokens` : ""}. It did not modify project files.`);
     } catch (caught) {
       if (controller.signal.aborted || !navigator.onLine) {
         setBuildState("paused");
