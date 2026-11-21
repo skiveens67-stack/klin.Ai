@@ -44,10 +44,13 @@ export default function AutonomousBuilder() {
   const quote = useMemo(() => {
     if (!estimate) return null;
     const discount = plan === "Pro" ? 0.1 : plan === "Business" ? 0.2 : 0;
-    const total = Math.round(estimate.estimated_total_usd * (1 - discount) * 100) / 100;
+    const blocks = estimate.estimated_blocks;
+    const low = Math.round(blocks * 7 * (1 - discount) * 100) / 100;
+    const high = Math.round(blocks * 35 * (1 - discount) * 100) / 100;
     const isMultiDay = estimate.estimated_days > 1;
-    const deposit = total > 150 && isMultiDay ? Math.round(total * 0.15 * 100) / 100 : Math.min(total, 20);
-    return { total, deposit, balance: Math.max(0, Math.round((total - deposit) * 100) / 100), discount, isMultiDay };
+    const depositLow = high > 150 && isMultiDay ? Math.round(low * 0.15 * 100) / 100 : Math.min(low, 20);
+    const depositHigh = high > 150 && isMultiDay ? Math.round(high * 0.15 * 100) / 100 : Math.min(high, 20);
+    return { low, high, depositLow, depositHigh, balanceLow: Math.max(0, Math.round((low - depositLow) * 100) / 100), balanceHigh: Math.max(0, Math.round((high - depositHigh) * 100) / 100), discount, isMultiDay };
   }, [estimate, plan]);
 
   async function createQuote() {
@@ -135,9 +138,9 @@ export default function AutonomousBuilder() {
             <div className="module-card-title"><Clock3 size={17} /><h3>Locked Build Quote · preview</h3></div>
             <div className="module-estimate-metric"><span>Project</span><strong>{title}</strong><small>{selectedPlan.name} plan · {selectedPlan.agents} · {estimate.complexity} complexity</small></div>
             <div className="module-estimate-metric"><span>Estimated build time</span><strong>{estimate.estimated_hours} active hours</strong><small>Approximately {estimate.estimated_days} working day(s), subject to plan duration limits</small></div>
-            <div className="module-estimate-metric"><span>Estimated total</span><strong>${quote.total.toFixed(2)}</strong><small>{quote.discount ? `${Math.round(quote.discount * 100)}% plan discount applied` : "No plan discount"}</small></div>
-            <div className="module-estimate-metric"><span>Deposit before build</span><strong>${quote.deposit.toFixed(2)}</strong><small>{quote.total > 150 && quote.isMultiDay ? "15% upfront for a multi-day build over $150" : " $20 deposit, credited in full toward the final balance"}</small></div>
-            <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balance.toFixed(2)}</strong></div>
+            <div className="module-estimate-metric"><span>Estimated total</span><strong>${quote.low.toFixed(2)} – ${quote.high.toFixed(2)}</strong><small>Range at $7–$35 per 10-hour block. {quote.discount ? `${Math.round(quote.discount * 100)}% plan discount applied` : "No plan discount"}</small></div>
+            <div className="module-estimate-metric"><span>Deposit before build</span><strong>${quote.depositLow.toFixed(2)} – ${quote.depositHigh.toFixed(2)}</strong><small>{quote.high > 150 && quote.isMultiDay ? "15% upfront for a multi-day build over $150" : "$20 deposit, credited in full toward the final balance"}</small></div>
+            <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balanceLow.toFixed(2)} – ${quote.balanceHigh.toFixed(2)}</strong></div>
             <div className="module-alert module-alert-warning">This is an estimate preview, not an accepted quote or payment request. The current estimator prices 10-hour work blocks at a complexity-based rate. Final compute-hour and agent-tier pricing still needs a verified pricing table. The build runtime and deposit checkout are not connected, so no build can start from this screen.</div>
             <p className="offline-privacy-note">Project request: {description}</p>
           </div>
