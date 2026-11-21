@@ -263,6 +263,8 @@ export default function KlinModuleManager() {
       </div>
       <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount} / {maxAgents} plan limit · Up to {maxModuleLevel.toUpperCase()}</span></div>
       <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
+      {modules.some((item) => item.enabled && item.roleId === "builder") && <div className="module-field mt-3"><label htmlFor="klin-builder-project-id">Builder project ID (required for paid build work)</label><input id="klin-builder-project-id" value={projectId} onChange={(event) => setProjectId(event.target.value)} placeholder="Paste the project ID shown after saving your quote" /></div>}
+      <div className="mt-3 flex flex-wrap items-center gap-3"><button type="button" onClick={() => void runTeam()} disabled={teamRunning || runningId !== null || !task.trim() || activeCount < 1 || activeCount > maxAgents} className="rounded-lg bg-cyan-400/15 px-4 py-2 text-sm font-medium text-cyan-100 disabled:opacity-40">{teamRunning ? "Running module team…" : `Run enabled team · ${activeCount} modules`}</button><span className="text-xs text-slate-500">Runs enabled profiles in parallel. Each worker uses separate model tokens.</span></div>
       <div className="space-y-3">
         {modules.map((instance) => {
           const role = KLIN_MODULE_ROLES.find((item) => item.id === instance.roleId)!;
