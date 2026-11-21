@@ -11,7 +11,7 @@ test("paid intelligence levels run from V1 through V6; V7 is not a paid model le
   assert.deepEqual(KLIN_MODULE_LEVELS.map((level) => level.id), ["v1", "v2", "v3", "v4", "v5", "v6"]);
   assert.deepEqual(KLIN_MODULE_LEVELS.map((level) => level.rank), [1, 2, 3, 4, 5, 6]);
   assert.equal(KLIN_MODULE_LEVELS[0].name, "Klin V1 Free");
-  assert.equal(KLIN_MODULE_LEVELS[5].name, "Klin V6 Ultra");
+  assert.equal(KLIN_MODULE_LEVELS[5].name, "Klin V6 Ultra Smart");
 });
 
 test("V7 Ultra Safe is a free always-on policy, not an agent slot", () => {
