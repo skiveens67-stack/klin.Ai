@@ -38,7 +38,9 @@ export default function AutonomousBuilder() {
   const [plan, setPlan] = useState("Free");
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);\n  const [checkoutLoading, setCheckoutLoading] = useState(false);\n  const [checkoutError, setCheckoutError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
   const quote = useMemo(() => {
