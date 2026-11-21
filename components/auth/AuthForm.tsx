@@ -12,6 +12,7 @@ type Props = { mode: "login" | "signup"; initialError?: string };
 export default function AuthForm({ mode, initialError }: Props) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationPending, setVerificationPending] = useState(false);
@@ -22,6 +23,7 @@ export default function AuthForm({ mode, initialError }: Props) {
       const savedEmail = window.localStorage.getItem("klin.pendingSignupEmail");
       if (savedEmail) {
         setEmail(savedEmail);
+        setUsername(window.localStorage.getItem("klin.pendingSignupUsername") || "");
         setVerificationPending(true);
         setMessage("Your signup is saved. Enter the six-digit code from your email to continue.");
       }
@@ -51,18 +53,18 @@ export default function AuthForm({ mode, initialError }: Props) {
         const supabase = createSupabaseBrowserClient();
         const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "signup" });
         if (verifyError) throw verifyError;
-        try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ }
+        try { window.localStorage.removeItem("klin.pendingSignupEmail"); window.localStorage.removeItem("klin.pendingSignupUsername"); } catch { /* Ignore storage cleanup errors. */ }
         redirectAfterLoading = true;
       } else {
         const response = await fetch("/api/auth/signup", {
           method: "POST", credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim(), password }),
+          body: JSON.stringify({ email: email.trim(), password, username }),
         });
         const data = await response.json() as { message?: string; error?: string };
         if (!response.ok) throw new Error(data.error || "Unable to create your account.");
         setPassword(""); setVerificationPending(true);
-        try { window.localStorage.setItem("klin.pendingSignupEmail", email.trim()); } catch { /* Keep current-tab flow working if storage is unavailable. */ }
+        try { window.localStorage.setItem("klin.pendingSignupEmail", email.trim()); window.localStorage.setItem("klin.pendingSignupUsername", username); } catch { /* Keep current-tab flow working if storage is unavailable. */ }
         setMessage(data.message || "Check your email for a six-digit verification code from Klin.");
       }
     } catch (caught) {
@@ -85,6 +87,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         <h1>{title}</h1>
         <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the six-digit code we sent to your email to activate your account." : "Create a workspace account for your conversations, projects, and tools."}</p>
         <form onSubmit={submit} className="auth-form">
+          {mode === "signup" && !verificationPending && <><label htmlFor="username">Username</label><div className="auth-input-wrap"><input id="username" type="text" autoComplete="username" required minLength={3} maxLength={20} pattern="[A-Za-z0-9_]+" value={username} onChange={e => setUsername(e.target.value)} placeholder="Choose a username" /></div><p className="auth-email-help">3–20 characters. Letters, numbers, and underscores only.</p></>}
           <label htmlFor="email">Email address</label>
           <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" readOnly={mode === "signup" && verificationPending} /></div>
           {mode === "signup" && verificationPending ? <>
