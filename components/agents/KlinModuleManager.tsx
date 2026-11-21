@@ -29,8 +29,9 @@ export default function KlinModuleManager() {
     void fetch("/api/agents/limits", { credentials: "same-origin", cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) return;
-        const data = await response.json() as { max_agents?: number };
+        const data = await response.json() as { max_agents?: number; max_module_level?: KlinModuleLevelId };
         if (Number.isInteger(data.max_agents) && Number(data.max_agents) >= 1) setMaxAgents(Number(data.max_agents));
+        if (data.max_module_level && KLIN_MODULE_LEVELS.some((level) => level.id === data.max_module_level)) setMaxModuleLevel(data.max_module_level);
       }).catch(() => undefined);
   }, []);
 
