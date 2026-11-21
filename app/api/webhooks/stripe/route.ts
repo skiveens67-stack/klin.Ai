@@ -104,6 +104,45 @@ export async function POST(request: Request) {
         });
         if (walletError) throw walletError;
       }
+
+      if (mode === "payment" && purchaseType === "builder_deposit" && paymentStatus === "paid") {
+        const projectId = typeof metadata.project_id === "string" ? metadata.project_id : null;
+        const quoteVersion = Number(metadata.quote_version);
+        const depositCents = Number(metadata.deposit_amount_cents);
+        const paidCents = Number(object.amount_total);
+        const currency = typeof object.currency === "string" ? object.currency.toLowerCase() : null;
+        if (!userId || !sessionId || !projectId || !Number.isSafeInteger(quoteVersion) || !Number.isSafeInteger(depositCents) || depositCents < 1 || paidCents !== depositCents || currency !== "usd") {
+          throw new Error("Builder deposit payment is missing validated quote metadata or amount.");
+        }
+
+        const { data: project, error: projectError } = await admin.from("creator_projects")
+          .select("id,owner_user_id,metadata").eq("id", projectId).eq("owner_user_id", userId).maybeSingle();
+        if (projectError || !project) throw new Error("Builder deposit project ownership could not be verified.");
+        const projectMetadata = asRecord(project.metadata);
+        const quote = asRecord(projectMetadata.builder_quote);
+        if (quote.status === "deposit_paid" && quote.deposit_checkout_session_id === sessionId) {
+          // Duplicate payment notification for the already-recorded deposit.
+        } else {
+          const expectedDepositCents = Math.round(Number(quote.deposit_high_usd) * 100);
+          if (quote.status !== "awaiting_deposit" || quote.quote_version !== quoteVersion || expectedDepositCents !== depositCents) {
+            throw new Error("Builder deposit does not match the current saved quote.");
+          }
+          const updatedQuote = {
+            ...quote,
+            status: "deposit_paid",
+            deposit_paid_cents: depositCents,
+            deposit_paid_usd: depositCents / 100,
+            deposit_paid_at: new Date().toISOString(),
+            deposit_checkout_session_id: sessionId,
+            deposit_payment_intent_id: paymentIntent,
+            deposit_credit_percent: 100,
+          };
+          const { error: quoteUpdateError } = await admin.from("creator_projects")
+            .update({ metadata: { ...projectMetadata, builder_quote: updatedQuote, builder_execution_status: "deposit_paid_waiting_for_builder_runtime" } })
+            .eq("id", projectId).eq("owner_user_id", userId);
+          if (quoteUpdateError) throw quoteUpdateError;
+        }
+      }
     }
 
     if (event.type.startsWith("customer.subscription.")) {
