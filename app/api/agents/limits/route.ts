@@ -28,9 +28,7 @@ export async function GET() {
     const capacity = calculateAgentCapacity(subscriptions ?? []);
     return NextResponse.json({
       ...capacity,
-      agent_runtime: "not_connected",
-      enforcement: "entitlement_preview_only",
-      note: "This endpoint reports the account limit. Agent orchestration and per-run enforcement must be connected before Klin can launch or meter agents.",
+      note: "The builder plan is read from verified active subscription records. Agent orchestration and concurrency enforcement are not connected, so this is an entitlement preview only.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Agent capacity service unavailable." }, { status: 503 });
