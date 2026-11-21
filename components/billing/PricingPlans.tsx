@@ -81,8 +81,24 @@ export default function PricingPlans() {
       <section className="module-card">
         <div className="module-card-title"><Check size={18} /><h2>Included with every plan</h2></div>
         <div className="module-grid">
-          {["Klin V7 Ultra Safe · always-on safety layer", "Privacy-first defaults and Dignity Shield checks", "Access to the six specialist Klin Modules within plan limits", "Video creation remains marked Coming soon"].map((item) => <div className="module-list-item" key={item}><Check size={16} /><span>{item}</span></div>)}
+          {["Klin V7 Ultra Safe · free and always on", "V7 Vault · client-side encrypted local records", "Dignity Shield · private fee-waiver rules; assistance is not active yet", "21+ Compliance Firewall · Business Exchange stays gated until verified age checks exist", "Access to the six specialist Klin Modules within plan limits", "Video creation remains marked Coming soon"].map((item) => <div className="module-list-item" key={item}><Check size={16} /><span>{item}</span></div>)}
         </div>
+      </section>
+      <section className="module-card">
+        <div className="module-card-title"><CreditCard size={18} /><h2>Klin revenue streams</h2></div>
+        <div className="module-grid">
+          {[
+            "SaaS subscriptions — the five V7 membership tiers",
+            "Marketplace platform fee — 10% V7 baseline; not charged until settlement and seller terms are approved",
+            "Business Exchange closing fees — planned; not active and not treated as escrow",
+            "Physical Thangie hardware and beacon sales — future hardware program",
+            "Gems micro-transactions — Stripe checkout, subject to configured price IDs",
+            "Enterprise and classroom API licenses — planned, subject to age and education safeguards",
+            "Optional instant-payout convenience margins — not enabled; requires Stripe and legal review",
+            "Additional digital services — build deposits/final invoices, hosting, storage and promotions",
+          ].map((item) => <div className="module-list-item" key={item}><Check size={16} /><span>{item}</span></div>)}
+        </div>
+        <p className="offline-privacy-note">The 10% marketplace fee is the V7 proposal. A prior 15% proposal remains unapproved. Klin will not charge either rate until the owner approves the commercial terms and Stripe Connect settlement is implemented.</p>
       </section>
     </main>
   );
