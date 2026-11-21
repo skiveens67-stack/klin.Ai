@@ -142,7 +142,7 @@ export default function KlinModuleManager() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim() }),
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim(), project_id: instance.roleId === "builder" ? projectId.trim() : undefined }),
         signal: controller.signal,
       });
       const data = await response.json() as { result?: string; error?: string; model?: string; usage?: { total_tokens?: number } | null };
