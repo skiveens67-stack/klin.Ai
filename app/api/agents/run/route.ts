@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   }
 
   const input = parsed.value as Record<string, unknown>;
-  if (Object.keys(input).some((key) => !["role_id", "level", "task", "context"].includes(key))) {
+  if (Object.keys(input).some((key) => !["role_id", "level", "task", "context", "project_id"].includes(key))) {
     return NextResponse.json({ error: "Unexpected module request field." }, { status: 400 });
   }
   if (!isKlinModuleRole(input.role_id) || !isKlinModuleLevel(input.level)) {
@@ -51,6 +51,19 @@ export async function POST(request: Request) {
 
     const role = getKlinModuleRole(input.role_id);
     if (!role) return NextResponse.json({ error: "Module role not found." }, { status: 400 });
+    if (role.id === "builder") {
+      if (typeof input.project_id !== "string" || !/^[0-9a-f-]{36}$/i.test(input.project_id)) {
+        return NextResponse.json({ error: "The Builder module requires a project ID with a verified paid deposit." }, { status: 402 });
+      }
+      const { data: project, error: projectError } = await supabase.from("creator_projects")
+        .select("id,owner_user_id,metadata").eq("id", input.project_id).eq("owner_user_id", user.id).maybeSingle();
+      if (projectError || !project) return NextResponse.json({ error: "Builder project not found." }, { status: 404 });
+      const projectMetadata = project.metadata && typeof project.metadata === "object" && !Array.isArray(project.metadata)
+        ? project.metadata as Record<string, unknown> : {};
+      const quote = projectMetadata.builder_quote && typeof projectMetadata.builder_quote === "object" && !Array.isArray(projectMetadata.builder_quote)
+        ? projectMetadata.builder_quote as Record<string, unknown> : {};
+      if (quote.status !== "deposit_paid") return NextResponse.json({ error: "The Builder module cannot start project work until Stripe verifies the saved quote deposit." }, { status: 402 });
+    }
     const runtime = getKlinModuleRuntime(input.level);
     if (!runtime) return NextResponse.json({
       error: input.level === "v1"
