@@ -28,8 +28,8 @@ export default function AuthForm({ mode, initialError }: Props) {
     setMessage("");
     setBusy(true);
     try {
-      const supabase = createSupabaseBrowserClient();
       if (mode === "login") {
+        const supabase = createSupabaseBrowserClient();
         const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (authError) throw authError;
         router.replace("/");
