@@ -13,25 +13,27 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 - Offline project drafts are stored in browser IndexedDB and sync only after the user reconnects and is authenticated. Sync uses a per-draft idempotency key and must retain unsynced drafts after a network or server error. The `creator_projects.idempotency_key` migration must be applied before this API path is deployed.
 - Local browser drafts are currently not encrypted by Klin. Users must not save passwords, payment details, or highly sensitive data in them. A future encrypted local vault requires a separate threat model and recovery design.
 
-## Project estimates and work billing
-- Estimate projects from type, complexity, feature count, integrations, and assets. The estimate is a forecast, not a guarantee.
-- A heavy project should target about 7 working days. The planning ceiling is 10 working days (up to 100 active build hours using ten-hour active-work days). Smaller projects should be estimated below this cap. Do not promise that every project takes 7 or 10 days.
-- Billable work is measured in 10-hour blocks of active build time. Idle time, provider wait time, outages, and paused time are not billable.
-- The price for each 10-hour block is calculated from project complexity and must be between $7 and $35. Show the selected rate and amount before the user authorizes work.
-- Before a paid build starts, show the estimated active hours, likely working days, complexity, price per 10-hour block, estimated number of blocks, estimated total if all blocks are used, and the pause/payment rules.
-- At each completed 10 billable active hours, stop new work and issue an in-app notification with the exact block charge and a payment link. The user has 30 minutes from notification delivery to complete payment.
-- If payment is confirmed within 30 minutes, record the payment idempotently and resume from the last verified checkpoint. If it is not confirmed by the deadline, pause the project and retain all work. Do not delete, reset, or overwrite the project.
-- Never silently charge a saved card or assume consent to future blocks. Each block requires an explicit payment action by the user. Payment success must come from a verified Stripe webhook, not a browser redirect.
-- Use server-side active-time metering and immutable work-block records. A block may be invoiced/charged only once, even if workers retry, webhooks repeat, or the browser refreshes.
+## Project estimates, deposit and final payment
+- Estimate projects from type, complexity, feature count, integrations, assets, compute usage and the verified builder tier. Estimates are forecasts until the user accepts a locked quote.
+- Builder plans: Free = 4 agents / 30 minutes; Starter = $29/month, 10 agents / 24 hours; Pro = $79/month, 20 agents / 5 days and 10% build discount; Business = $199/month, 30+ agents / 10 days and 20% build discount.
+- The plan selected in the browser never grants entitlements. Read verified active subscriptions server-side.
+- Before a build starts, show a locked quote with the estimated time, price range, verified plan, discount, deposit, final-balance rule and exclusions.
+- Deposit: $20 for a standard build; 15% upfront for multi-day builds with an estimated total above $150. Credit 100% of the deposit against the final invoice.
+- No agent starts until the deposit is confirmed by a verified payment webhook. A redirect or client-side success state is not proof of payment.
+- At 100% verified completion, show the itemized invoice: approved total minus deposit paid equals remaining balance. The user must pay the remaining balance or have an eligible installment plan confirmed before source/API export, watermark removal or production publishing.
+- Never silently charge a saved card. No further build charges may be introduced without explicit quote disclosure and user approval.
+- Idle, provider-wait, offline and paused time must not be counted as active compute time. The server-side runtime must record active usage and retain immutable billing records.
+- The earlier proposal for charging each 10-hour block with a 30-minute payment deadline is superseded by this deposit-and-final-invoice policy unless the product owner explicitly re-approves it. The existing $7–$35 per 10-hour-block estimate is only a provisional pricing input, not a production compute-rate schedule.
 - A quote alone is not a payment, a running build, a time meter, or evidence that the billing runtime works.
 
 ## Agent capacity
-- Free plan maximum: 30 agents.
-- Each distinct active paid subscription plan adds 10 agents to the account maximum.
-- Calculate entitlements server-side from verified active subscription records. Browser-provided plan names or agent counts must never grant capacity.
-- Do not count canceled, expired, trial, unknown, or duplicate copies of the same plan.
-- Enforce the limit inside the server-side agent scheduler at job admission and during long-running work. If the user's entitlement decreases, do not kill work unsafely; stop admitting new agents and reconcile active work safely.
-- The current capacity endpoint and page report entitlements only. They do not run agents or enforce concurrent execution because the orchestration runtime is not connected.
+- Free plan maximum: 4 agents and 30 minutes per build.
+- Starter: 10 agents and up to 24 hours.
+- Pro: 20 agents and up to 5 days, with a 10% build discount.
+- Business: 30+ agents and up to 10 days, with a 20% build discount.
+- Verify active builder subscription codes server-side: `builder_starter`, `builder_pro`, and `builder_business`. A user cannot grant capacity by changing browser state.
+- Do not count canceled, expired, trial, unknown, or duplicate subscriptions. Higher active tier determines capacity; subscriptions do not stack.
+- Enforce the limit inside the server-side agent scheduler at job admission and during long-running work. The current API reports entitlements only; it does not launch agents or enforce concurrent execution because the orchestration runtime is not connected.
 
 ## Progress reports and review checkpoints
 - Set a checkpoint interval between 5% and 20% for each project; default to 10% unless the user chooses another value.
