@@ -46,6 +46,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Choose a supported paid plan." }, { status: 400 });
     }
 
+    const v7Plans = new Set(["plus", "pro", "family_fortress", "merchant_enterprise"]);
+    const legacyMemberships = new Set(["creator", "galaxy", "studio_pro", "developer", "ultimate", "business"]);
+    const builderPlans = new Set(["builder_starter", "builder_pro", "builder_business"]);
+    if (v7Plans.has(planCode) && process.env.KLIN_V7_PLANS_ENABLED !== "true") {
+      return NextResponse.json({ error: "V7 paid plan checkout is not open until plan entitlements, quotas and Stripe prices are approved." }, { status: 503 });
+    }
+    if (legacyMemberships.has(planCode) && process.env.KLIN_MEMBERSHIP_CHECKOUT_ENABLED !== "true") {
+      return NextResponse.json({ error: "Paid membership checkout is not open on this early-access deployment yet." }, { status: 503 });
+    }
+    if (builderPlans.has(planCode) && process.env.KLIN_BUILDER_RUNTIME_ENABLED !== "true") {
+      return NextResponse.json({ error: "Builder subscriptions are not open until the autonomous build runtime is ready." }, { status: 503 });
+    }
+    if (planCode === "klin_v6_ultra" && process.env.KLIN_V6_ULTRA_CHECKOUT_ENABLED !== "true") {
+      return NextResponse.json({ error: "V6 Ultra Smart checkout is not open until its model, price and entitlement are verified." }, { status: 503 });
+    }
+
     const priceId = process.env[PLAN_PRICE_ENV[planCode]];
     if (!priceId) return NextResponse.json({ error: "This plan is not configured for checkout yet." }, { status: 503 });
 
