@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-export default function CheckoutReturn({ kind, successful }: { kind: "subscription" | "gems"; successful: boolean }) {
-  const item = kind === "gems" ? "Gems purchase" : "subscription";
+export default function CheckoutReturn({ kind, successful }: { kind: "subscription" | "gems" | "builder_deposit"; successful: boolean }) {
+  const item = kind === "gems" ? "Gems purchase" : kind === "builder_deposit" ? "build deposit" : "subscription";
   return (
     <main className="checkout-return-page">
       <div className="checkout-return-mark">{successful ? "✓" : "↩"}</div>
@@ -13,7 +13,7 @@ export default function CheckoutReturn({ kind, successful }: { kind: "subscripti
       <p className="checkout-return-note">{successful
         ? "If the balance or subscription does not appear shortly, refresh your Wallet. Never rely on this page alone as proof of payment."
         : "You can return to your Wallet whenever you are ready."}</p>
-      <Link href={kind === "gems" ? "/wallet" : "/"}>{kind === "gems" ? "Return to Wallet" : "Return to Klin"}</Link>
+      <Link href={kind === "gems" ? "/wallet" : kind === "builder_deposit" ? "/builder" : "/"}>{kind === "gems" ? "Return to Wallet" : kind === "builder_deposit" ? "Return to Builder" : "Return to Klin"}</Link>
     </main>
   );
 }
