@@ -169,7 +169,8 @@ export default function KlinModuleManager() {
   }
 
   async function runTeam(requestedTask = task, requestedProjectId = projectId, workerIds = modules.filter((item) => item.enabled).map((item) => item.id)) {
-    const selected = modules.filter((item) => workerIds.includes(item.id));
+    const selected = modules.filter((item) => workerIds.includes(item.id) && item.enabled);
+    if (selected.length !== workerIds.length) { setNotice("One or more saved team profiles are now disabled or missing. Re-enable them before continuing."); return; }
     if (!requestedTask.trim() || selected.length < 1) {
       setNotice("Enter a task and enable at least one module.");
       return;
@@ -254,7 +255,7 @@ export default function KlinModuleManager() {
     if (pendingTeamRun) { void runTeam(pendingTeamRun.task, pendingTeamRun.projectId, pendingTeamRun.workerIds); return; }
     if (pendingRun) {
       const instance = modules.find((item) => item.id === pendingRun.moduleId);
-      if (instance) { void runModule(instance, pendingRun.task, pendingRun.projectId); return; }
+      if (instance?.enabled) { void runModule(instance, pendingRun.task, pendingRun.projectId); return; }
       setNotice("The saved module was removed. Select a module and submit the task again.");
       return;
     }
