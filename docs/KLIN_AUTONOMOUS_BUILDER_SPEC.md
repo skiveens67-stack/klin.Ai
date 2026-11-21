@@ -110,7 +110,7 @@ Do not activate creator payouts, charity disbursements, escrow, business acquisi
 - Four builder plan cards and explicit role descriptions.
 - Server-side agent entitlement calculation using active subscription records for the new builder plan codes.
 - Stripe checkout allowlist and environment-variable placeholders for the three paid builder plans.
-- Quote preview based on the existing $7–$35 per 10-hour-block estimate policy, with the requested $20 / 15% deposit arithmetic.
+- Quote preview and authenticated quote persistence in private project metadata, with server-side subscription verification and the requested $20 / 15% deposit arithmetic. Quote persistence does not collect payment or start a build.
 - Existing project estimator, project drafts, offline draft sync, checkpoint policy primitives and repository CI.
 
 ### Not operational / requires more work
