@@ -53,6 +53,7 @@ export async function POST(request: Request) {
 
     const stripe = getStripeClient();
     const previousSessionId = typeof quote.deposit_checkout_session_id === "string" ? quote.deposit_checkout_session_id : null;
+    let depositAttempt = Number.isSafeInteger(Number(quote.deposit_attempt)) && Number(quote.deposit_attempt) >= 0 ? Number(quote.deposit_attempt) : 0;
     if (previousSessionId) {
       try {
         const previous = await stripe.checkout.sessions.retrieve(previousSessionId);
@@ -60,10 +61,15 @@ export async function POST(request: Request) {
           return NextResponse.json({ checkout_url: previous.url, session_id: previous.id, deposit_amount_usd: depositUsd, reused: true }, { headers: { "Cache-Control": "no-store" } });
         }
         if (previous.status === "complete") {
-          return NextResponse.json({ error: "Stripe has completed this checkout. Wait for the verified webhook to update the quote before retrying." }, { status: 409 });
+          return NextResponse.json({ error: "Stripe has completed this checkout. Wait for the verified success or failure webhook before retrying." }, { status: 409 });
         }
         if (previous.status === "expired") {
-          return NextResponse.json({ error: "This deposit checkout expired. Create a fresh quote or contact Klin support before retrying." }, { status: 409 });
+          depositAttempt += 1;
+          const expiredQuote = { ...quote, deposit_checkout_session_id: null, deposit_attempt: depositAttempt, deposit_checkout_expired_at: new Date().toISOString() };
+          const { error: expiredUpdateError } = await supabase.from("creator_projects")
+            .update({ metadata: { ...metadata, builder_quote: expiredQuote } })
+            .eq("id", project.id).eq("owner_user_id", user.id);
+          if (expiredUpdateError) return NextResponse.json({ error: "The expired checkout could not be reset. Contact Klin support." }, { status: 503 });
         }
       } catch {
         return NextResponse.json({ error: "Unable to verify the existing deposit checkout. Contact Klin support before retrying." }, { status: 503 });
@@ -89,6 +95,7 @@ export async function POST(request: Request) {
         project_id: project.id,
         quote_version: String(quote.quote_version),
         deposit_amount_cents: String(depositCents),
+        deposit_attempt: String(depositAttempt),
       },
       payment_intent_data: {
         metadata: {
@@ -101,10 +108,10 @@ export async function POST(request: Request) {
       },
       success_url: `${origin}/builder/deposit/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/builder/deposit/cancel?project_id=${encodeURIComponent(project.id)}`,
-    }, { idempotencyKey: `klin-builder-deposit-${user.id}-${project.id}-v${quote.quote_version}` });
+    }, { idempotencyKey: `klin-builder-deposit-${user.id}-${project.id}-v${quote.quote_version}-a${depositAttempt}` });
 
     if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
-    const nextQuote = { ...quote, deposit_checkout_session_id: session.id, deposit_checkout_created_at: new Date().toISOString() };
+    const nextQuote = { ...quote, deposit_checkout_session_id: session.id, deposit_attempt: depositAttempt, deposit_checkout_created_at: new Date().toISOString() };
     const { error: updateError } = await supabase.from("creator_projects")
       .update({ metadata: { ...metadata, builder_quote: nextQuote } })
       .eq("id", project.id).eq("owner_user_id", user.id);
