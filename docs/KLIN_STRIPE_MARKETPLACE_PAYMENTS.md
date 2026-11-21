@@ -25,8 +25,8 @@ For a standard Klin marketplace sale where Klin controls checkout, use a reviewe
 
 For an eligible sale:
 - Gross customer payment: 100%.
-- Klin marketplace fee: proposed 15%.
-- Seller proceeds: proposed 85%, less disclosed Stripe fees, refunds, taxes, chargebacks or other agreed adjustments as applicable.
+- Klin marketplace fee: V7's documented baseline is 10%. An earlier 15% proposal remains an alternative that requires explicit owner approval.
+- Seller proceeds: 90% at the V7 baseline, less disclosed Stripe fees, refunds, taxes, chargebacks or other agreed adjustments as applicable. If the owner later approves 15%, seller proceeds would be 85% before those adjustments.
 
 The exact amount, tax handling, refund responsibility, dispute liability and seller terms must be disclosed before checkout. Calculate money in integer minor units (cents), never floating-point arithmetic. Use Stripe's authoritative balance transactions and webhook events for reconciliation.
 
@@ -72,3 +72,7 @@ Never accept a client-supplied "paid", "available balance", seller identity, or 
 - Test-mode end-to-end tests, then owner-approved live-mode configuration.
 
 Do not create Connect accounts, transfer money, enable payouts, or claim "Klin Bank" functionality until these requirements are completed and the account owner explicitly approves the Stripe Connect configuration.
+
+
+## V7 monetization alignment
+The seven V7 revenue streams are: SaaS subscriptions; 10% platform marketplace fee; Business Exchange escrow closing fees; physical Thangie hardware/beacon sales; Gems micro-transactions; enterprise/classroom API licenses; and optional instant-payout convenience margins. Escrow fees and instant payout margins are not enabled: Stripe Connect is not escrow, and the commercial/legal model, fee disclosure, refunds, chargebacks, age/guardian requirements and provider eligibility must be approved first.
