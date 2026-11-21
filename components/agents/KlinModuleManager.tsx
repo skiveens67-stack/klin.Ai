@@ -53,6 +53,15 @@ export default function KlinModuleManager() {
     localStorage.setItem(BUILD_KEY, buildState);
   }, [buildState, ready]);
 
+  useEffect(() => {
+    const pauseOnDisconnect = () => {
+      setBuildState("paused");
+      setNotice("Connection lost. Build marked paused locally. Reconnect, then choose Continue when ready.");
+    };
+    window.addEventListener("offline", pauseOnDisconnect);
+    return () => window.removeEventListener("offline", pauseOnDisconnect);
+  }, []);
+
   const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
 
   function cloneModule(source: ModuleInstance) {
