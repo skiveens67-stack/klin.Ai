@@ -4,7 +4,7 @@ import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 export const dynamic = "force-dynamic";
 
 function clean(value: unknown, max: number) {
-  return typeof value === "string" ? value.trim().replace(/[\\r\\n]+/g, " ").slice(0, max) : "";
+  return typeof value === "string" ? value.trim().replace(/[\r\n]+/g, " ").slice(0, max) : "";
 }
 
 function escapeHtml(value: string) {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const email = clean(input.email, 254).toLowerCase();
   const subject = clean(input.subject, 140);
   const message = typeof input.message === "string" ? input.message.trim().slice(0, 5000) : "";
-  if (name.length < 2 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || subject.length < 3 || message.length < 10) {
+  if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || subject.length < 3 || message.length < 10) {
     return NextResponse.json({ error: "Enter your name, a valid email, a subject, and a message of at least 10 characters." }, { status: 400 });
   }
   const apiKey = process.env.RESEND_API_KEY;
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const safeName = escapeHtml(name);
   const safeEmail = escapeHtml(email);
   const safeSubject = escapeHtml(subject);
-  const safeMessage = escapeHtml(message).replace(/\\n/g, "<br>");
+  const safeMessage = escapeHtml(message).replace(/\n/g, "<br>");
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         reply_to: [email],
         subject: "[Klin Support] " + subject,
         html: "<div style='font-family:Arial,sans-serif;white-space:normal'><h2>New public Klin support request</h2><p><b>Name:</b> " + safeName + "</p><p><b>Reply email:</b> " + safeEmail + "</p><p><b>Subject:</b> " + safeSubject + "</p><hr><p>" + safeMessage + "</p></div>",
-        text: "New public Klin support request\\nName: " + name + "\\nReply email: " + email + "\\nSubject: " + subject + "\\n\\n" + message,
+        text: "New public Klin support request\nName: " + name + "\nReply email: " + email + "\nSubject: " + subject + "\n\n" + message,
       }),
       signal: AbortSignal.timeout(12000),
       cache: "no-store",
