@@ -123,3 +123,8 @@ The current module execution endpoint returns a specialist model response only. 
 - The signed Stripe webhook handles `checkout.session.completed` and `checkout.session.async_payment_succeeded` for `purchase_type=builder_deposit`, verifies user/project ownership, quote version, currency and exact paid amount, then marks the quote deposit as paid in project metadata. Signed async-failure and expiry events clear the matching session and allow a new attempt without reusing the old Stripe idempotency key.
 - A checkout redirect is not proof of payment. A verified webhook is required. The deposit is credited at 100% toward the eventual final invoice.
 - Deposit payment does not start a build because the durable builder runtime is not connected. Final invoice collection and pay-to-publish remain pending.
+
+
+- `POST /api/agents/team-run` — launches a bounded parallel batch of enabled specialist module requests. The server verifies the active builder plan, batch size and each worker's maximum allowed model level. If the Builder role is included, it also requires a project owned by the user with a Stripe-webhook-verified paid deposit.
+- Team results return per-worker status, model ID and token usage. Each worker is an independent model request; duplicated profiles of the same role can run in the same batch.
+- Team execution is request-scoped and bounded to one Vercel function invocation. It is not a durable background job, does not edit files or package a product, and does not enforce a global per-user concurrency lock across separate browser sessions.
