@@ -13,3 +13,8 @@ Production secrets must be configured through the deployment environment and mus
 
 
 The Autonomous Builder includes the Free, Starter, Pro, and Business builder-tier catalogue, verified plan-based entitlement previews, a quote preview with the requested deposit arithmetic, and Stripe checkout routes for paid builder subscriptions. The live multi-agent scheduler, build deposit collection, isolated generated-project QA, cloud checkpoints, offline pause/resume, watermarked delivery sandbox, and pay-to-publish controls are not yet operational; see `docs/KLIN_AUTONOMOUS_BUILDER_SPEC.md` for the implementation boundary and remaining work.
+
+
+Klin Modules now provides six reusable specialist profiles (Tester, Builder, Animator, Calculator, Helper, Safety & Law), local profile duplication, Klin V1–V7 model-level selection, and an authenticated single-module AI Gateway execution endpoint. V2–V7 require their own server-side model IDs. Browser-offline cancellation and explicit Continue retry are implemented for an in-flight module request; durable cloud builds and parallel worker scheduling are not yet connected. See `docs/KLIN_AUTONOMOUS_BUILDER_SPEC.md` and `docs/KLIN_PROJECT_EXECUTION_RULES.md`.
+
+Stripe subscription checkout is separate from marketplace seller payouts. The intended user-to-user marketplace model is Stripe Connect with verified connected accounts and payout reconciliation. Klin must not describe itself as a bank or hold user funds in a proprietary cash balance without an approved regulated financial structure. See `docs/KLIN_STRIPE_MARKETPLACE_PAYMENTS.md`.
