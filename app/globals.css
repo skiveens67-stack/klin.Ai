@@ -476,3 +476,51 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .module-ordered-list { display:grid; gap:10px; padding-left:22px; color:#cbd5e1; font-size:13px; line-height:1.6; }
 .module-card-title h3 { margin:0; color:#e2e8f0; font-size:14px; font-weight:650; }
 @media (max-width:640px) { .module-grid { grid-template-columns:1fr; } .module-plan-card { min-height:0; } }
+
+
+/* Klin V7 local encrypted vault */
+.module-file-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  color: #c7f3ff;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.media-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.module-record-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.module-record {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 0.9rem;
+  background: rgba(15, 23, 42, 0.48);
+  padding: 1rem;
+  overflow-wrap: anywhere;
+}
+.module-record-title {
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.module-empty {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  padding: 1rem 0;
+}
