@@ -15,10 +15,10 @@ type Estimate = {
 };
 
 const plans = [
-  { name: "Free", price: "$0/mo", agents: "4 agents", duration: "30 minutes", discount: "No build discount", roles: "Planner · Frontend · Backend · QA" },
-  { name: "Starter", price: "$29/mo", agents: "10 agents", duration: "Up to 24 hours", discount: "Standard build pricing", roles: "Core agents + specialist builders" },
-  { name: "Pro", price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
-  { name: "Business", price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
+  { name: "Free", code: "free", price: "$0/mo", agents: "4 agents", duration: "30 minutes", discount: "No build discount", roles: "Planner · Frontend · Backend · QA" },
+  { name: "Starter", code: "builder_starter", price: "$29/mo", agents: "10 agents", duration: "Up to 24 hours", discount: "Standard build pricing", roles: "Core agents + specialist builders" },
+  { name: "Pro", code: "builder_pro", price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
+  { name: "Business", code: "builder_business", price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
 ];
 
 const deliverables = [
@@ -38,7 +38,7 @@ export default function AutonomousBuilder() {
   const [plan, setPlan] = useState("Free");
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);\n  const [checkoutLoading, setCheckoutLoading] = useState(false);\n  const [checkoutError, setCheckoutError] = useState("");
 
   const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
   const quote = useMemo(() => {
@@ -52,6 +52,26 @@ export default function AutonomousBuilder() {
     const depositHigh = high > 150 && isMultiDay ? Math.round(high * 0.15 * 100) / 100 : Math.min(high, 20);
     return { low, high, depositLow, depositHigh, balanceLow: Math.max(0, Math.round((low - depositLow) * 100) / 100), balanceHigh: Math.max(0, Math.round((high - depositHigh) * 100) / 100), discount, isMultiDay };
   }, [estimate, plan]);
+
+  async function subscribeToSelectedPlan() {
+    if (selectedPlan.code === "free") return;
+    setCheckoutLoading(true);
+    setCheckoutError("");
+    try {
+      const response = await fetch("/api/billing/checkout", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+        body: JSON.stringify({ plan_code: selectedPlan.code }),
+      });
+      const data = await response.json() as { checkout_url?: string; error?: string };
+      if (!response.ok || !data.checkout_url) throw new Error(data.error || "This plan is not available for checkout yet.");
+      window.location.assign(data.checkout_url);
+    } catch (caught) {
+      setCheckoutError(caught instanceof Error ? caught.message : "Checkout could not be started.");
+      setCheckoutLoading(false);
+    }
+  }
 
   async function createQuote() {
     setLoading(true);
@@ -113,6 +133,8 @@ export default function AutonomousBuilder() {
             </button>
           ))}
         </div>
+        <button type="button" className="module-submit" disabled={checkoutLoading || selectedPlan.code === "free"} onClick={() => void subscribeToSelectedPlan()}>{checkoutLoading ? "Opening secure checkout…" : selectedPlan.code === "free" ? "Free plan selected" : `Subscribe to ${selectedPlan.name} · ${selectedPlan.price}`}</button>
+        {checkoutError && <div className="module-alert module-alert-error" role="alert">{checkoutError}</div>}
         <div className="module-card-title"><ShieldCheck size={17} /><h3>Specialist roles</h3></div>
         <div className="module-grid">
           {["Planner — milestones and architecture", "Frontend — interface and responsive behavior", "Backend — APIs, data and integrations", "QA Tester — automated checks and failure reports"].map((role) => <div className="module-list-item" key={role}><CheckCircle2 size={16} /><span>{role}</span></div>)}
