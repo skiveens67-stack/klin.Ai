@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,6 +15,18 @@ export default function AuthForm({ mode, initialError }: Props) {
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationPending, setVerificationPending] = useState(false);
+
+  useEffect(() => {
+    if (mode !== "signup") return;
+    try {
+      const savedEmail = window.localStorage.getItem("klin.pendingSignupEmail");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setVerificationPending(true);
+        setMessage("Your signup is saved. Enter the six-digit code from your email to continue.");
+      }
+    } catch { /* Storage may be unavailable; signup still works in the current tab. */ }
+  }, [mode]);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(initialError === "configuration"
@@ -37,6 +49,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         const supabase = createSupabaseBrowserClient();
         const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "signup" });
         if (verifyError) throw verifyError;
+        try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ }
         router.replace("/"); router.refresh();
       } else {
         const response = await fetch("/api/auth/signup", {
@@ -47,6 +60,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         const data = await response.json() as { message?: string; error?: string };
         if (!response.ok) throw new Error(data.error || "Unable to create your account.");
         setPassword(""); setVerificationPending(true);
+        try { window.localStorage.setItem("klin.pendingSignupEmail", email.trim()); } catch { /* Keep current-tab flow working if storage is unavailable. */ }
         setMessage(data.message || "Check your email for a six-digit verification code from Klin.");
       }
     } catch (caught) {
@@ -78,7 +92,8 @@ export default function AuthForm({ mode, initialError }: Props) {
           <button className="auth-submit" type="submit" disabled={busy}>
             {busy ? <><span className="auth-button-spinner" /> {mode === "login" ? "Signing in…" : verificationPending ? "Verifying…" : "Creating account…"}</> : <>{mode === "login" ? "Sign in" : verificationPending ? "Verify email and continue" : "Create account"} <ArrowRight size={17} /></>}
           </button>
-          {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); }}>Use a different email address</button>}
+          {mode === "signup" && verificationPending && <a className="auth-gmail-link" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener noreferrer">Open Gmail in a new tab</a>}
+          {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ } }}>Use a different email address</button>}
         </form>
         {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Sign up for Klin" : "Sign in instead"}</Link></p>
