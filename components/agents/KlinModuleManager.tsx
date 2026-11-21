@@ -15,6 +15,7 @@ export default function KlinModuleManager() {
   const [modules, setModules] = useState<ModuleInstance[]>(initialModules);
   const [ready, setReady] = useState(false);
   const [maxAgents, setMaxAgents] = useState(4);
+  const [maxModuleLevel, setMaxModuleLevel] = useState<KlinModuleLevelId>("v1");
   const [buildState, setBuildState] = useState<BuildState>("idle");
   const [notice, setNotice] = useState("");
   const [task, setTask] = useState("");
@@ -169,7 +170,7 @@ export default function KlinModuleManager() {
       <div className="module-grid">
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
       </div>
-      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount} / {maxAgents} plan limit</span></div>
+      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount} / {maxAgents} plan limit · Up to {maxModuleLevel.toUpperCase()}</span></div>
       <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
       <div className="space-y-3">
         {modules.map((instance) => {
@@ -186,7 +187,7 @@ export default function KlinModuleManager() {
             <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
               <div><label className="mb-1 block text-[10px] uppercase tracking-wider text-slate-500">Intelligence level</label>
                 <select value={instance.level} onChange={(event) => updateModule(instance.id, { level: event.target.value as KlinModuleLevelId })} className="w-full rounded-lg border border-white/10 bg-[#080D18] px-3 py-2 text-sm text-white">
-                  {KLIN_MODULE_LEVELS.map((level) => <option key={level.id} value={level.id}>{level.name}</option>)}
+                  {KLIN_MODULE_LEVELS.map((level) => <option key={level.id} value={level.id} disabled={level.rank > (KLIN_MODULE_LEVELS.find((item) => item.id === maxModuleLevel)?.rank ?? 1)}>{level.name}{level.rank > (KLIN_MODULE_LEVELS.find((item) => item.id === maxModuleLevel)?.rank ?? 1) ? " · Upgrade required" : ""}</option>)}
                 </select>
               </div>
               <button type="button" onClick={() => cloneModule(instance)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100"><Copy size={14} /> Copy module</button>
@@ -210,7 +211,7 @@ export default function KlinModuleManager() {
         </div>
       </div>
       {notice && <p className="mt-3 text-xs text-slate-300" role="status">{notice}</p>}
-      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. The UI reads your plan capacity and limits enabled profiles locally; server-side concurrent worker enforcement is not connected. Each run currently executes one AI Gateway request. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
+      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. The UI reads your verified plan capacity and model-level ceiling. The API enforces the model-level ceiling for each request; server-side concurrent worker enforcement is not connected. Each run currently executes one AI Gateway request. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
     </section>
   );
 }
