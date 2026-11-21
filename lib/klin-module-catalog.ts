@@ -4,7 +4,7 @@ export const KLIN_MODULE_LEVELS = [
   { id: "v3", name: "Klin V3", description: "Advanced planning and implementation", rank: 3 },
   { id: "v4", name: "Klin V4", description: "Complex projects and deeper verification", rank: 4 },
   { id: "v5", name: "Klin V5", description: "High-capability specialist workflows", rank: 5 },
-  { id: "v6", name: "Klin V6 Ultra", description: "Premium intelligence add-on with the highest paid model tier", rank: 6 },
+  { id: "v6", name: "Klin V6 Ultra Smart", description: "Premium intelligence add-on with the highest paid model tier", rank: 6 },
 ] as const;
 
 export const KLIN_MODULE_ROLES = [
