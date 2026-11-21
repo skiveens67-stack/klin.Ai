@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Bot, CheckCircle2, CircleDollarSign, Clock3, Code2, Film, Gauge, Layers3, ShieldCheck, Workflow } from "lucide-react";
 
 type Estimate = {
@@ -174,7 +175,10 @@ export default function AutonomousBuilder() {
         {checkoutError && <div className="module-alert module-alert-error" role="alert">{checkoutError}</div>}
         <div className="module-card-title"><ShieldCheck size={17} /><h3>Specialist roles</h3></div>
         <div className="module-grid">
-          {["Planner — milestones and architecture", "Frontend — interface and responsive behavior", "Backend — APIs, data and integrations", "QA Tester — automated checks and failure reports"].map((role) => <div className="module-list-item" key={role}><CheckCircle2 size={16} /><span>{role}</span></div>)}
+          {["Klin Tester — QA, security and functionality", "Klin Builder — websites, apps and software", "Klin Animator — animation and video workflows", "Klin Calculator — estimates, deposits and invoices", "Klin Helper — user support and coordination", "Klin Safety & Law — privacy, safety and compliance review"].map((role) => <div className="module-list-item" key={role}><CheckCircle2 size={16} /><span>{role}</span></div>)}
+        </div>
+        <Link href="/agents/modules" className="mt-3 inline-flex rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100">Configure and copy Klin Modules</Link>
+        <div>
         </div>
         <p className="offline-privacy-note">Builder concurrency, agent isolation and plan enforcement are not live yet. This plan table is a product specification, not an active entitlement grant.</p>
       </section>
