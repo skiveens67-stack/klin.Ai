@@ -18,11 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signup request." }, { status: 400 });
   }
   const input = parsed.value as Record<string, unknown>;
-  if (Object.keys(input).some((key) => !["email", "password"].includes(key))) {
+  if (Object.keys(input).some((key) => !["email", "password", "username"].includes(key))) {
     return NextResponse.json({ error: "Unexpected signup field." }, { status: 400 });
   }
   const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
   const password = typeof input.password === "string" ? input.password : "";
+  const username = typeof input.username === "string" ? input.username.trim() : "";
+  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+    return NextResponse.json({ error: "Username must be 3–20 characters and use only letters, numbers, or underscores." }, { status: 400 });
+  }
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
@@ -68,7 +72,7 @@ export async function POST(request: Request) {
       cache: "no-store",
     });
     if (!response.ok) return NextResponse.json({ error: "Your account request was created, but Klin could not send the verification code. Contact Klin support before trying to create another account." }, { status: 502 });
-    return NextResponse.json({ sent: true, message: "Check your inbox for a six-digit verification code from Klin." });
+    return NextResponse.json({ sent: true, message: "Check your inbox for a six-digit verification code from Klin. Your username and account number will be available after verification." });
   } catch {
     return NextResponse.json({ error: "Klin could not send your verification code. Try again or contact support." }, { status: 503 });
   }
