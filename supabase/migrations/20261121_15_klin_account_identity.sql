@@ -5,7 +5,7 @@ create table if not exists public.klin_profiles (
   account_number char(6) not null unique,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint klin_profiles_username_format check (username ~ '^[A-Za-z0-9_]{3,20}$')
+  constraint klin_profiles_username_length check (char_length(username) > 3 and char_length(username) < 50)
 );
 create unique index if not exists klin_profiles_username_lower_uidx on public.klin_profiles (lower(username));
 create index if not exists klin_profiles_account_number_idx on public.klin_profiles(account_number);
@@ -27,7 +27,7 @@ declare
   requested_username text;
 begin
   requested_username := coalesce(new.raw_user_meta_data ->> 'username', '');
-  if requested_username !~ '^[A-Za-z0-9_]{3,20}$' then
+  if char_length(requested_username) <= 3 or char_length(requested_username) >= 50 then
     requested_username := 'user_' || substr(replace(new.id::text, '-', ''), 1, 12);
   end if;
 
