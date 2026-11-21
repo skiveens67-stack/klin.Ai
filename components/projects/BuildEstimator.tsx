@@ -55,7 +55,7 @@ export default function BuildEstimator() {
   return (
     <section className="module-card">
       <div className="module-card-title"><Calculator size={17} /><h2>Project time and cost estimate</h2></div>
-      <p className="offline-drafts-copy">Klin estimates active build time from project type, features, integrations, and assets. Heavy projects target about 7 days; the estimate is capped at 10 working days (100 active hours). Progress reports and test previews are planned at configurable 5%–20% checkpoints.</p>
+      <p className="offline-drafts-copy">Klin estimates active build time from project type, features, integrations, and assets. Heavy projects target about 7 working days; the estimate is capped at 10 working days (100 active hours). For the full builder quote, verified plan limits, deposit and final-balance rules, use Autonomous Builder.</p>
       <div className="module-form">
         <div className="module-field"><label htmlFor="estimate-checkpoint">Progress report interval: {checkpointInterval}%</label><input id="estimate-checkpoint" type="range" min={5} max={20} step={5} value={checkpointInterval} onChange={(event) => setCheckpointInterval(Number(event.target.value))} /><small>Choose a report and review checkpoint every 5%, 10%, 15%, or 20% of verified progress.</small></div>
         <div className="module-field"><label htmlFor="estimate-type">Project type</label><select id="estimate-type" value={projectType} onChange={(event) => setProjectType(event.target.value)}><option value="website">Website</option><option value="video_app">Video app</option><option value="mobile_app">Mobile app</option><option value="game">Game</option><option value="business">Business platform</option><option value="other">Other</option></select></div>
@@ -70,8 +70,8 @@ export default function BuildEstimator() {
           <div className="module-estimate-metric"><Clock3 size={16} /><span>Estimated active build time</span><strong>{estimate.estimated_hours} hours</strong><small>About {estimate.estimated_days} working day(s) · heavy target {estimate.heavy_project_target_days} days · maximum {estimate.max_days} days</small></div>
           <div className="module-estimate-metric"><DollarSign size={16} /><span>Price per 10 active hours</span><strong>${estimate.ten_hour_block_price_usd}</strong><small>{estimate.complexity} complexity · {estimate.estimated_blocks} estimated blocks</small></div>
           <div className="module-estimate-total"><span>Estimated total if all blocks are used</span><strong>${estimate.estimated_total_usd.toLocaleString("en-US")}</strong></div>
-          <p className="offline-privacy-note">This estimate uses a {estimate.progress_checkpoint_percent}% progress-report interval. A testable preview at each checkpoint requires the isolated builder and QA runtime, which is not connected yet.</p>
-          <p className="offline-privacy-note">Estimate only. No payment is taken here. Before work starts, Klin must show the exact amount and obtain your authorization. After each 10 active hours, Klin will notify you and provide a 30-minute payment window. If unpaid, the project pauses with its work saved. Idle time and time paused do not count.</p>
+          <p className="offline-privacy-note">This estimate uses a {estimate.progress_checkpoint_percent}% progress-report interval. The isolated builder and generated-project QA runtime are not connected yet.</p>
+          <p className="offline-privacy-note">Estimate only. Before a build, Klin must show a locked quote and collect a $20 deposit, or 15% for a multi-day build estimated above $150. The deposit is credited in full toward the final invoice. The remaining balance is due before source export, watermark removal or publishing. Deposit collection and build execution are not connected yet.</p>
         </div>
       )}
     </section>
