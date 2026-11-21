@@ -55,7 +55,7 @@ export default function AgentCapacity() {
           </section>
           <section className="module-card">
             <div className="module-card-title"><ShieldAlert size={17} /><h2>Agent runtime status</h2></div>
-            <div className="module-alert module-alert-warning">The account limit is calculated from your subscription records, but Klin's multi-agent execution runtime is not connected yet. This screen does not launch agents or guarantee that this many can run simultaneously.</div>
+            <div className="module-alert module-alert-warning">The account limit is calculated from your subscription records, but Klin&apos;s multi-agent execution runtime is not connected yet. This screen does not launch agents or guarantee that this many can run simultaneously.</div>
             <p className="offline-privacy-note">{capacity.note}</p>
           </section>
         </>
