@@ -143,7 +143,7 @@ export default function V7Vault() {
       <header className="module-header">
         <div><div className="module-eyebrow">KLIN V7 ULTRA SAFE · FREE</div><h1>V7 Secure Vault</h1><p>Private, client-side encrypted storage for identity, biometric, voice, location and personal records.</p></div>
       </header>
-      <div className="module-alert module-alert-info"><strong><ShieldCheck size={16} className="inline mr-2" />V7 Ultra Safe is always on.</strong> The Dignity Shield policy is applied automatically to Klin AI module requests. You do not need to activate it, and it is not a paid plan.</div>
+      <div className="module-alert module-alert-info"><strong><ShieldCheck size={16} className="inline mr-2" />V7 Ultra Safe is always on.</strong> The three V7 shields apply automatically: encrypted vaulting, private Dignity Shield assistance rules, and the 21+ Compliance Firewall. V7 is not a paid plan and cannot be disabled.</div>
       <div className="module-alert module-alert-warning">This early-access vault encrypts records in your browser using PBKDF2-SHA-256 and AES-256-GCM before saving the encrypted file to this browser&apos;s local storage. Klin&apos;s server does not receive the passphrase or plaintext records. There is no cloud sync or password recovery. If you lose the passphrase and encrypted backup, the data cannot be recovered. This implementation has not yet received an independent security audit.</div>
 
       {error && <div className="module-alert module-alert-error" role="alert">{error}</div>}
@@ -187,8 +187,14 @@ export default function V7Vault() {
       </section>}
 
       <section className="module-card">
-        <div className="module-card-title"><ShieldCheck size={18} /><h2>Dignity Shield</h2></div>
-        <p className="offline-drafts-copy">Klin&apos;s always-on safety layer is designed to reduce unnecessary sensitive-data collection and resist doxxing, stalking, non-consensual tracking, impersonation, coercion, harassment and exploitation. Safety checks apply across every module level, including V1 Free.</p>
+        <div className="module-card-title"><ShieldCheck size={18} /><h2>Shield 2 · Dignity Shield Protocol</h2></div>
+        <p className="offline-drafts-copy">Dignity Shield is Klin&apos;s private financial-assistance and fee-waiver program. A user must never receive a public badge, hardship label or social marker because they requested help. The request, if introduced, must remain private.</p>
+        <div className="module-alert module-alert-warning">Not accepting assistance requests yet. Eligibility rules, approvers, funding budget, appeals, expiry and accounting are not finalized. Klin will not invent eligibility or promise a fee waiver before those rules are approved.</div>
+      </section>
+      <section className="module-card">
+        <div className="module-card-title"><ShieldCheck size={18} /><h2>Shield 3 · 21+ Compliance Firewall</h2></div>
+        <p className="offline-drafts-copy">Klin&apos;s planned Business Exchange, escrow, valuation and handover features require verified 21+ eligibility. Self-declared age is not proof. Under-21 and unverified accounts must not enter those restricted features.</p>
+        <div className="module-alert module-alert-warning">The age-verification provider and verified-age record are not connected yet. Business Exchange remains unavailable until the server can verify age status and the policy receives legal review.</div>
       </section>
     </main>
   );
