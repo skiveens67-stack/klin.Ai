@@ -8,7 +8,7 @@ import { calculateAgentCapacity } from "@/lib/agent-capacity";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type GatewayResponse = { model?: string; choices?: Array<{ message?: { content?: unknown } }> };
+type GatewayResponse = { model?: string; usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }; choices?: Array<{ message?: { content?: unknown } }> };
 
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
@@ -112,6 +112,7 @@ export async function POST(request: Request) {
       result: output.trim(),
       module: { role_id: role.id, role_name: role.name, level: input.level },
       model: result.model || runtime.model,
+      usage: result.usage ?? null,
       execution: "single_module_request",
       note: "This module produced a response. It has not executed external tools, changed project files, or coordinated parallel workers.",
     }, { headers: { "Cache-Control": "no-store" } });
