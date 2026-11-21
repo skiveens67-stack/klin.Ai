@@ -104,6 +104,7 @@ export async function POST(request: Request) {
           project_id: project.id,
           quote_version: String(quote.quote_version),
           deposit_amount_cents: String(depositCents),
+          deposit_attempt: String(depositAttempt),
         },
       },
       success_url: `${origin}/builder/deposit/success?session_id={CHECKOUT_SESSION_ID}`,
