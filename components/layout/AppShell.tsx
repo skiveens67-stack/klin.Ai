@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole,
   Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
-  ShieldCheck, Users, WalletCards, X,
+  ShieldCheck, Users, WalletCards, X, Palette,
 } from "lucide-react";
 
 type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
@@ -32,7 +32,7 @@ const navigation: NavigationItem[] = [
   { label: "Safety Check-ins", href: "/checkins", icon: ClipboardCheck },
   { label: "Trusted Contacts", href: "/trusted-contacts", icon: Contact },
   { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Creative Studio", href: "/creative-studio", icon: Sparkles },
+  { label: "Creative Studio", href: "/creative-studio", icon: Palette },
   { label: "Integrations", href: "/integrations", icon: Blocks },
 ];
 
