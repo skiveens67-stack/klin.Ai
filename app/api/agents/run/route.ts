@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { getKlinModuleRole, getKlinModuleRuntime, isKlinModuleLevel, isKlinModuleRole } from "@/lib/klin-agent-runtime";
+import { KLIN_MODULE_LEVELS } from "@/lib/klin-module-catalog";
+import { calculateAgentCapacity } from "@/lib/agent-capacity";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -34,6 +36,18 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const { data: subscriptions, error: subscriptionError } = await supabase
+      .from("subscriptions").select("plan_code,status").eq("user_id", user.id).eq("status", "active");
+    if (subscriptionError) return NextResponse.json({ error: "Unable to verify your module plan." }, { status: 503 });
+    const entitlement = calculateAgentCapacity(subscriptions ?? []);
+    const selectedLevel = KLIN_MODULE_LEVELS.find((level) => level.id === input.level);
+    const maximumLevel = KLIN_MODULE_LEVELS.find((level) => level.id === entitlement.max_module_level);
+    if (!selectedLevel || !maximumLevel || selectedLevel.rank > maximumLevel.rank) {
+      return NextResponse.json({
+        error: `${entitlement.active_builder_plan} supports up to ${entitlement.max_module_level.toUpperCase()}. Upgrade your builder plan to use this module level.`,
+        maximum_module_level: entitlement.max_module_level,
+      }, { status: 403 });
+    }
 
     const role = getKlinModuleRole(input.role_id);
     if (!role) return NextResponse.json({ error: "Module role not found." }, { status: 400 });
