@@ -46,6 +46,8 @@ export default function AutonomousBuilder() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [savingQuote, setSavingQuote] = useState(false);
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositError, setDepositError] = useState("");
   const [savedQuote, setSavedQuote] = useState<{ projectId: string; status: string } | null>(null);
 
   const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
@@ -108,6 +110,26 @@ export default function AutonomousBuilder() {
       setError(caught instanceof Error ? caught.message : "Could not save the locked quote.");
     } finally {
       setSavingQuote(false);
+    }
+  }
+
+  async function payBuildDeposit() {
+    if (!savedQuote) return;
+    setDepositLoading(true);
+    setDepositError("");
+    try {
+      const response = await fetch("/api/builder/quotes/deposit", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
+        body: JSON.stringify({ project_id: savedQuote.projectId }),
+      });
+      const data = await response.json() as { checkout_url?: string; error?: string };
+      if (!response.ok || !data.checkout_url) throw new Error(data.error || "Could not start the deposit checkout.");
+      window.location.assign(data.checkout_url);
+    } catch (caught) {
+      setDepositError(caught instanceof Error ? caught.message : "Could not start the deposit checkout.");
+      setDepositLoading(false);
     }
   }
 
@@ -205,6 +227,9 @@ export default function AutonomousBuilder() {
             <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balanceLow.toFixed(2)} – ${quote.balanceHigh.toFixed(2)}</strong></div>
             <button type="button" className="module-submit" disabled={savingQuote || estimate.estimated_hours > verifiedPlan.maxHours || !title.trim() || !description.trim()} onClick={() => void saveLockedQuote()}>{savingQuote ? "Saving quote…" : "Save and lock this quote"}</button>
             {savedQuote && <div className="module-alert module-alert-warning" role="status">Quote saved to project {savedQuote.projectId}. Status: {savedQuote.status}. No deposit has been collected and no agents have started.</div>}
+            {savedQuote && <button type="button" className="module-submit" disabled={depositLoading} onClick={() => void payBuildDeposit()}>{depositLoading ? "Opening Stripe Checkout…" : `Pay $ ${quote.depositHigh.toFixed(2)} build deposit with Stripe`}</button>}
+            {savedQuote && <p className="offline-privacy-note">The deposit is credited 100% toward your final invoice. A successful redirect is not payment confirmation; Klin waits for Stripe's verified webhook. Payment does not start a build until the builder runtime is available.</p>}
+            {depositError && <div className="module-alert module-alert-error" role="alert">{depositError}</div>}
             <div className="module-alert module-alert-warning">This is an estimate preview, not an accepted quote or payment request. The current estimator prices 10-hour work blocks at a complexity-based rate. Final compute-hour and agent-tier pricing still needs a verified pricing table. The build runtime and deposit checkout are not connected, so no build can start from this screen.</div>
             <p className="offline-privacy-note">Project request: {description}</p>
           </div>
