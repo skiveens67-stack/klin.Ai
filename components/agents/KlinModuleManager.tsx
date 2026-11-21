@@ -109,7 +109,9 @@ export default function KlinModuleManager() {
     }
     const controller = new AbortController();
     activeRequest.current = controller;
-    setPendingRun({ moduleId: instance.id, task: requestedTask.trim() });
+    const pending = { moduleId: instance.id, task: requestedTask.trim() };
+    setPendingRun(pending);
+    try { localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pending)); } catch { /* Continue with in-memory retry if storage is unavailable. */ }
     setBuildState("running");
     setRunningId(instance.id);
     setNotice("");
@@ -126,6 +128,7 @@ export default function KlinModuleManager() {
       if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
       setResults((current) => ({ ...current, [instance.id]: data.result! }));
       setPendingRun(null);
+      try { localStorage.removeItem(PENDING_RUN_KEY); } catch { /* State is also cleared in memory. */ }
       setBuildState("idle");
       setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}. It did not modify project files.`);
     } catch (caught) {
@@ -148,6 +151,7 @@ export default function KlinModuleManager() {
   }
 
   function continueBuild() {
+    if (!navigator.onLine) { setNotice("Klin is still offline. Reconnect before continuing."); return; }
     if (pendingRun) {
       const instance = modules.find((item) => item.id === pendingRun.moduleId);
       if (instance) { void runModule(instance, pendingRun.task); return; }
