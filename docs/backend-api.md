@@ -112,3 +112,6 @@ The command route only records requests; it does not actuate hardware. Thangie r
 - The Klin Modules UI stores cloned module profiles and a pending retry task in browser local storage. If the browser goes offline it aborts the active request where possible and marks the task paused; the user must press Continue after reconnecting to retry.
 - Local module profiles and client-side plan limits are not a substitute for server-side concurrent worker admission. The persistent agent scheduler is not yet connected.
 - Marketplace seller payouts are a separate Stripe Connect integration. See `docs/KLIN_STRIPE_MARKETPLACE_PAYMENTS.md`; no Klin-held stored-value balance or escrow is enabled.
+
+
+The current module execution endpoint returns a specialist model response only. It does not create a durable build job, write project source files, launch parallel workers, or guarantee that an upstream model provider stops immediately when a client disconnects. Use the local Continue control to retry an interrupted short request; long builds require the future durable job runtime.
