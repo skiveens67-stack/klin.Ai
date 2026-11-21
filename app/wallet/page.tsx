@@ -1,6 +1,5 @@
 import AppShell from "@/components/layout/AppShell";
 import BillingPortalButton from "@/components/billing/BillingPortalButton";
-import ProtectedWorkspacePage from "@/components/workspace/ProtectedWorkspacePage";
 import WorkspaceModule from "@/components/workspace/WorkspaceModule";
 import { requireAuthenticatedUser } from "@/lib/supabase/require-user";
 
