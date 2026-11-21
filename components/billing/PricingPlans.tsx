@@ -13,6 +13,7 @@ const memberships = [
   { name: "Developer", code: "developer", price: "$79.99/mo", detail: "Developer-focused tools and integrations." },
   { name: "Ultimate", code: "ultimate", price: "$149.99/mo", detail: "Highest standard membership tier." },
   { name: "Business", code: "business", price: "From $299/mo", detail: "Business workspaces and team operations." },
+  { name: "Enterprise", code: "enterprise", price: "Custom", detail: "Custom deployment, security and organization-wide support.", contactOnly: true },
 ] as const;
 
 const builderPlans = [
@@ -55,7 +56,7 @@ export default function PricingPlans() {
         <div className="module-grid">
           {memberships.map((plan) => <article className="module-plan-card" key={plan.code}>
             <strong>{plan.name}</strong><b>{plan.price}</b><span>{plan.detail}</span>
-            <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>
+            {plan.code === "enterprise" ? <a className="module-submit inline-block text-center" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact Klin support</a> : <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>}
           </article>)}
         </div>
         <p className="offline-privacy-note">Published prices are the current proposed catalogue. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin&apos;s Stripe account.</p>
