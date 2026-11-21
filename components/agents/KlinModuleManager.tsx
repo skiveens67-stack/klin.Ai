@@ -164,6 +164,77 @@ export default function KlinModuleManager() {
     }
   }
 
+  async function runTeam(requestedTask = task, requestedProjectId = projectId, workerIds = modules.filter((item) => item.enabled).map((item) => item.id)) {
+    const selected = modules.filter((item) => workerIds.includes(item.id));
+    if (!requestedTask.trim() || selected.length < 1) {
+      setNotice("Enter a task and enable at least one module.");
+      return;
+    }
+    if (selected.length > maxAgents) {
+      setNotice(`Your verified plan allows up to ${maxAgents} active modules in one team run.`);
+      return;
+    }
+    if (selected.some((item) => item.roleId === "builder") && !requestedProjectId.trim()) {
+      setNotice("The Builder module needs the project ID from a saved quote with a verified paid deposit.");
+      return;
+    }
+
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const pending = { task: requestedTask.trim(), projectId: requestedProjectId.trim(), workerIds: selected.map((item) => item.id) };
+    setPendingTeamRun(pending);
+    setPendingRun(null);
+    try {
+      localStorage.setItem(PENDING_TEAM_KEY, JSON.stringify(pending));
+      localStorage.removeItem(PENDING_RUN_KEY);
+    } catch { /* Keep the pending team run in memory if local storage is unavailable. */ }
+    setBuildState("running");
+    setTeamRunning(true);
+    setRunningId(null);
+    setNotice("");
+    try {
+      const response = await fetch("/api/agents/team-run", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: requestedTask.trim(),
+          project_id: requestedProjectId.trim() || undefined,
+          workers: selected.map((item) => ({ instance_id: item.id, role_id: item.roleId, level: item.level })),
+        }),
+        signal: controller.signal,
+      });
+      const data = await response.json() as {
+        error?: string;
+        completed_workers?: number;
+        requested_workers?: number;
+        results?: Array<{ instance_id: string; status: string; result?: string; error?: string; usage?: { total_tokens?: number } | null }>;
+      };
+      if (!response.ok || !Array.isArray(data.results)) throw new Error(data.error || "Team run failed.");
+      setResults((current) => {
+        const next = { ...current };
+        for (const item of data.results ?? []) {
+          next[item.instance_id] = item.status === "completed" ? item.result ?? "" : `Worker failed: ${item.error ?? "Unknown error"}`;
+        }
+        return next;
+      });
+      setPendingTeamRun(null);
+      try { localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* State is also cleared in memory. */ }
+      setBuildState("idle");
+      setNotice(`Team finished: ${data.completed_workers ?? 0} of ${data.requested_workers ?? selected.length} modules completed. Results are shown under each module.`);
+    } catch (caught) {
+      if (controller.signal.aborted || !navigator.onLine) {
+        setBuildState("paused");
+        setNotice("Team run paused. Reconnect and press Continue to retry the saved team task.");
+      } else {
+        setNotice(caught instanceof Error ? caught.message : "Team run failed.");
+      }
+    } finally {
+      if (activeRequest.current === controller) activeRequest.current = null;
+      setTeamRunning(false);
+    }
+  }
+
   function pauseBuild() {
     activeRequest.current?.abort();
     setBuildState("paused");
@@ -172,6 +243,7 @@ export default function KlinModuleManager() {
 
   function continueBuild() {
     if (!navigator.onLine) { setNotice("Klin is still offline. Reconnect before continuing."); return; }
+    if (pendingTeamRun) { void runTeam(pendingTeamRun.task, pendingTeamRun.projectId, pendingTeamRun.workerIds); return; }
     if (pendingRun) {
       const instance = modules.find((item) => item.id === pendingRun.moduleId);
       if (instance) { void runModule(instance, pendingRun.task); return; }
@@ -215,7 +287,7 @@ export default function KlinModuleManager() {
                 {modules.length > KLIN_MODULE_ROLES.length && <button type="button" aria-label={`Delete ${instance.name}`} onClick={() => setModules((current) => current.filter((item) => item.id !== instance.id))} className="rounded-lg border border-rose-300/20 px-3 py-2 text-rose-200"><Trash2 size={14} /></button>}
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" disabled={!instance.enabled || runningId !== null || !task.trim()} onClick={() => void runModule(instance)} className="rounded-lg bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40">{runningId === instance.id ? "Running module…" : "Run module"}</button></div>
+            <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" disabled={!instance.enabled || runningId !== null || teamRunning || !task.trim()} onClick={() => void runModule(instance)} className="rounded-lg bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40">{runningId === instance.id ? "Running module…" : "Run module"}</button></div>
             {results[instance.id] && <div className="mt-3 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/20 p-3 text-xs leading-5 text-slate-200">{results[instance.id]}</div>}
             <details className="mt-3"><summary className="cursor-pointer text-[11px] text-slate-500">Worker instructions</summary><p className="mt-2 text-xs text-slate-400">{role.instructions}</p></details>
           </article>;
@@ -226,7 +298,7 @@ export default function KlinModuleManager() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={pauseBuild} disabled={buildState === "paused" || buildState === "idle"} className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"><Pause size={14} /> Pause</button>
           <button type="button" onClick={continueBuild} disabled={buildState === "running"} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40"><Play size={14} /> Continue</button>
-          <button type="button" onClick={() => { activeRequest.current?.abort(); setPendingRun(null); setBuildState("idle"); setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
+          <button type="button" onClick={() => { activeRequest.current?.abort(); setPendingRun(null); setPendingTeamRun(null); setBuildState("idle"); try { localStorage.removeItem(PENDING_RUN_KEY); localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* Ignore local cleanup errors. */ } setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
         </div>
       </div>
       {notice && <p className="mt-3 text-xs text-slate-300" role="status">{notice}</p>}
