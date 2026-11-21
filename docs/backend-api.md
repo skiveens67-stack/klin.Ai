@@ -99,6 +99,7 @@ The command route only records requests; it does not actuate hardware. Thangie r
 ## Autonomous Builder
 - `GET /api/agents/limits` — reads the signed-in user's active builder subscription and reports the plan's agent limit. It does not start or enforce agents.
 - `POST /api/projects/estimate` — returns an authenticated quote estimate, verified builder plan, agent limit and eligible Pro/Business discount.
+- `POST /api/builder/quotes` — recalculates scope, verifies active plan/duration, computes deposit and final-balance ranges server-side, and saves a private draft quote in the existing project metadata.
 - `POST /api/billing/checkout` accepts the allowlisted builder subscription codes `builder_starter`, `builder_pro`, and `builder_business` in addition to the existing membership codes. Checkout fails closed when the matching Klin Stripe price ID is not configured.
 - Builder subscription price IDs must be configured as server-only environment variables. Do not create live products/prices or use another Stripe account without explicit owner approval.
 - The quote UI applies the $20 / 15% deposit arithmetic, but deposit checkout, build authorization, agent orchestration, worker pause/resume, generated-project QA and pay-to-publish are not implemented.
