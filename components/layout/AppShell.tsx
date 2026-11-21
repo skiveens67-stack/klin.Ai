@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole,
   Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
-  ShieldCheck, Sparkles, Users, WalletCards, X,
+  ShieldCheck, Users, WalletCards, X,
 } from "lucide-react";
 
 type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
@@ -62,8 +62,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
       <aside className={`app-sidebar fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-white/[0.07] bg-[#090F1D] transition-transform lg:relative lg:z-0 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-[72px] items-center justify-between border-b border-white/[0.07] px-5">
           <Link href="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3" aria-label="Klin home">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 shadow-lg shadow-cyan-500/20"><Sparkles size={18} /></div>
-            <div><div className="text-base font-bold tracking-wide">Klin<span className="text-cyan-300">.</span></div><div className="text-[10px] tracking-[0.15em] text-slate-500">YOUR AI WORKSPACE</div></div>
+            <img src="/klin-logo.svg" alt="Klin" className="h-9 w-auto" />
           </Link>
           <button aria-label="Close navigation" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 lg:hidden"><X size={18} /></button>
         </div>
@@ -103,7 +102,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
         <OfflineSupport />
         <header className="flex h-[56px] shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#080D18] px-4 lg:hidden">
           <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5"><Menu size={18} /></button>
-          <span className="text-sm font-semibold">Klin<span className="text-cyan-300">.</span></span>
+          <img src="/klin-logo.svg" alt="Klin" className="h-7 w-auto" />
           <span className="ml-auto text-[10px] text-slate-500">{activeLabel}</span>
         </header>
         <div className="min-h-0 flex-1">{children}</div>
