@@ -115,3 +115,11 @@ The command route only records requests; it does not actuate hardware. Thangie r
 
 
 The current module execution endpoint returns a specialist model response only. It does not create a durable build job, write project source files, launch parallel workers, or guarantee that an upstream model provider stops immediately when a client disconnects. Use the local Continue control to retry an interrupted short request; long builds require the future durable job runtime.
+
+
+## Builder deposit checkout
+- `POST /api/builder/quotes/deposit` — accepts a private project ID, verifies project ownership and the saved quote server-side, computes the deposit from the stored high estimate, and creates a one-time Stripe Checkout Session. The client cannot choose the amount.
+- Stripe idempotency is scoped to the authenticated user, project and quote version. An open Checkout Session is reused.
+- The signed Stripe webhook handles `checkout.session.completed` and `checkout.session.async_payment_succeeded` for `purchase_type=builder_deposit`, verifies user/project ownership, quote version, currency and exact paid amount, then marks the quote deposit as paid in project metadata.
+- A checkout redirect is not proof of payment. A verified webhook is required. The deposit is credited at 100% toward the eventual final invoice.
+- Deposit payment does not start a build because the durable builder runtime is not connected. Final invoice collection and pay-to-publish remain pending.
