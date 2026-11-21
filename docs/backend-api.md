@@ -46,6 +46,7 @@ Required server-only environment variables:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_GALAXY`, `STRIPE_PRICE_STUDIO_PRO`, `STRIPE_PRICE_ULTIMATE`
+- `STRIPE_PRICE_BUILDER_STARTER`, `STRIPE_PRICE_BUILDER_PRO`, `STRIPE_PRICE_BUILDER_BUSINESS`
 - `STRIPE_PRICE_GEMS_1000`, `STRIPE_PRICE_GEMS_5000`, `STRIPE_PRICE_GEMS_10000`
 - `KLIN_GEMS_AMOUNT_1000`, `KLIN_GEMS_AMOUNT_5000`, `KLIN_GEMS_AMOUNT_10000`
 - `SUPABASE_SERVICE_ROLE_KEY` (server only; never add a NEXT_PUBLIC_ prefix)
@@ -93,3 +94,11 @@ The command route only records requests; it does not actuate hardware. Thangie r
 5. Build moderation/review workers before enabling public content.
 6. Build the authenticated device gateway and firmware safety controls before enabling hardware commands.
 7. Complete runtime tests with verified test accounts and Stripe test-mode events before merging to production.
+
+
+## Autonomous Builder
+- `GET /api/agents/limits` — reads the signed-in user's active builder subscription and reports the plan's agent limit. It does not start or enforce agents.
+- `POST /api/projects/estimate` — returns an authenticated quote estimate, verified builder plan, agent limit and eligible Pro/Business discount.
+- `POST /api/billing/checkout` accepts the allowlisted builder subscription codes `builder_starter`, `builder_pro`, and `builder_business` in addition to the existing membership codes. Checkout fails closed when the matching Klin Stripe price ID is not configured.
+- Builder subscription price IDs must be configured as server-only environment variables. Do not create live products/prices or use another Stripe account without explicit owner approval.
+- The quote UI applies the $20 / 15% deposit arithmetic, but deposit checkout, build authorization, agent orchestration, worker pause/resume, generated-project QA and pay-to-publish are not implemented.
