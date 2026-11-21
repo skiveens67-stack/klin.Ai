@@ -1,16 +1,34 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { calculateAgentCapacity } from "../lib/agent-capacity.ts";
-test("free accounts receive a maximum of 30 agents", () => { assert.equal(calculateAgentCapacity([]).max_agents, 30); });
-test("each distinct active paid plan adds ten agents", () => {
-  const result = calculateAgentCapacity([{ plan_code: "galaxy", status: "active" }, { plan_code: "studio_pro", status: "active" }]);
-  assert.equal(result.max_agents, 50);
+
+test("free accounts receive four agents", () => {
+  const result = calculateAgentCapacity([]);
+  assert.equal(result.max_agents, 4);
+  assert.equal(result.active_builder_plan, "free");
 });
-test("duplicate subscription rows do not multiply the same plan entitlement", () => {
-  const result = calculateAgentCapacity([{ plan_code: "galaxy", status: "active" }, { plan_code: "galaxy", status: "active" }]);
-  assert.equal(result.max_agents, 40);
+
+test("Starter, Pro and Business plans enforce their respective agent limits", () => {
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_starter", status: "active" }]).max_agents, 10);
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_pro", status: "active" }]).max_agents, 20);
+  assert.equal(calculateAgentCapacity([{ plan_code: "builder_business", status: "active" }]).max_agents, 30);
 });
-test("canceled, trial, and unknown plans do not add paid agents", () => {
-  const result = calculateAgentCapacity([{ plan_code: "ultimate", status: "canceled" }, { plan_code: "galaxy", status: "trialing" }, { plan_code: "unrecognized", status: "active" }]);
-  assert.equal(result.max_agents, 30);
+
+test("the highest active builder tier wins and duplicate rows do not stack", () => {
+  const result = calculateAgentCapacity([
+    { plan_code: "builder_starter", status: "active" },
+    { plan_code: "builder_pro", status: "active" },
+    { plan_code: "builder_pro", status: "active" },
+  ]);
+  assert.equal(result.max_agents, 20);
+  assert.equal(result.active_builder_plan, "builder_pro");
+});
+
+test("canceled, trial and legacy memberships do not grant builder agents", () => {
+  const result = calculateAgentCapacity([
+    { plan_code: "builder_business", status: "canceled" },
+    { plan_code: "builder_pro", status: "trialing" },
+    { plan_code: "ultimate", status: "active" },
+  ]);
+  assert.equal(result.max_agents, 4);
 });
