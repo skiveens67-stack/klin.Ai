@@ -39,18 +39,20 @@ export default function AuthForm({ mode, initialError }: Props) {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(""); setMessage(""); setBusy(true);
+    const loadingStartedAt = Date.now();
+    let redirectAfterLoading = false;
     try {
       if (mode === "login") {
         const supabase = createSupabaseBrowserClient();
         const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (authError) throw authError;
-        router.replace("/"); router.refresh();
+        redirectAfterLoading = true;
       } else if (verificationPending) {
         const supabase = createSupabaseBrowserClient();
         const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "signup" });
         if (verifyError) throw verifyError;
         try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ }
-        router.replace("/"); router.refresh();
+        redirectAfterLoading = true;
       } else {
         const response = await fetch("/api/auth/signup", {
           method: "POST", credentials: "same-origin",
@@ -65,7 +67,12 @@ export default function AuthForm({ mode, initialError }: Props) {
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
-    } finally { setBusy(false); }
+    } finally {
+      const remaining = 10000 - (Date.now() - loadingStartedAt);
+      if (remaining > 0) await new Promise(resolve => window.setTimeout(resolve, remaining));
+      setBusy(false);
+    }
+    if (redirectAfterLoading) { router.replace("/"); router.refresh(); }
   };
 
   const title = mode === "login" ? "Welcome back." : verificationPending ? "Check your email." : "Create your Klin account.";
@@ -93,8 +100,9 @@ export default function AuthForm({ mode, initialError }: Props) {
             {busy ? <><span className="auth-button-spinner" /> {mode === "login" ? "Signing in…" : verificationPending ? "Verifying…" : "Creating account…"}</> : <>{mode === "login" ? "Sign in" : verificationPending ? "Verify email and continue" : "Create account"} <ArrowRight size={17} /></>}
           </button>
           {mode === "signup" && verificationPending && <a className="auth-gmail-link" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener noreferrer">Open Gmail in a new tab</a>}
-          {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ } }}>Use a different email address</button>}
+          {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ } }}>I forgot this email / I no longer use it — change email</button>}
         </form>
+        {mode === "signup" && verificationPending && <p className="auth-email-help">Can’t access this inbox? <Link href="/support">Contact Klin Support</Link> if you need help recovering access.</p>}
         {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Sign up for Klin" : "Sign in instead"}</Link></p>
         <p className="auth-support-link">Need help? <Link href="/support">Contact Klin Support without an account</Link></p>
