@@ -143,7 +143,7 @@ export default function V7Vault() {
       <header className="module-header">
         <div><div className="module-eyebrow">KLIN V7 ULTRA SAFE · FREE</div><h1>V7 Secure Vault</h1><p>Private, client-side encrypted storage for identity, biometric, voice, location and personal records.</p></div>
       </header>
-      <div className="module-alert module-alert-info"><strong><ShieldCheck size={16} className="inline mr-2" />V7 Ultra Safe is always on.</strong> The three V7 shields apply automatically: encrypted vaulting, private Dignity Shield assistance rules, and the 21+ Compliance Firewall. V7 is not a paid plan and cannot be disabled.</div>
+      <div className="module-alert module-alert-info"><strong><ShieldCheck size={16} className="inline mr-2" />V7 Ultra Safe is always on.</strong> The V7 three-shield policy is always on and cannot be disabled. The local encrypted vault is available; Dignity Shield assistance and 21+ restricted features remain gated until their eligibility, funding and verification systems are complete.</div>
       <div className="module-alert module-alert-warning">This early-access vault encrypts records in your browser using PBKDF2-SHA-256 and AES-256-GCM before saving the encrypted file to this browser&apos;s local storage. Klin&apos;s server does not receive the passphrase or plaintext records. There is no cloud sync or password recovery. If you lose the passphrase and encrypted backup, the data cannot be recovered. This implementation has not yet received an independent security audit.</div>
 
       {error && <div className="module-alert module-alert-error" role="alert">{error}</div>}
