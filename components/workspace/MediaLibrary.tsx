@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { FileImage, FilePlus2, RefreshCw } from "lucide-react";
 
@@ -137,7 +138,7 @@ export default function MediaLibrary() {
 
       <section className="module-card">
         <div className="module-card-title"><FileImage size={18} /><h2>AI Image Creator</h2></div>
-        <p className="offline-drafts-copy">Create a new picture with Klin's configured image model, or use your own Gemini API key. Gemini keys are sent only for the current request and are not saved in Klin.</p>
+        <p className="offline-drafts-copy">Create a new picture with Klin&apos;s configured image model, or use your own Gemini API key. Gemini keys are sent only for the current request and are not saved in Klin.</p>
         <div className="module-form">
           <div className="module-field"><label htmlFor="image-provider">Image provider</label><select id="image-provider" value={imageProvider} onChange={(event) => { setImageProvider(event.target.value as "klin" | "gemini"); setGeneratedImage(null); setImageError(""); }}><option value="klin">Klin Image Creator</option><option value="gemini">Use my Gemini API key</option></select></div>
           {imageProvider === "gemini" && <div className="module-field"><label htmlFor="gemini-api-key">Gemini API key (used once, not saved)</label><input id="gemini-api-key" type="password" autoComplete="off" value={geminiApiKey} onChange={(event) => setGeminiApiKey(event.target.value)} placeholder="Paste your Gemini API key" /></div>}
@@ -145,7 +146,7 @@ export default function MediaLibrary() {
           <button className="module-submit" type="button" disabled={generatingImage || imagePrompt.trim().length < 4 || (imageProvider === "gemini" && geminiApiKey.trim().length < 20)} onClick={() => void generateImage()}>{generatingImage ? "Drawing your picture…" : "Generate image"}</button>
         </div>
         {imageError && <div className="module-alert module-alert-error" role="alert">{imageError}</div>}
-        {generatedImage && <div className="mt-4"><img src={generatedImage.image} alt="Image generated with Klin" className="w-full rounded-xl border border-white/10" /><div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-slate-400">Created with {generatedImage.provider}{generatedImage.model ? ` · ${generatedImage.model}` : ""}</span><a className="rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100" href={generatedImage.image} download="klin-image.png">Download picture</a></div>{generatedImage.note && <p className="offline-privacy-note">{generatedImage.note}</p>}</div>}
+        {generatedImage && <div className="mt-4"><Image src={generatedImage.image} alt="Image generated with Klin" width={1024} height={1024} unoptimized className="w-full rounded-xl border border-white/10" /><div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-slate-400">Created with {generatedImage.provider}{generatedImage.model ? ` · ${generatedImage.model}` : ""}</span><a className="rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100" href={generatedImage.image} download="klin-image.png">Download picture</a></div>{generatedImage.note && <p className="offline-privacy-note">{generatedImage.note}</p>}</div>}
       </section>
 
       <section className="module-card">
