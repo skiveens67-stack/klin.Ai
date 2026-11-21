@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Bot, CheckCircle2, CircleDollarSign, Clock3, Code2, Film, Gauge, Layers3, ShieldCheck, Workflow } from "lucide-react";
 
@@ -50,6 +50,24 @@ export default function AutonomousBuilder() {
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositError, setDepositError] = useState("");
   const [savedQuote, setSavedQuote] = useState<{ projectId: string; status: string } | null>(null);
+  const [enabledPlanCodes, setEnabledPlanCodes] = useState<string[]>([]);
+  const [billingPlansReady, setBillingPlansReady] = useState(false);
+  const [builderRuntimeEnabled, setBuilderRuntimeEnabled] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/billing/plans", { credentials: "same-origin", cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as { enabled_plan_codes?: string[]; builder_runtime_enabled?: boolean };
+        if (active && response.ok) {
+          setEnabledPlanCodes(data.enabled_plan_codes ?? []);
+          setBuilderRuntimeEnabled(data.builder_runtime_enabled === true);
+        }
+      })
+      .catch(() => { if (active) { setEnabledPlanCodes([]); setBuilderRuntimeEnabled(false); } })
+      .finally(() => { if (active) setBillingPlansReady(true); });
+    return () => { active = false; };
+  }, []);
 
   const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
   const verifiedPlan = estimate ? plans.find((item) => item.code === estimate.active_builder_plan) ?? plans[0] : plans[0];
@@ -213,8 +231,8 @@ export default function AutonomousBuilder() {
             </button>
           ))}
         </div>
-        <button type="button" className="module-submit" disabled={checkoutLoading || selectedPlan.code === "free"} onClick={() => void subscribeToSelectedPlan()}>{checkoutLoading ? "Opening secure checkout…" : selectedPlan.code === "free" ? "Free plan selected" : `Subscribe to ${selectedPlan.name} · ${selectedPlan.price}`}</button>
-        <div className="module-alert module-alert-info mt-3"><strong>Klin V6 Ultra Smart — separate paid intelligence plan</strong><br />Unlocks the V6 Ultra Smart model level as an add-on to your current builder capacity. Its price is controlled by Klin&apos;s Stripe configuration and is not guessed here. <button type="button" className="mt-2 rounded-lg border border-cyan-300/30 px-3 py-2 text-xs text-cyan-100" disabled={v6CheckoutLoading} onClick={() => void subscribeToV6Ultra()}>{v6CheckoutLoading ? "Opening V6 checkout…" : "Subscribe to V6 Ultra Smart"}</button></div>
+        <button type="button" className="module-submit" disabled={checkoutLoading || selectedPlan.code === "free" || !enabledPlanCodes.includes(selectedPlan.code)} onClick={() => void subscribeToSelectedPlan()}>{checkoutLoading ? "Opening secure checkout…" : selectedPlan.code === "free" ? "Free plan selected" : enabledPlanCodes.includes(selectedPlan.code) ? `Subscribe to ${selectedPlan.name} · ${selectedPlan.price}` : "Builder checkout coming soon"}</button>
+        <div className="module-alert module-alert-info mt-3"><strong>Klin V6 Ultra Smart — separate paid intelligence plan</strong><br />Unlocks the V6 Ultra Smart model level as an add-on to your current builder capacity. Its price is controlled by Klin&apos;s Stripe configuration and is not guessed here. <button type="button" className="mt-2 rounded-lg border border-cyan-300/30 px-3 py-2 text-xs text-cyan-100" disabled={v6CheckoutLoading || !enabledPlanCodes.includes("klin_v6_ultra")} onClick={() => void subscribeToV6Ultra()}>{v6CheckoutLoading ? "Opening V6 checkout…" : enabledPlanCodes.includes("klin_v6_ultra") ? "Subscribe to V6 Ultra Smart" : "V6 Ultra Smart coming soon"}</button></div>
         <div className="module-alert module-alert-info mt-2"><strong>Klin V7 Ultra Safe — Free and always active</strong><br />Automatic privacy, safety and Dignity Shield checks apply to every module and every plan. No upgrade or activation is required.</div>
         {checkoutError && <div className="module-alert module-alert-error" role="alert">{checkoutError}</div>}
         <div className="module-card-title"><ShieldCheck size={17} /><h3>Specialist roles</h3></div>
@@ -249,8 +267,8 @@ export default function AutonomousBuilder() {
             <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balanceLow.toFixed(2)} – ${quote.balanceHigh.toFixed(2)}</strong></div>
             <button type="button" className="module-submit" disabled={savingQuote || estimate.estimated_hours > verifiedPlan.maxHours || !title.trim() || !description.trim()} onClick={() => void saveLockedQuote()}>{savingQuote ? "Saving quote…" : "Save and lock this quote"}</button>
             {savedQuote && <div className="module-alert module-alert-warning" role="status">Quote saved to project {savedQuote.projectId}. Status: {savedQuote.status}. No deposit has been collected and no agents have started.</div>}
-            {savedQuote && <button type="button" className="module-submit" disabled={depositLoading} onClick={() => void payBuildDeposit()}>{depositLoading ? "Opening Stripe Checkout…" : `Pay ${quote.depositHigh.toFixed(2)} build deposit with Stripe`}</button>}
-            {savedQuote && <p className="offline-privacy-note">The deposit is credited 100% toward your final invoice. A successful redirect is not payment confirmation; Klin waits for Stripe&apos;s verified webhook. Payment does not start a build until the builder runtime is available.</p>}
+            {savedQuote && <button type="button" className="module-submit" disabled={depositLoading || !builderRuntimeEnabled || !billingPlansReady} onClick={() => void payBuildDeposit()}>{depositLoading ? "Opening Stripe Checkout…" : builderRuntimeEnabled ? `Pay ${quote.depositHigh.toFixed(2)} build deposit with Stripe` : "Deposit checkout unavailable until builder runtime is ready"}</button>}
+            {savedQuote && <p className="offline-privacy-note">The deposit is credited 100% toward your final invoice. A successful redirect is not payment confirmation; Klin waits for Stripe&apos;s verified webhook. Payment will be enabled only after the builder runtime can safely execute the approved build.</p>}
             {depositError && <div className="module-alert module-alert-error" role="alert">{depositError}</div>}
             <div className="module-alert module-alert-warning">This is an estimate preview, not an accepted quote or payment request. The current estimator prices 10-hour work blocks at a complexity-based rate. Final compute-hour and agent-tier pricing still needs a verified pricing table. The build runtime and deposit checkout are not connected, so no build can start from this screen.</div>
             <p className="offline-privacy-note">Project request: {description}</p>
