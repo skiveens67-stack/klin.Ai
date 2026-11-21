@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { getKlinModuleRole, getKlinModuleRuntime, isKlinModuleLevel, isKlinModuleRole } from "@/lib/klin-agent-runtime";
-import { KLIN_MODULE_LEVELS } from "@/lib/klin-module-catalog";
+import { KLIN_MODULE_LEVELS, type KlinModuleLevelId, type KlinModuleRoleId } from "@/lib/klin-module-catalog";
 import { calculateAgentCapacity } from "@/lib/agent-capacity";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type WorkerInput = { instance_id: string; role_id: string; level: string };
+type WorkerInput = { instance_id: string; role_id: KlinModuleRoleId; level: KlinModuleLevelId };
 type GatewayResponse = { model?: string; usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }; choices?: Array<{ message?: { content?: unknown } }> };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -89,6 +89,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Configure the server-side model ID for ${missing.worker.level.toUpperCase()} before starting this team run.` }, { status: 503 });
     }
 
+    const taskText = (input.task as string).trim();
     const results = await Promise.all(configured.map(async ({ worker, role, runtime }) => {
       if (!role || !runtime) return { instance_id: worker.instance_id, role_id: worker.role_id, level: worker.level, status: "failed", error: "Worker configuration unavailable." };
       try {
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
         const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
           method: "POST",
           headers: { Authorization: `Bearer ${runtime.apiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model: runtime.model, messages: [{ role: "system", content: system }, { role: "user", content: input.task.trim() }], max_tokens: 1400, stream: false }),
+          body: JSON.stringify({ model: runtime.model, messages: [{ role: "system", content: system }, { role: "user", content: taskText }], max_tokens: 1400, stream: false }),
           signal: AbortSignal.any([request.signal, AbortSignal.timeout(50000)]),
           cache: "no-store",
         });
