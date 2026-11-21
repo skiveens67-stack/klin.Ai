@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,8 @@ export async function POST(request: Request) {
     const { data: signed, error: signedError } = await supabase.storage.from("klin-user-assets").createSignedUploadUrl(path);
     if (signedError || !signed) return NextResponse.json({ error: "Unable to create a secure upload URL." }, { status: 503 });
 
-    const { data: asset, error: assetError } = await supabase.from("media_assets").insert({
+    const admin = createSupabaseAdminClient();
+    const { data: asset, error: assetError } = await admin.from("media_assets").insert({
       user_id: user.id, asset_type: descriptor.assetType, storage_bucket: "klin-user-assets",
       storage_path: path, content_type: mime, size_bytes: size, status: "uploading",
     }).select("id,asset_type,storage_bucket,storage_path,status,size_bytes,content_type,created_at").single();
