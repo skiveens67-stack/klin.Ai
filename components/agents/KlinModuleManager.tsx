@@ -89,11 +89,16 @@ export default function KlinModuleManager() {
     }
     const role = KLIN_MODULE_ROLES.find((item) => item.id === source.roleId);
     const count = modules.filter((item) => item.roleId === source.roleId).length + 1;
-    setModules((current) => [...current, { ...source, id: crypto.randomUUID(), name: (role?.name ?? source.name) + " " + count }]);
+    const canEnable = activeCount < maxAgents;
+    setModules((current) => [...current, { ...source, id: crypto.randomUUID(), enabled: canEnable, name: (role?.name ?? source.name) + " " + count }]);
     setNotice("Module copy added to this device's roster. It is a configuration copy, not a separately running worker.");
   }
 
   function updateModule(id: string, patch: Partial<Pick<ModuleInstance, "name" | "level" | "enabled">>) {
+    if (patch.enabled === true && activeCount >= maxAgents) {
+      setNotice(`Your verified plan allows up to ${maxAgents} enabled modules. Upgrade your plan or disable another module first.`);
+      return;
+    }
     setModules((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
   }
 
