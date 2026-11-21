@@ -44,6 +44,20 @@ Deposit rule:
 
 The current estimator has an existing provisional price range of $7–$35 per 10-hour work block, and the Builder UI derives a range from that policy. This is not yet a true compute-hour/agent-tier cost model. Finance/product owner must approve the compute rates, provider-cost markup, agent-tier multiplier, rounding, taxes, refunds, and quote-expiry policy before the quote can be treated as binding. The UI calls the current calculation an estimate preview and does not start work or charge a deposit.
 
+## Klin Modules as the agent system
+
+Klin's agent architecture uses six reusable specialist modules rather than a separate codebase for every agent:
+1. Klin Tester — code, link, accessibility, security and functional QA.
+2. Klin Builder — websites, applications, software and digital business kits.
+3. Klin Animator — animation, video and media workflows.
+4. Klin Calculator — estimates, compute, deposits, discounts and invoices.
+5. Klin Helper — user support, explanations and task coordination.
+6. Klin Safety & Law — safety, privacy, platform-policy and legal-risk review. It flags issues and is not a substitute for qualified legal counsel.
+
+Module intelligence levels are Klin V1 Free, V2, V3, V4, V5, V6 Ultra and V7 Ultra Safe. Each level maps to a server-side Vercel AI Gateway model ID via `KLIN_MODULE_V2_MODEL` through `KLIN_MODULE_V7_MODEL`; V1 falls back to `KLINIE_MODEL`. Missing model configuration fails closed. A tier name does not magically improve a model: Klin's owner must select and test the actual provider/model IDs, capability, latency and cost for each tier.
+
+The new Klin Modules page supports role profiles, local duplication, per-profile model-level selection, single-module AI Gateway execution, and local pause/retry behavior. Copies are currently stored in browser local storage, not a durable cloud module registry. A module run is one model request with a role-specific system instruction; it does not yet edit repository files or operate connected external services. Parallel execution, durable roster sync and server-side concurrent-agent admission still need the job runtime.
+
 ## Agent roles and work isolation
 
 - Planner: requirements, architecture, milestone plan, risk register and task ownership.
@@ -118,7 +132,7 @@ Do not activate creator payouts, charity disbursements, escrow, business acquisi
 - Server-side plan admission enforcement during long-running jobs.
 - Compute-hour and agent-tier cost model; approved final price ranges and binding quotes.
 - Deposit checkout and webhook-linked build authorization/credit ledger.
-- Durable build jobs, heartbeats, 2-minute pause, cloud snapshots and resume.
+- Durable build jobs, heartbeats, cloud snapshots and server-side resume. The module UI can cancel an active browser request on offline and retain its task locally for an explicit Continue retry, but it cannot guarantee provider cancellation or pause an autonomous cloud worker until the job runtime exists.
 - Checkpoint preview deployment and user testing gates.
 - Isolated generated-project QA for websites, video apps and software.
 - Watermarked sandbox enforcement, source/API export locks and pay-to-publish release.
@@ -126,3 +140,6 @@ Do not activate creator payouts, charity disbursements, escrow, business acquisi
 - CRM/email automation worker execution and video rendering providers.
 
 No production database schema change or production migration is authorized by this specification.
+
+
+For marketplace payments and the proposed Klin Wallet, see `docs/KLIN_STRIPE_MARKETPLACE_PAYMENTS.md`. Stripe Connect is the intended route for seller onboarding and payouts; Klin must not pool user funds or advertise a bank/escrow product without an approved regulated structure.
