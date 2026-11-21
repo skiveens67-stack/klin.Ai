@@ -62,6 +62,9 @@ export async function POST(request: Request) {
         if (previous.status === "complete") {
           return NextResponse.json({ error: "Stripe has completed this checkout. Wait for the verified webhook to update the quote before retrying." }, { status: 409 });
         }
+        if (previous.status === "expired") {
+          return NextResponse.json({ error: "This deposit checkout expired. Create a fresh quote or contact Klin support before retrying." }, { status: 409 });
+        }
       } catch {
         return NextResponse.json({ error: "Unable to verify the existing deposit checkout. Contact Klin support before retrying." }, { status: 503 });
       }
@@ -98,7 +101,7 @@ export async function POST(request: Request) {
       },
       success_url: `${origin}/builder/deposit/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/builder/deposit/cancel?project_id=${encodeURIComponent(project.id)}`,
-    }, { idempotencyKey: `klin-builder-deposit-${user.id}-${idempotencyKey}` });
+    }, { idempotencyKey: `klin-builder-deposit-${user.id}-${project.id}-v${quote.quote_version}` });
 
     if (!session.url) return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
     const nextQuote = { ...quote, deposit_checkout_session_id: session.id, deposit_checkout_created_at: new Date().toISOString() };
