@@ -10,6 +10,9 @@ const PLAN_PRICE_ENV: Record<string, string> = {
   galaxy: "STRIPE_PRICE_GALAXY",
   studio_pro: "STRIPE_PRICE_STUDIO_PRO",
   ultimate: "STRIPE_PRICE_ULTIMATE",
+  builder_starter: "STRIPE_PRICE_BUILDER_STARTER",
+  builder_pro: "STRIPE_PRICE_BUILDER_PRO",
+  builder_business: "STRIPE_PRICE_BUILDER_BUSINESS",
 };
 
 export async function POST(request: Request) {
