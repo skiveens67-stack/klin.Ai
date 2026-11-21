@@ -6,8 +6,9 @@ import { KLIN_V7_SAFETY_POLICY } from "@/lib/klin-v7-safety";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type GeminiResponse = {
-  candidates?: Array<{ content?: { parts?: Array<{ text?: string; inlineData?: { mimeType?: string; data?: string } }> }; finishReason?: string }>;
+type GeminiInteractionResponse = {
+  output_image?: { data?: string; mime_type?: string };
+  steps?: Array<{ type?: string; content?: Array<{ type?: string; data?: string; mime_type?: string }> }>;
 };
 type GatewayImageResponse = { data?: Array<{ b64_json?: string; url?: string }> };
 
@@ -45,25 +46,28 @@ export async function POST(request: Request) {
       if (!apiKey || apiKey.length < 20 || apiKey.length > 256 || /\s/.test(apiKey)) {
         return NextResponse.json({ error: "Enter a valid Gemini API key. Klin uses it only for this request and does not save it." }, { status: 400 });
       }
-      const model = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      const model = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image";
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: safePrompt }] }],
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"], imageConfig: { aspectRatio: "1:1" } },
+          model,
+          input: [{ type: "text", text: safePrompt }],
+          response_format: { type: "image", mime_type: "image/png", aspect_ratio: "1:1", image_size: "1K" },
         }),
         signal: AbortSignal.timeout(55000),
         cache: "no-store",
       });
       if (!response.ok) return NextResponse.json({ error: response.status === 400 || response.status === 403 ? "Gemini rejected the API key or request. Check your key and image-generation access." : response.status === 429 ? "Gemini rate limit reached. Try again later." : "Gemini image generation is temporarily unavailable." }, { status: response.status === 429 ? 429 : 502 });
-      const data = await response.json() as GeminiResponse;
-      const part = data.candidates?.[0]?.content?.parts?.find((item) => item.inlineData?.data);
-      if (!part?.inlineData?.data || part.inlineData.data.length > 14_000_000) {
+      const data = await response.json() as GeminiInteractionResponse;
+      const imagePart = data.output_image?.data
+        ? data.output_image
+        : data.steps?.flatMap((step) => step.content ?? []).find((part) => part.type === "image" && part.data);
+      if (!imagePart?.data || imagePart.data.length > 14_000_000) {
         return NextResponse.json({ error: "Gemini did not return an image. Try a clearer prompt or another image model." }, { status: 502 });
       }
-      const mime = part.inlineData.mimeType === "image/jpeg" ? "image/jpeg" : "image/png";
-      return NextResponse.json({ image: `data:${mime};base64,${part.inlineData.data}`, provider: "gemini", model, note: "Generated with your Gemini API key. The key was used for this request only and was not stored." }, { headers: { "Cache-Control": "no-store" } });
+      const mime = imagePart.mime_type === "image/jpeg" ? "image/jpeg" : "image/png";
+      return NextResponse.json({ image: `data:${mime};base64,${imagePart.data}`, provider: "gemini", model, note: "Generated with your Gemini API key. The key was used for this request only and was not stored." }, { headers: { "Cache-Control": "no-store" } });
     }
 
     const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
