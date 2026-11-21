@@ -4,9 +4,11 @@ import { useState } from "react";
 import { Check, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
 
 const memberships = [
-  { name: "Free", code: "free", price: "$0", detail: "Core Klin access and always-on V7 safety." },
-  { name: "Starter", code: "starter", price: "$4.99/mo", detail: "More everyday Klin usage." },
-  { name: "Plus", code: "plus", price: "$9.99/mo", detail: "Higher usage for regular users." },
+  { name: "Starter", code: "free", price: "$0", detail: "Free entry plan with Klin V7 Ultra Safe always on." },
+  { name: "Plus", code: "plus", price: "$9.99/mo", detail: "More everyday Klin usage and creative tools." },
+  { name: "Pro", code: "pro", price: "$24.99/mo", detail: "Higher usage for power users and creators." },
+  { name: "Family Fortress", code: "family_fortress", price: "$34.99/mo", detail: "Family-focused features and guardian workflows as they become available." },
+  { name: "Merchant & Enterprise", code: "merchant_enterprise", price: "$79.99/mo", detail: "Merchant tools, business workflows and enterprise features as they become available." },
   { name: "Creator", code: "creator", price: "$19.99/mo", detail: "Creator tools and publishing workflows." },
   { name: "Galaxy", code: "galaxy", price: "$29.99/mo", detail: "Expanded creative and workspace access." },
   { name: "Studio Pro", code: "studio_pro", price: "$49.99/mo", detail: "Professional creation and project workflows." },
@@ -59,7 +61,7 @@ export default function PricingPlans() {
             {plan.code === "enterprise" ? <a className="module-submit inline-block text-center" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact Klin support</a> : <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>}
           </article>)}
         </div>
-        <p className="offline-privacy-note">Published prices are the current proposed catalogue. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin&apos;s Stripe account.</p>
+        <p className="offline-privacy-note">Published prices follow Klin's current V7 membership proposal plus the additional creator/developer tiers. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin&apos;s Stripe account.</p>
       </section>
       <section className="module-card">
         <div className="module-card-title"><CreditCard size={18} /><h2>Autonomous Builder plans</h2></div>
