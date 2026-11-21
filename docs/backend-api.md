@@ -119,7 +119,7 @@ The current module execution endpoint returns a specialist model response only. 
 
 ## Builder deposit checkout
 - `POST /api/builder/quotes/deposit` — accepts a private project ID, verifies project ownership and the saved quote server-side, computes the deposit from the stored high estimate, and creates a one-time Stripe Checkout Session. The client cannot choose the amount.
-- Stripe idempotency is scoped to the authenticated user, project and quote version. An open Checkout Session is reused.
-- The signed Stripe webhook handles `checkout.session.completed` and `checkout.session.async_payment_succeeded` for `purchase_type=builder_deposit`, verifies user/project ownership, quote version, currency and exact paid amount, then marks the quote deposit as paid in project metadata.
+- Stripe idempotency is scoped to the authenticated user, project and quote version. An open Checkout Session is reused. Expired or asynchronously failed sessions increment a quote-scoped attempt counter; completed sessions wait for the signed success/failure webhook before another attempt.
+- The signed Stripe webhook handles `checkout.session.completed` and `checkout.session.async_payment_succeeded` for `purchase_type=builder_deposit`, verifies user/project ownership, quote version, currency and exact paid amount, then marks the quote deposit as paid in project metadata. Signed async-failure and expiry events clear the matching session and allow a new attempt without reusing the old Stripe idempotency key.
 - A checkout redirect is not proof of payment. A verified webhook is required. The deposit is credited at 100% toward the eventual final invoice.
 - Deposit payment does not start a build because the durable builder runtime is not connected. Final invoice collection and pay-to-publish remain pending.
