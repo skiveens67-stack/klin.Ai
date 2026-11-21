@@ -10,7 +10,7 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 - A paused job must resume from its last verified checkpoint after service and authentication recover. It must not restart from zero or delete project data.
 - Use worker heartbeats and expiring execution leases so a crashed worker cannot continue consuming billable time. On lease expiry, mark the job interrupted/paused and reconcile its last checkpoint before resuming.
 - Offline mode supports local draft capture and access to the offline screen. It does not run cloud AI models, remote agents, payments, publishing, integrations, or account operations.
-- Offline project drafts are stored in browser IndexedDB and sync only after the user reconnects and is authenticated. Sync must be idempotent and retain unsynced drafts after a network or server error.
+- Offline project drafts are stored in browser IndexedDB and sync only after the user reconnects and is authenticated. Sync uses a per-draft idempotency key and must retain unsynced drafts after a network or server error. The `creator_projects.idempotency_key` migration must be applied before this API path is deployed.
 - Local browser drafts are currently not encrypted by Klin. Users must not save passwords, payment details, or highly sensitive data in them. A future encrypted local vault requires a separate threat model and recovery design.
 
 ## Project estimates and work billing

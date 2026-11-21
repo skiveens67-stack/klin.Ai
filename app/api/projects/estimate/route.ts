@@ -16,11 +16,16 @@ export async function POST(request: Request) {
   }
 
   const input = parsed.value as Record<string, unknown>;
-  if (Object.keys(input).some((key) => !["project_type", "feature_count", "integrations_count", "asset_count"].includes(key))) {
+  if (Object.keys(input).some((key) => !["project_type", "feature_count", "integrations_count", "asset_count", "checkpoint_interval_percent"].includes(key))) {
     return NextResponse.json({ error: "Unexpected estimate field." }, { status: 400 });
   }
   if (typeof input.project_type !== "string" || !PROJECT_TYPES.has(input.project_type)) {
     return NextResponse.json({ error: "Choose a supported project type." }, { status: 400 });
+  }
+
+  const checkpointInterval = input.checkpoint_interval_percent === undefined ? 10 : input.checkpoint_interval_percent;
+  if (!Number.isInteger(checkpointInterval) || Number(checkpointInterval) < 5 || Number(checkpointInterval) > 20) {
+    return NextResponse.json({ error: "Progress checkpoints must be set between 5% and 20%." }, { status: 400 });
   }
 
   const counts = [input.feature_count, input.integrations_count, input.asset_count];
@@ -41,7 +46,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      estimate,
+      estimate: { ...estimate, progress_checkpoint_percent: Number(checkpointInterval) },
       billing_notice: "Estimate only. Klin must disclose the $7–$35 price for each 10 active-hour block and obtain your approval before paid work starts. At each block boundary, Klin will notify you and allow 30 minutes to pay. If payment is not confirmed, the project pauses with its saved checkpoint. Idle and paused time are not billable.",
       execution_status: "builder_not_connected",
     }, { headers: { "Cache-Control": "no-store" } });
