@@ -4,6 +4,12 @@ export const BUILDER_PLAN_LIMITS: Record<string, number> = {
   builder_pro: 20,
   builder_business: 30,
 };
+export const BUILDER_PLAN_MAX_MODULE_LEVEL: Record<string, string> = {
+  free: "v1",
+  builder_starter: "v3",
+  builder_pro: "v5",
+  builder_business: "v7",
+};
 export type SubscriptionEntitlement = { plan_code: string; status: string };
 
 export function calculateAgentCapacity(subscriptions: SubscriptionEntitlement[]) {
@@ -22,7 +28,8 @@ export function calculateAgentCapacity(subscriptions: SubscriptionEntitlement[])
     free_agent_limit: FREE_AGENT_LIMIT,
     active_builder_plan: selectedPlan,
     max_agents: maxAgents,
-    agent_runtime: "not_connected",
-    enforcement: "entitlement_preview_only",
+    max_module_level: BUILDER_PLAN_MAX_MODULE_LEVEL[selectedPlan],
+    agent_runtime: "single_module_request",
+    enforcement: "per_request_plan_level_gate",
   };
 }
