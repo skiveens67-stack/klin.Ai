@@ -28,7 +28,7 @@ export async function GET() {
     const capacity = calculateAgentCapacity(subscriptions ?? []);
     return NextResponse.json({
       ...capacity,
-      note: "The builder plan is read from verified active subscription records. Agent orchestration and concurrency enforcement are not connected, so this is an entitlement preview only.",
+      note: "The builder plan, agent capacity and maximum Klin module level are read from verified active subscription records. The module API enforces the model-level ceiling per request; parallel worker admission and concurrency enforcement are not connected.",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Agent capacity service unavailable." }, { status: 503 });
