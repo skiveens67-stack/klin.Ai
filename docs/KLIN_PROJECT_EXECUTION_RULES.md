@@ -15,9 +15,9 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 
 ## Project estimates and work billing
 - Estimate projects from type, complexity, feature count, integrations, and assets. The estimate is a forecast, not a guarantee.
-- A heavy project may take up to 25 working days (up to 200 active build hours using an eight-hour planning day). Smaller projects should be estimated below this cap. Do not promise that every project takes 25 days.
+- A heavy project should target about 7 working days. The planning ceiling is 10 working days (up to 100 active build hours using ten-hour active-work days). Smaller projects should be estimated below this cap. Do not promise that every project takes 7 or 10 days.
 - Billable work is measured in 10-hour blocks of active build time. Idle time, provider wait time, outages, and paused time are not billable.
-- The price for each 10-hour block is calculated from project complexity and must be between $10 and $35. Show the selected rate and amount before the user authorizes work.
+- The price for each 10-hour block is calculated from project complexity and must be between $7 and $35. Show the selected rate and amount before the user authorizes work.
 - Before a paid build starts, show the estimated active hours, likely working days, complexity, price per 10-hour block, estimated number of blocks, estimated total if all blocks are used, and the pause/payment rules.
 - At each completed 10 billable active hours, stop new work and issue an in-app notification with the exact block charge and a payment link. The user has 30 minutes from notification delivery to complete payment.
 - If payment is confirmed within 30 minutes, record the payment idempotently and resume from the last verified checkpoint. If it is not confirmed by the deadline, pause the project and retain all work. Do not delete, reset, or overwrite the project.
@@ -26,12 +26,18 @@ Updated 2026-11-20. These are product requirements, not evidence that every depe
 - A quote alone is not a payment, a running build, a time meter, or evidence that the billing runtime works.
 
 ## Agent capacity
-- Free plan maximum: 3 agents.
-- Each distinct active paid subscription plan adds 5 agents to the account maximum.
+- Free plan maximum: 30 agents.
+- Each distinct active paid subscription plan adds 10 agents to the account maximum.
 - Calculate entitlements server-side from verified active subscription records. Browser-provided plan names or agent counts must never grant capacity.
 - Do not count canceled, expired, trial, unknown, or duplicate copies of the same plan.
 - Enforce the limit inside the server-side agent scheduler at job admission and during long-running work. If the user's entitlement decreases, do not kill work unsafely; stop admitting new agents and reconcile active work safely.
 - The current capacity endpoint and page report entitlements only. They do not run agents or enforce concurrent execution because the orchestration runtime is not connected.
+
+## Progress reports and review checkpoints
+- Set a checkpoint interval between 5% and 20% for each project; default to 10% unless the user chooses another value.
+- At each checkpoint, persist a durable project version, report completed work, list known issues, and provide a safe preview/test environment before continuing.
+- The user can test the preview and report problems. A failed checkpoint must return to building or needs_attention; never discard the last good checkpoint.
+- Checkpoint progress is based on completed, verified work, not elapsed time or generated token estimates.
 
 ## Test-before-delivery gate
 A generated artifact must not be labeled ready until its applicable checks pass. Store the test report with the project version and make failures visible to the user.

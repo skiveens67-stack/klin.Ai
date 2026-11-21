@@ -51,7 +51,7 @@ export default function BuildEstimator() {
   return (
     <section className="module-card">
       <div className="module-card-title"><Calculator size={17} /><h2>Project time and cost estimate</h2></div>
-      <p className="offline-drafts-copy">Klin calculates complexity and price from the project type, features, integrations, and assets. Large projects are capped at 25 eight-hour workdays (200 active hours).</p>
+      <p className="offline-drafts-copy">Klin estimates active build time from project type, features, integrations, and assets. Heavy projects target about 7 days; the estimate is capped at 10 working days (100 active hours). Progress reports and test previews are planned at configurable 5%–20% checkpoints.</p>
       <div className="module-form">
         <div className="module-field"><label htmlFor="estimate-type">Project type</label><select id="estimate-type" value={projectType} onChange={(event) => setProjectType(event.target.value)}><option value="website">Website</option><option value="video_app">Video app</option><option value="mobile_app">Mobile app</option><option value="game">Game</option><option value="business">Business platform</option><option value="other">Other</option></select></div>
         <div className="module-field"><label htmlFor="estimate-features">Features</label><input id="estimate-features" type="number" min={0} max={100} value={features} onChange={(event) => setFeatures(Number(event.target.value))} /></div>

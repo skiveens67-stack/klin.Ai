@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       estimate,
-      billing_notice: "Estimate only. Klin must disclose the $10–$35 price for each 10 active-hour block and obtain your approval before paid work starts. At each block boundary, Klin will notify you and allow 30 minutes to pay. If payment is not confirmed, the project pauses with its saved checkpoint. Idle and paused time are not billable.",
+      billing_notice: "Estimate only. Klin must disclose the $7–$35 price for each 10 active-hour block and obtain your approval before paid work starts. At each block boundary, Klin will notify you and allow 30 minutes to pay. If payment is not confirmed, the project pauses with its saved checkpoint. Idle and paused time are not billable.",
       execution_status: "builder_not_connected",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch {
