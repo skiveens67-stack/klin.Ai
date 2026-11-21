@@ -17,7 +17,8 @@ type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: b
 const navigation: NavigationItem[] = [
   { label: "Klinie Chat", href: "/", icon: MessageCircle },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Agent capacity", href: "/agents", icon: Bot },\n  { label: "Autonomous Builder", href: "/builder", icon: Hammer },
+  { label: "Agent capacity", href: "/agents", icon: Bot },
+  { label: "Autonomous Builder", href: "/builder", icon: Hammer },
   { label: "Marketplace", href: "/marketplace", icon: Compass },
   { label: "Social", href: "/social", icon: Users },
   { label: "Learning", href: "/learning", icon: BookOpen },
