@@ -124,19 +124,19 @@ Do not activate creator payouts, charity disbursements, escrow, business acquisi
 - Four builder plan cards and explicit role descriptions.
 - Server-side agent entitlement calculation using active subscription records for the new builder plan codes.
 - Stripe checkout allowlist and environment-variable placeholders for the three paid builder plans.
-- Quote preview and authenticated quote persistence in private project metadata, with server-side subscription verification and the requested $20 / 15% deposit arithmetic. Quote persistence does not collect payment or start a build.
+- Quote preview and authenticated quote persistence in private project metadata, with server-side subscription verification and the requested $20 / 15% deposit arithmetic. A one-time Stripe Checkout flow collects the server-calculated deposit, and the signed webhook verifies amount/quote ownership before marking the deposit paid and crediting it 100% toward the final invoice. Deposit payment does not start a build.
 - Existing project estimator, project drafts, offline draft sync, checkpoint policy primitives and repository CI.
 
 ### Not operational / requires more work
 - Multi-agent scheduler, isolated worker execution and real parallel code generation.
 - Server-side plan admission enforcement during long-running jobs.
 - Compute-hour and agent-tier cost model; approved final price ranges and binding quotes.
-- Deposit checkout and webhook-linked build authorization/credit ledger.
+- Final invoice checkout, payment ledger/reconciliation and pay-to-publish release.
 - Durable build jobs, heartbeats, cloud snapshots and server-side resume. The module UI can cancel an active browser request on offline and retain its task locally for an explicit Continue retry, but it cannot guarantee provider cancellation or pause an autonomous cloud worker until the job runtime exists.
 - Checkpoint preview deployment and user testing gates.
 - Isolated generated-project QA for websites, video apps and software.
 - Watermarked sandbox enforcement, source/API export locks and pay-to-publish release.
-- Stripe price products/webhook configuration for builder plans; Klarna/Affirm eligibility and checkout support.
+- Stripe price products/webhook configuration for builder subscriptions; Klarna/Affirm eligibility and checkout support.
 - CRM/email automation worker execution and video rendering providers.
 
 No production database schema change or production migration is authorized by this specification.
