@@ -103,3 +103,12 @@ The command route only records requests; it does not actuate hardware. Thangie r
 - `POST /api/billing/checkout` accepts the allowlisted builder subscription codes `builder_starter`, `builder_pro`, and `builder_business` in addition to the existing membership codes. Checkout fails closed when the matching Klin Stripe price ID is not configured.
 - Builder subscription price IDs must be configured as server-only environment variables. Do not create live products/prices or use another Stripe account without explicit owner approval.
 - The quote UI applies the $20 / 15% deposit arithmetic, but deposit checkout, build authorization, agent orchestration, worker pause/resume, generated-project QA and pay-to-publish are not implemented.
+
+
+## Klin specialist modules
+- `GET /api/agents/limits` — returns the signed-in user's active builder plan and agent capacity.
+- `POST /api/agents/run` — runs one authenticated specialist module request. Allowed roles: tester, builder, animator, calculator, helper, safety. Allowed levels: v1–v7. V1 uses `KLINIE_MODEL`; V2–V7 require `KLIN_MODULE_V2_MODEL` through `KLIN_MODULE_V7_MODEL`. All model IDs are server-only Vercel AI Gateway configuration.
+- The V7 request adds a stricter safety instruction set. A module request returns text only; it cannot modify files or call external integrations.
+- The Klin Modules UI stores cloned module profiles and a pending retry task in browser local storage. If the browser goes offline it aborts the active request where possible and marks the task paused; the user must press Continue after reconnecting to retry.
+- Local module profiles and client-side plan limits are not a substitute for server-side concurrent worker admission. The persistent agent scheduler is not yet connected.
+- Marketplace seller payouts are a separate Stripe Connect integration. See `docs/KLIN_STRIPE_MARKETPLACE_PAYMENTS.md`; no Klin-held stored-value balance or escrow is enabled.
