@@ -24,6 +24,9 @@ export default function KlinModuleManager() {
   const [ready, setReady] = useState(false);
   const [buildState, setBuildState] = useState<BuildState>("idle");
   const [notice, setNotice] = useState("");
+  const [task, setTask] = useState("");
+  const [runningId, setRunningId] = useState<string | null>(null);
+  const [results, setResults] = useState<Record<string, string>>({});
 
   useEffect(() => {
     try {
@@ -79,6 +82,32 @@ export default function KlinModuleManager() {
     setModules((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
   }
 
+  async function runModule(instance: ModuleInstance) {
+    if (!task.trim()) {
+      setNotice("Enter a task before running a module.");
+      return;
+    }
+    setRunningId(instance.id);
+    setNotice("");
+    setResults((current) => ({ ...current, [instance.id]: "" }));
+    try {
+      const response = await fetch("/api/agents/run", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: task.trim() }),
+      });
+      const data = await response.json() as { result?: string; error?: string; model?: string };
+      if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
+      setResults((current) => ({ ...current, [instance.id]: data.result! }));
+      setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}. It did not modify project files.`);
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : "Module run failed.");
+    } finally {
+      setRunningId(null);
+    }
+  }
+
   function pauseBuild() {
     setBuildState("paused");
     setNotice("Local build status set to paused. No cloud worker is currently connected to this control.");
@@ -97,6 +126,7 @@ export default function KlinModuleManager() {
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
       </div>
       <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled locally: {activeCount}</span></div>
+      <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
       <div className="space-y-3">
         {modules.map((instance) => {
           const role = KLIN_MODULE_ROLES.find((item) => item.id === instance.roleId)!;
@@ -121,6 +151,8 @@ export default function KlinModuleManager() {
                 {modules.length > KLIN_MODULE_ROLES.length && <button type="button" aria-label={`Delete ${instance.name}`} onClick={() => setModules((current) => current.filter((item) => item.id !== instance.id))} className="rounded-lg border border-rose-300/20 px-3 py-2 text-rose-200"><Trash2 size={14} /></button>}
               </div>
             </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" disabled={!instance.enabled || runningId !== null || !task.trim()} onClick={() => void runModule(instance)} className="rounded-lg bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40">{runningId === instance.id ? "Running module…" : "Run module"}</button></div>
+            {results[instance.id] && <div className="mt-3 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/20 p-3 text-xs leading-5 text-slate-200">{results[instance.id]}</div>}
             <details className="mt-3"><summary className="cursor-pointer text-[11px] text-slate-500">Worker instructions</summary><p className="mt-2 text-xs text-slate-400">{role.instructions}</p></details>
           </article>;
         })}
