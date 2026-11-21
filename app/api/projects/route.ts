@@ -50,8 +50,18 @@ export async function POST(request: Request) {
       if (existing) return NextResponse.json({ project: existing, duplicate: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
     }
 
+    const projectInsert: Record<string, unknown> = {
+      owner_user_id: user.id,
+      project_type: input.project_type,
+      title: input.title.trim(),
+      description,
+      status: "draft",
+      visibility: "private",
+    };
+    if (idempotencyKey) projectInsert.idempotency_key = idempotencyKey;
+
     const { data, error } = await supabase.from("creator_projects")
-      .insert({ owner_user_id: user.id, project_type: input.project_type, title: input.title.trim(), description, status: "draft", visibility: "private", idempotency_key: idempotencyKey })
+      .insert(projectInsert)
       .select(selectedFields).single();
     if (error?.code === "23505" && idempotencyKey) {
       const { data: existing, error: lookupError } = await supabase.from("creator_projects")

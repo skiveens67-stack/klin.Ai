@@ -70,7 +70,7 @@ export default function BuildEstimator() {
           <div className="module-estimate-metric"><Clock3 size={16} /><span>Estimated active build time</span><strong>{estimate.estimated_hours} hours</strong><small>About {estimate.estimated_days} working day(s) · heavy target {estimate.heavy_project_target_days} days · maximum {estimate.max_days} days</small></div>
           <div className="module-estimate-metric"><DollarSign size={16} /><span>Price per 10 active hours</span><strong>${estimate.ten_hour_block_price_usd}</strong><small>{estimate.complexity} complexity · {estimate.estimated_blocks} estimated blocks</small></div>
           <div className="module-estimate-total"><span>Estimated total if all blocks are used</span><strong>${estimate.estimated_total_usd.toLocaleString("en-US")}</strong></div>
-          <p className="offline-privacy-note">Progress reports are set for every {estimate.progress_checkpoint_percent}% of verified work. A testable preview at each checkpoint requires the isolated builder and QA runtime, which is not connected yet.</p>
+          <p className="offline-privacy-note">This estimate uses a {estimate.progress_checkpoint_percent}% progress-report interval. A testable preview at each checkpoint requires the isolated builder and QA runtime, which is not connected yet.</p>
           <p className="offline-privacy-note">Estimate only. No payment is taken here. Before work starts, Klin must show the exact amount and obtain your authorization. After each 10 active hours, Klin will notify you and provide a 30-minute payment window. If unpaid, the project pauses with its work saved. Idle time and time paused do not count.</p>
         </div>
       )}
