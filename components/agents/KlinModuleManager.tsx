@@ -131,7 +131,8 @@ export default function KlinModuleManager() {
     activeRequest.current = controller;
     const pending = { moduleId: instance.id, task: requestedTask.trim() };
     setPendingRun(pending);
-    try { localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pending)); } catch { /* Continue with in-memory retry if storage is unavailable. */ }
+    setPendingTeamRun(null);
+    try { localStorage.removeItem(PENDING_TEAM_KEY); localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pending)); } catch { /* Continue with in-memory retry if storage is unavailable. */ }
     setBuildState("running");
     setRunningId(instance.id);
     setNotice("");
