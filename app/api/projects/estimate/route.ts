@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { estimateBuild, type BuildProjectType } from "@/lib/project-estimator";
+import { calculateAgentCapacity } from "@/lib/agent-capacity";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,19 @@ export async function POST(request: Request) {
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
+    const { data: subscriptions, error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .select("plan_code,status")
+      .eq("user_id", user.id)
+      .eq("status", "active");
+    if (subscriptionError) return NextResponse.json({ error: "Unable to verify your builder plan for quote pricing." }, { status: 503 });
+    const entitlement = calculateAgentCapacity(subscriptions ?? []);
+    const buildDiscountPercent = entitlement.active_builder_plan === "builder_pro"
+      ? 10
+      : entitlement.active_builder_plan === "builder_business"
+        ? 20
+        : 0;
+
     const estimate = estimateBuild({
       project_type: input.project_type as BuildProjectType,
       feature_count: Number(input.feature_count),
@@ -46,7 +60,13 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      estimate: { ...estimate, progress_checkpoint_percent: Number(checkpointInterval) },
+      estimate: {
+        ...estimate,
+        progress_checkpoint_percent: Number(checkpointInterval),
+        active_builder_plan: entitlement.active_builder_plan,
+        max_agents: entitlement.max_agents,
+        build_discount_percent: buildDiscountPercent,
+      },
       billing_notice: "Estimate only. Klin must disclose the $7–$35 price for each 10 active-hour block and obtain your approval before paid work starts. At each block boundary, Klin will notify you and allow 30 minutes to pay. If payment is not confirmed, the project pauses with its saved checkpoint. Idle and paused time are not billable.",
       execution_status: "builder_not_connected",
     }, { headers: { "Cache-Control": "no-store" } });
