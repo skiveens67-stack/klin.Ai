@@ -20,8 +20,8 @@ type Estimate = {
 const plans = [
   { name: "Free", code: "free", maxHours: 0.5, price: "$0/mo", agents: "4 agents", duration: "30 minutes", discount: "No build discount", roles: "Planner · Frontend · Backend · QA" },
   { name: "Starter", code: "builder_starter", maxHours: 24, price: "$29/mo", agents: "10 agents", duration: "Up to 24 hours", discount: "Standard build pricing", roles: "Core agents + specialist builders" },
-  { name: "Pro", code: "builder_pro", maxHours: 120, price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
-  { name: "Business", code: "builder_business", maxHours: 240, price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
+  { name: "Pro", code: "builder_pro", maxHours: 50, price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
+  { name: "Business", code: "builder_business", maxHours: 100, price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
 ];
 
 const deliverables = [
