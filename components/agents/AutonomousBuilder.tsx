@@ -15,10 +15,10 @@ type Estimate = {
 };
 
 const plans = [
-  { name: "Free", code: "free", price: "$0/mo", agents: "4 agents", duration: "30 minutes", discount: "No build discount", roles: "Planner · Frontend · Backend · QA" },
-  { name: "Starter", code: "builder_starter", price: "$29/mo", agents: "10 agents", duration: "Up to 24 hours", discount: "Standard build pricing", roles: "Core agents + specialist builders" },
-  { name: "Pro", code: "builder_pro", price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
-  { name: "Business", code: "builder_business", price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
+  { name: "Free", code: "free", maxHours: 0.5, price: "$0/mo", agents: "4 agents", duration: "30 minutes", discount: "No build discount", roles: "Planner · Frontend · Backend · QA" },
+  { name: "Starter", code: "builder_starter", maxHours: 24, price: "$29/mo", agents: "10 agents", duration: "Up to 24 hours", discount: "Standard build pricing", roles: "Core agents + specialist builders" },
+  { name: "Pro", code: "builder_pro", maxHours: 120, price: "$79/mo", agents: "20 agents", duration: "Up to 5 days", discount: "10% build discount", roles: "Parallel frontend, backend, data, video and QA teams" },
+  { name: "Business", code: "builder_business", maxHours: 240, price: "$199/mo", agents: "30+ agents", duration: "Up to 10 days", discount: "20% build discount", roles: "Expanded specialist teams and business-kit workflows" },
 ];
 
 const deliverables = [
@@ -42,10 +42,10 @@ export default function AutonomousBuilder() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
 
-  const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
+  const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];\n  const verifiedPlan = estimate ? plans.find((item) => item.code === estimate.active_builder_plan) ?? plans[0] : plans[0];
   const quote = useMemo(() => {
     if (!estimate) return null;
-    const discount = plan === "Pro" ? 0.1 : plan === "Business" ? 0.2 : 0;
+    const discount = estimate.build_discount_percent / 100;
     const blocks = estimate.estimated_blocks;
     const low = Math.round(blocks * 7 * (1 - discount) * 100) / 100;
     const high = Math.round(blocks * 35 * (1 - discount) * 100) / 100;
@@ -160,9 +160,9 @@ export default function AutonomousBuilder() {
         {estimate && quote && (
           <div className="module-estimate-result">
             <div className="module-card-title"><Clock3 size={17} /><h3>Locked Build Quote · preview</h3></div>
-            <div className="module-estimate-metric"><span>Project</span><strong>{title}</strong><small>{selectedPlan.name} plan · {selectedPlan.agents} · {estimate.complexity} complexity</small></div>
+            <div className="module-estimate-metric"><span>Project</span><strong>{title}</strong><small>Verified entitlement: {verifiedPlan.name} · {estimate.max_agents} agents · {estimate.complexity} complexity</small></div>
             <div className="module-estimate-metric"><span>Estimated build time</span><strong>{estimate.estimated_hours} active hours</strong><small>Approximately {estimate.estimated_days} working day(s), subject to plan duration limits</small></div>
-            <div className="module-estimate-metric"><span>Estimated total</span><strong>${quote.low.toFixed(2)} – ${quote.high.toFixed(2)}</strong><small>Range at $7–$35 per 10-hour block. {quote.discount ? `${Math.round(quote.discount * 100)}% plan discount applied` : "No plan discount"}</small></div>
+            <div className="module-estimate-metric"><span>Estimated total</span><strong>${quote.low.toFixed(2)} – ${quote.high.toFixed(2)}</strong><small>Range at $7–$35 per 10-hour block. {quote.discount ? `${Math.round(quote.discount * 100)}% verified plan discount applied` : "No verified builder discount"}</small></div>
             <div className="module-estimate-metric"><span>Deposit before build</span><strong>${quote.depositLow.toFixed(2)} – ${quote.depositHigh.toFixed(2)}</strong><small>{quote.high > 150 && quote.isMultiDay ? "15% upfront for a multi-day build over $150" : "$20 deposit, credited in full toward the final balance"}</small></div>
             <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balanceLow.toFixed(2)} – ${quote.balanceHigh.toFixed(2)}</strong></div>
             <div className="module-alert module-alert-warning">This is an estimate preview, not an accepted quote or payment request. The current estimator prices 10-hour work blocks at a complexity-based rate. Final compute-hour and agent-tier pricing still needs a verified pricing table. The build runtime and deposit checkout are not connected, so no build can start from this screen.</div>
