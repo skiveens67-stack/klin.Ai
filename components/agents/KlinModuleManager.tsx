@@ -9,11 +9,12 @@ type BuildState = "idle" | "running" | "paused";
 const STORAGE_KEY = "klin.module-roster.v1";
 const BUILD_KEY = "klin.build-session.v1";
 const PENDING_RUN_KEY = "klin.pending-module-run.v1";
-const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role) => ({ id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: true }));
+const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role, index) => ({ id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: index < 4 }));
 
 export default function KlinModuleManager() {
   const [modules, setModules] = useState<ModuleInstance[]>(initialModules);
   const [ready, setReady] = useState(false);
+  const [maxAgents, setMaxAgents] = useState(4);
   const [buildState, setBuildState] = useState<BuildState>("idle");
   const [notice, setNotice] = useState("");
   const [task, setTask] = useState("");
@@ -22,6 +23,15 @@ export default function KlinModuleManager() {
   const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string } | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
+
+  useEffect(() => {
+    void fetch("/api/agents/limits", { credentials: "same-origin", cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json() as { max_agents?: number };
+        if (Number.isInteger(data.max_agents) && Number(data.max_agents) >= 1) setMaxAgents(Number(data.max_agents));
+      }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     try {
@@ -150,7 +160,7 @@ export default function KlinModuleManager() {
       <div className="module-grid">
         {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
       </div>
-      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount}</span></div>
+      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount} / {maxAgents} plan limit</span></div>
       <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
       <div className="space-y-3">
         {modules.map((instance) => {
@@ -191,7 +201,7 @@ export default function KlinModuleManager() {
         </div>
       </div>
       {notice && <p className="mt-3 text-xs text-slate-300" role="status">{notice}</p>}
-      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. One module can execute one AI Gateway request at a time. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
+      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. The UI reads your plan capacity and limits enabled profiles locally; server-side concurrent worker enforcement is not connected. Each run currently executes one AI Gateway request. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
     </section>
   );
 }
