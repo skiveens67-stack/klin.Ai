@@ -147,3 +147,33 @@ For marketplace payments and the proposed Klin Wallet, see `docs/KLIN_STRIPE_MAR
 
 ## V7 Ultra Safe vaulting status
 The product requirement is to protect identity records, biometric pose vectors, voice prints and GPS coordinates using a zero-knowledge encryption design, with a strict no-data-sale commitment and Dignity Shield automation. The current code adds an always-on model safety policy and Dignity Shield prompt guidance, plus a local-only vault that encrypts user-entered identity, biometric-pose, voice-print, GPS and private-note records in the browser with PBKDF2-SHA-256 and AES-256-GCM before writing ciphertext to local storage. The passphrase is not sent to the server. The vault supports encrypted export/import; it has no cloud sync, account recovery, multi-device key management, automatic capture from biometric/location features, or independent security audit. This is a client-side encrypted early-access vault, not a fully audited zero-knowledge cloud vault. Do not market those vault controls as active until implemented and audited. No personal data should be sold; this is a product commitment and must be reflected in privacy terms and vendor contracts.
+
+
+## V7 Ultra Safe — three shields and monetization
+
+Klin V7 Ultra Safe is a free, always-on policy layer, not a paid model tier. It applies automatically to Klinie Chat, specialist modules and image-generation requests.
+
+1. **V7 Ultra Safe Vaulting:** protect identity records, biometric pose vectors, voice prints and GPS coordinates with client-side encryption where feasible. The early-access local vault now uses PBKDF2-SHA-256 and AES-256-GCM and supports encrypted backup import/export. Cloud sync, account recovery, E2E chat encryption and independent security audit are not complete.
+2. **Dignity Shield Protocol:** private financial assistance and fee waivers. No public badge, hardship label or social marker. Eligibility, approvers, funding, appeals and accounting must be approved before requests or benefits can be enabled.
+3. **21+ Compliance Firewall:** Business Exchange, escrow, valuation and handover require verified 21+ status. Self-declared age is not sufficient. The feature remains unavailable until a provider and server-side verified-age enforcement are implemented and legally reviewed.
+
+### V7 membership plans
+- Starter — Free.
+- Plus — $9.99/month.
+- Pro — $24.99/month.
+- Family Fortress — $34.99/month.
+- Merchant & Enterprise — $79.99/month.
+- Klin V6 Ultra Smart remains a separate paid intelligence plan; V7 Ultra Safe is always free.
+
+The plans page also preserves additional creator/developer tiers and separate Autonomous Builder plans. All paid plan checkout is fail-closed until the matching Klin Stripe Price ID is configured.
+
+### Seven V7 revenue streams
+1. SaaS subscriptions.
+2. 10% platform marketplace fee (the earlier 15% proposal remains an alternative pending owner approval; do not charge either rate until terms are approved).
+3. Business Exchange escrow closing fees (not active; Stripe Connect is not escrow, so legal and settlement design are required).
+4. Physical Thangie hardware and beacon sales (future hardware program).
+5. Gems micro-transactions.
+6. Enterprise/classroom API licenses (requires age, guardian, privacy and education-policy review).
+7. Optional instant-payout convenience margins (requires provider eligibility, cost disclosure, legal/accounting review and owner approval).
+
+Additional product revenue can include paid build services/deposits and final invoices, hosting/storage, promotions, and other digital services where pricing and refunds are disclosed. No user cash balance should be called a bank account.
