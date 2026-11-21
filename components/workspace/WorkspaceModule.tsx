@@ -59,7 +59,7 @@ const configs: Record<ModuleKey, ModuleConfig> = {
       ] },
       { name: "price_minor", label: "Price in minor currency units (e.g. cents)", type: "number", placeholder: "Only for fixed-price listings", help: "A value of 1500 represents $15.00 when the listing currency is USD." },
     ],
-    note: "Listings are saved as drafts. Orders, payouts, and public listing activation are not enabled.",
+    note: "Listings are saved as drafts. Orders, payouts, and public listing activation are not enabled. Business Exchange, escrow, valuation and handover remain unavailable until verified 21+ eligibility, seller/buyer checks, legal review and an approved settlement model are implemented.",
   },
   social: {
     title: "Klin Social",
