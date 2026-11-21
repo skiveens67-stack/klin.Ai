@@ -73,7 +73,7 @@ These are not code deletions. The owner has decided to keep the existing product
 
 The latest source commit reviewed for this update is `22f231ef085d07d74791fe7b0641b00b44469342`. GitHub Actions run #396 passed dependency installation, lint, TypeScript checking, unit tests, and the Next.js production build. This is CI evidence for the repository, not generated-project QA or launch certification.
 
-## G. Owner-approved competitor-capability additions — 2026-11-21
+## G. Owner-approved competitor-capability additions — 2026-11-20
 
 **Product direction:** Klin.AI launches as a website first. Video creation remains visibly marked **Coming Soon**. All other capabilities in this section are approved additions to the Klin.AI product roadmap. This approval records product scope; it does not claim the features are already implemented.
 
