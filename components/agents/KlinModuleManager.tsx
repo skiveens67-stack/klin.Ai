@@ -157,6 +157,9 @@ export default function KlinModuleManager() {
         setBuildState("paused");
         setNotice("Module request paused. Reconnect and press Continue to retry the saved task.");
       } else {
+        setPendingRun(null);
+        try { localStorage.removeItem(PENDING_RUN_KEY); } catch { /* Ignore local cleanup errors. */ }
+        setBuildState("idle");
         setNotice(caught instanceof Error ? caught.message : "Module run failed.");
       }
     } finally {
@@ -229,6 +232,9 @@ export default function KlinModuleManager() {
         setBuildState("paused");
         setNotice("Team run paused. Reconnect and press Continue to retry the saved team task.");
       } else {
+        setPendingTeamRun(null);
+        try { localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* Ignore local cleanup errors. */ }
+        setBuildState("idle");
         setNotice(caught instanceof Error ? caught.message : "Team run failed.");
       }
     } finally {
