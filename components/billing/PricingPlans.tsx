@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
 
 const memberships = [
@@ -28,6 +28,20 @@ const builderPlans = [
 export default function PricingPlans() {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const [enabledPlanCodes, setEnabledPlanCodes] = useState<string[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/billing/plans", { credentials: "same-origin", cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as { enabled_plan_codes?: string[] };
+        if (active && response.ok) setEnabledPlanCodes(data.enabled_plan_codes ?? []);
+      })
+      .catch(() => { if (active) setEnabledPlanCodes([]); })
+      .finally(() => { if (active) setLoadingPlans(false); });
+    return () => { active = false; };
+  }, []);
 
   async function checkout(code: string) {
     if (code === "free") return;
@@ -58,24 +72,24 @@ export default function PricingPlans() {
         <div className="module-grid">
           {memberships.map((plan) => <article className="module-plan-card" key={plan.code}>
             <strong>{plan.name}</strong><b>{plan.price}</b><span>{plan.detail}</span>
-            {plan.code === "enterprise" ? <a className="module-submit inline-block text-center" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact Klin support</a> : <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>}
+            {plan.code === "enterprise" ? <a className="module-submit inline-block text-center" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact Klin support</a> : <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free" || loadingPlans || !enabledPlanCodes.includes(plan.code)} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : loadingPlans ? "Checking availability…" : enabledPlanCodes.includes(plan.code) ? "Choose plan" : "Early access soon"}</button>}
           </article>)}
         </div>
-        <p className="offline-privacy-note">Published prices follow Klin's current V7 membership proposal plus the additional creator/developer tiers. A paid plan can be purchased only after its matching Stripe Price ID is configured on Klin&apos;s Stripe account.</p>
+        <p className="offline-privacy-note">Published prices follow Klin's current V7 membership proposal plus the additional creator/developer tiers. A paid plan can be purchased only after its matching Stripe Price ID, feature entitlements and server-side checkout gate are enabled.</p>
       </section>
       <section className="module-card">
         <div className="module-card-title"><CreditCard size={18} /><h2>Autonomous Builder plans</h2></div>
         <div className="module-grid">
           {builderPlans.map((plan) => <article className="module-plan-card" key={plan.code}>
             <strong>{plan.name}</strong><b>{plan.price}</b><span>{plan.agents} · {plan.duration}</span><small>{plan.discount}</small>
-            <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free"} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : "Choose plan"}</button>
+            <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free" || loadingPlans || !enabledPlanCodes.includes(plan.code)} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : loadingPlans ? "Checking availability…" : enabledPlanCodes.includes(plan.code) ? "Choose plan" : "Early access soon"}</button>
           </article>)}
         </div>
       </section>
       <section className="module-card">
         <div className="module-card-title"><ShieldCheck size={18} /><h2>Klin V6 Ultra Smart intelligence</h2></div>
         <p className="offline-drafts-copy">V6 Ultra Smart is its own paid intelligence plan. It unlocks the V6 model level while keeping worker count governed by the user&apos;s Builder plan.</p>
-        <button type="button" className="module-submit" disabled={busy !== ""} onClick={() => void checkout("klin_v6_ultra")}>{busy === "klin_v6_ultra" ? "Opening checkout…" : "Subscribe to V6 Ultra Smart"}</button>
+        <button type="button" className="module-submit" disabled={busy !== "" || loadingPlans || !enabledPlanCodes.includes("klin_v6_ultra")} onClick={() => void checkout("klin_v6_ultra")}>{busy === "klin_v6_ultra" ? "Opening checkout…" : enabledPlanCodes.includes("klin_v6_ultra") ? "Subscribe to V6 Ultra Smart" : "Early access setup pending"}</button>
         <p className="offline-privacy-note">V6 Ultra Smart pricing and its Stripe Price ID must be configured before checkout can complete. Klin V7 Ultra Safe is free and automatically active for every account; it is never an upgrade.</p>
       </section>
       <section className="module-card">
