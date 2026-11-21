@@ -12,6 +12,9 @@ type Estimate = {
   estimated_blocks: number;
   estimated_total_usd: number;
   billing_unit_hours: number;
+  active_builder_plan: string;
+  max_agents: number;
+  build_discount_percent: number;
 };
 
 const plans = [
@@ -50,10 +53,11 @@ export default function AutonomousBuilder() {
     const low = Math.round(blocks * 7 * (1 - discount) * 100) / 100;
     const high = Math.round(blocks * 35 * (1 - discount) * 100) / 100;
     const isMultiDay = estimate.estimated_days > 1;
-    const depositLow = high > 150 && isMultiDay ? Math.round(low * 0.15 * 100) / 100 : Math.min(low, 20);
-    const depositHigh = high > 150 && isMultiDay ? Math.round(high * 0.15 * 100) / 100 : Math.min(high, 20);
+    const depositFor = (amount: number) => amount > 150 && isMultiDay ? Math.round(amount * 0.15 * 100) / 100 : Math.min(amount, 20);
+    const depositLow = depositFor(low);
+    const depositHigh = depositFor(high);
     return { low, high, depositLow, depositHigh, balanceLow: Math.max(0, Math.round((low - depositLow) * 100) / 100), balanceHigh: Math.max(0, Math.round((high - depositHigh) * 100) / 100), discount, isMultiDay };
-  }, [estimate, plan]);
+  }, [estimate]);
 
   async function subscribeToSelectedPlan() {
     if (selectedPlan.code === "free") return;
