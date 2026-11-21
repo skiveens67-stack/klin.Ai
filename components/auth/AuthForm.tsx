@@ -35,19 +35,15 @@ export default function AuthForm({ mode, initialError }: Props) {
         router.replace("/");
         router.refresh();
       } else {
-        const callback = new URL("/auth/callback", window.location.origin);
-        const { data, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { emailRedirectTo: callback.toString() },
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim(), password }),
         });
-        if (authError) throw authError;
-        if (data.session) {
-          router.replace("/");
-          router.refresh();
-        } else {
-          setMessage("Check your email for the confirmation link. You can return here after confirming your address.");
-        }
+        const data = await response.json() as { message?: string; error?: string };
+        if (!response.ok) throw new Error(data.error || "Unable to create your account.");
+        setMessage(data.message || "Check your email for a verification link from Klin.");
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
