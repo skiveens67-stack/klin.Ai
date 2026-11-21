@@ -46,9 +46,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Enter a valid Gemini API key. Klin uses it only for this request and does not save it." }, { status: 400 });
       }
       const model = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: safePrompt }] }],
           generationConfig: { responseModalities: ["TEXT", "IMAGE"], imageConfig: { aspectRatio: "1:1" } },
