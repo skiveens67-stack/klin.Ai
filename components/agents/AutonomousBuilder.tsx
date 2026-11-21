@@ -44,6 +44,8 @@ export default function AutonomousBuilder() {
   const [loading, setLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [savingQuote, setSavingQuote] = useState(false);
+  const [savedQuote, setSavedQuote] = useState<{ projectId: string; status: string } | null>(null);
 
   const selectedPlan = plans.find((item) => item.name === plan) ?? plans[0];
   const verifiedPlan = estimate ? plans.find((item) => item.code === estimate.active_builder_plan) ?? plans[0] : plans[0];
@@ -77,6 +79,34 @@ export default function AutonomousBuilder() {
     } catch (caught) {
       setCheckoutError(caught instanceof Error ? caught.message : "Checkout could not be started.");
       setCheckoutLoading(false);
+    }
+  }
+
+  async function saveLockedQuote() {
+    setSavingQuote(true);
+    setError("");
+    setSavedQuote(null);
+    try {
+      const response = await fetch("/api/builder/quotes", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          project_type: projectType,
+          feature_count: features,
+          integrations_count: integrations,
+          asset_count: assets,
+        }),
+      });
+      const data = await response.json() as { project?: { id: string }; quote?: { status: string }; error?: string };
+      if (!response.ok || !data.project || !data.quote) throw new Error(data.error || "Could not save the locked quote.");
+      setSavedQuote({ projectId: data.project.id, status: data.quote.status });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not save the locked quote.");
+    } finally {
+      setSavingQuote(false);
     }
   }
 
@@ -171,6 +201,8 @@ export default function AutonomousBuilder() {
             <div className="module-estimate-metric"><span>Estimated total</span><strong>${quote.low.toFixed(2)} – ${quote.high.toFixed(2)}</strong><small>Range at $7–$35 per 10-hour block. {quote.discount ? `${Math.round(quote.discount * 100)}% verified plan discount applied` : "No verified builder discount"}</small></div>
             <div className="module-estimate-metric"><span>Deposit before build</span><strong>${quote.depositLow.toFixed(2)} – ${quote.depositHigh.toFixed(2)}</strong><small>{quote.high > 150 && quote.isMultiDay ? "15% upfront for a multi-day build over $150" : "$20 deposit, credited in full toward the final balance"}</small></div>
             <div className="module-estimate-total"><span>Remaining balance after deposit</span><strong>${quote.balanceLow.toFixed(2)} – ${quote.balanceHigh.toFixed(2)}</strong></div>
+            <button type="button" className="module-submit" disabled={savingQuote || estimate.estimated_hours > verifiedPlan.maxHours || !title.trim() || !description.trim()} onClick={() => void saveLockedQuote()}>{savingQuote ? "Saving quote…" : "Save and lock this quote"}</button>
+            {savedQuote && <div className="module-alert module-alert-warning" role="status">Quote saved to project {savedQuote.projectId}. Status: {savedQuote.status}. No deposit has been collected and no agents have started.</div>}
             <div className="module-alert module-alert-warning">This is an estimate preview, not an accepted quote or payment request. The current estimator prices 10-hour work blocks at a complexity-based rate. Final compute-hour and agent-tier pricing still needs a verified pricing table. The build runtime and deposit checkout are not connected, so no build can start from this screen.</div>
             <p className="offline-privacy-note">Project request: {description}</p>
           </div>
