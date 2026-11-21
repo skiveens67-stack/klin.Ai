@@ -52,7 +52,12 @@ export default function AuthForm({ mode, initialError }: Props) {
       } else if (verificationPending) {
         const supabase = createSupabaseBrowserClient();
         const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: verificationCode.trim(), type: "signup" });
-        if (verifyError) throw verifyError;
+        if (verifyError) {
+          const code = (verifyError as { code?: string }).code || "";
+          const messageText = verifyError.message.toLowerCase();
+          const expired = code === "otp_expired" || code === "token_expired" || messageText.includes("expired");
+          throw new Error(expired ? "Verification code is expired." : "Verification code is invalid.");
+        }
         try { window.localStorage.removeItem("klin.pendingSignupEmail"); window.localStorage.removeItem("klin.pendingSignupUsername"); } catch { /* Ignore storage cleanup errors. */ }
         redirectAfterLoading = true;
       } else {
@@ -87,7 +92,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         <h1>{title}</h1>
         <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the six-digit code we sent to your email to activate your account." : "Create a workspace account for your conversations, projects, and tools."}</p>
         <form onSubmit={submit} className="auth-form">
-          {mode === "signup" && !verificationPending && <><label htmlFor="username">Username</label><div className="auth-input-wrap"><input id="username" type="text" autoComplete="username" required minLength={3} maxLength={20} pattern="[A-Za-z0-9_]+" value={username} onChange={e => setUsername(e.target.value)} placeholder="Choose a username" /></div><p className="auth-email-help">3–20 characters. Letters, numbers, and underscores only.</p></>}
+          {mode === "signup" && !verificationPending && <><label htmlFor="username">Username</label><div className="auth-input-wrap"><input id="username" type="text" autoComplete="username" required minLength={4} maxLength={49} value={username} onChange={e => setUsername(e.target.value)} placeholder="Choose a username" /></div><p className="auth-email-help">Use any name you like, from 4 to 49 characters.</p></>}
           <label htmlFor="email">Email address</label>
           <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" readOnly={mode === "signup" && verificationPending} /></div>
           {mode === "signup" && verificationPending ? <>
