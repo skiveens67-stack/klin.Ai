@@ -1,0 +1,336 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Copy, Pause, Play, RotateCcw, ShieldCheck, Trash2, Users } from "lucide-react";
+import { KLIN_MODULE_LEVELS, KLIN_MODULE_MAX_INSTANCES, KLIN_MODULE_ROLES, type KlinModuleLevelId, type KlinModuleRoleId } from "@/lib/klin-module-catalog";
+
+type ModuleInstance = { id: string; roleId: KlinModuleRoleId; name: string; level: KlinModuleLevelId; enabled: boolean };
+type BuildState = "idle" | "running" | "paused";
+const STORAGE_KEY = "klin.module-roster.v1";
+const BUILD_KEY = "klin.build-session.v1";
+const PENDING_RUN_KEY = "klin.pending-module-run.v1";
+const PENDING_TEAM_KEY = "klin.pending-module-team.v1";
+const initialModules: ModuleInstance[] = KLIN_MODULE_ROLES.map((role, index) => ({ id: role.id, roleId: role.id, name: role.name, level: "v1", enabled: index < 4 }));
+
+export default function KlinModuleManager() {
+  const [modules, setModules] = useState<ModuleInstance[]>(initialModules);
+  const [ready, setReady] = useState(false);
+  const [maxAgents, setMaxAgents] = useState(4);
+  const [maxModuleLevel, setMaxModuleLevel] = useState<KlinModuleLevelId>("v1");
+  const [buildState, setBuildState] = useState<BuildState>("idle");
+  const [notice, setNotice] = useState("");
+  const [resumeCommand, setResumeCommand] = useState("");
+  const [task, setTask] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [teamRunning, setTeamRunning] = useState(false);
+  const [pendingTeamRun, setPendingTeamRun] = useState<{ task: string; projectId: string; workerIds: string[] } | null>(null);
+  const [runningId, setRunningId] = useState<string | null>(null);
+  const [results, setResults] = useState<Record<string, string>>({});
+  const [pendingRun, setPendingRun] = useState<{ moduleId: string; task: string; projectId: string } | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const activeCount = useMemo(() => modules.filter((item) => item.enabled).length, [modules]);
+
+  useEffect(() => {
+    void fetch("/api/agents/limits", { credentials: "same-origin", cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json() as { max_agents?: number; max_module_level?: KlinModuleLevelId };
+        if (Number.isInteger(data.max_agents) && Number(data.max_agents) >= 1) setMaxAgents(Number(data.max_agents));
+        if (data.max_module_level && KLIN_MODULE_LEVELS.some((level) => level.id === data.max_module_level)) setMaxModuleLevel(data.max_module_level);
+      }).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as ModuleInstance[];
+        if (Array.isArray(parsed) && parsed.length <= KLIN_MODULE_MAX_INSTANCES && parsed.every((item) =>
+          typeof item.id === "string" && KLIN_MODULE_ROLES.some((role) => role.id === item.roleId) &&
+          KLIN_MODULE_LEVELS.some((level) => level.id === item.level) && typeof item.name === "string" &&
+          typeof item.enabled === "boolean")) setModules(parsed);
+      }
+      const state = localStorage.getItem(BUILD_KEY);
+      if (state === "paused" || state === "running") setBuildState(state);
+      const teamPending = localStorage.getItem(PENDING_TEAM_KEY);
+      if (teamPending) {
+        const parsedTeam = JSON.parse(teamPending) as { task?: unknown; projectId?: unknown; workerIds?: unknown };
+        if (typeof parsedTeam.task === "string" && typeof parsedTeam.projectId === "string" &&
+            Array.isArray(parsedTeam.workerIds) && parsedTeam.workerIds.every((id) => typeof id === "string")) {
+          setPendingTeamRun({ task: parsedTeam.task, projectId: parsedTeam.projectId, workerIds: parsedTeam.workerIds });
+        }
+      }
+      const pending = localStorage.getItem(PENDING_RUN_KEY);
+      if (pending) {
+        const parsedPending = JSON.parse(pending) as { moduleId?: unknown; task?: unknown; projectId?: unknown };
+        if (typeof parsedPending.moduleId === "string" && typeof parsedPending.task === "string") setPendingRun({ moduleId: parsedPending.moduleId, task: parsedPending.task, projectId: typeof parsedPending.projectId === "string" ? parsedPending.projectId : "" });
+      }
+    } catch {
+      setNotice("Saved local module settings could not be read. Default modules are loaded.");
+    }
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(modules));
+  }, [modules, ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    localStorage.setItem(BUILD_KEY, buildState);
+  }, [buildState, ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (pendingRun) localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pendingRun));
+    else localStorage.removeItem(PENDING_RUN_KEY);
+  }, [pendingRun, ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (pendingTeamRun) localStorage.setItem(PENDING_TEAM_KEY, JSON.stringify(pendingTeamRun));
+    else localStorage.removeItem(PENDING_TEAM_KEY);
+  }, [pendingTeamRun, ready]);
+
+  useEffect(() => {
+    const pauseOnDisconnect = () => {
+      activeRequest.current?.abort();
+      setBuildState("paused");
+      setNotice("Connection lost. The active module request was cancelled where possible. Reconnect, then choose Continue to retry the saved task or team.");
+    };
+    const onReconnect = () => setNotice("Connection restored. Type continue below to retry the saved task; Klin will not restart it automatically.");
+    window.addEventListener("offline", pauseOnDisconnect);
+    window.addEventListener("online", onReconnect);
+    return () => {
+      window.removeEventListener("offline", pauseOnDisconnect);
+      window.removeEventListener("online", onReconnect);
+    };
+  }, []);
+
+  function cloneModule(source: ModuleInstance) {
+    if (modules.length >= KLIN_MODULE_MAX_INSTANCES) {
+      setNotice("The local roster reached its 30-module design limit. The active subscription must be checked by the server before real concurrent workers can run.");
+      return;
+    }
+    const role = KLIN_MODULE_ROLES.find((item) => item.id === source.roleId);
+    const count = modules.filter((item) => item.roleId === source.roleId).length + 1;
+    const canEnable = activeCount < maxAgents;
+    setModules((current) => [...current, { ...source, id: crypto.randomUUID(), enabled: canEnable, name: (role?.name ?? source.name) + " " + count }]);
+    setNotice("Module copy added to this device's roster. It is a configuration copy, not a separately running worker.");
+  }
+
+  function updateModule(id: string, patch: Partial<Pick<ModuleInstance, "name" | "level" | "enabled">>) {
+    if (patch.enabled === true && activeCount >= maxAgents) {
+      setNotice(`Your verified plan allows up to ${maxAgents} enabled modules. Upgrade your plan or disable another module first.`);
+      return;
+    }
+    setModules((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item));
+  }
+
+  async function runModule(instance: ModuleInstance, requestedTask = task, requestedProjectId = projectId) {
+    if (!requestedTask.trim()) {
+      setNotice("Enter a task before running a module.");
+      return;
+    }
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const pending = { moduleId: instance.id, task: requestedTask.trim(), projectId: requestedProjectId.trim() };
+    setPendingRun(pending);
+    setPendingTeamRun(null);
+    try { localStorage.removeItem(PENDING_TEAM_KEY); localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(pending)); } catch { /* Continue with in-memory retry if storage is unavailable. */ }
+    setBuildState("running");
+    setRunningId(instance.id);
+    setNotice("");
+    setResults((current) => ({ ...current, [instance.id]: "" }));
+    try {
+      const response = await fetch("/api/agents/run", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role_id: instance.roleId, level: instance.level, task: requestedTask.trim(), project_id: instance.roleId === "builder" ? requestedProjectId.trim() : undefined }),
+        signal: controller.signal,
+      });
+      const data = await response.json() as { result?: string; error?: string; model?: string; usage?: { total_tokens?: number } | null };
+      if (!response.ok || !data.result) throw new Error(data.error || "Module run failed.");
+      setResults((current) => ({ ...current, [instance.id]: data.result! }));
+      setPendingRun(null);
+      try { localStorage.removeItem(PENDING_RUN_KEY); } catch { /* State is also cleared in memory. */ }
+      setBuildState("idle");
+      setNotice(`${instance.name} completed one model request using ${data.model ?? instance.level}${data.usage?.total_tokens ? ` · ${data.usage.total_tokens} tokens` : ""}. It did not modify project files.`);
+    } catch (caught) {
+      if (controller.signal.aborted || !navigator.onLine) {
+        setBuildState("paused");
+        setNotice("Module request paused. Reconnect and press Continue to retry the saved task.");
+      } else {
+        setPendingRun(null);
+        try { localStorage.removeItem(PENDING_RUN_KEY); } catch { /* Ignore local cleanup errors. */ }
+        setBuildState("idle");
+        setNotice(caught instanceof Error ? caught.message : "Module run failed.");
+      }
+    } finally {
+      if (activeRequest.current === controller) activeRequest.current = null;
+      setRunningId(null);
+    }
+  }
+
+  async function runTeam(requestedTask = task, requestedProjectId = projectId, workerIds = modules.filter((item) => item.enabled).map((item) => item.id)) {
+    const selected = modules.filter((item) => workerIds.includes(item.id) && item.enabled);
+    if (selected.length !== workerIds.length) { setNotice("One or more saved team profiles are now disabled or missing. Re-enable them before continuing."); return; }
+    if (!requestedTask.trim() || selected.length < 1) {
+      setNotice("Enter a task and enable at least one module.");
+      return;
+    }
+    if (selected.length > maxAgents) {
+      setNotice(`Your verified plan allows up to ${maxAgents} active modules in one team run.`);
+      return;
+    }
+    if (selected.some((item) => item.roleId === "builder") && !requestedProjectId.trim()) {
+      setNotice("The Builder module needs the project ID from a saved quote with a verified paid deposit.");
+      return;
+    }
+
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const pending = { task: requestedTask.trim(), projectId: requestedProjectId.trim(), workerIds: selected.map((item) => item.id) };
+    setPendingTeamRun(pending);
+    setPendingRun(null);
+    try {
+      localStorage.setItem(PENDING_TEAM_KEY, JSON.stringify(pending));
+      localStorage.removeItem(PENDING_RUN_KEY);
+    } catch { /* Keep the pending team run in memory if local storage is unavailable. */ }
+    setBuildState("running");
+    setTeamRunning(true);
+    setRunningId(null);
+    setNotice("");
+    try {
+      const response = await fetch("/api/agents/team-run", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: requestedTask.trim(),
+          project_id: requestedProjectId.trim() || undefined,
+          workers: selected.map((item) => ({ instance_id: item.id, role_id: item.roleId, level: item.level })),
+        }),
+        signal: controller.signal,
+      });
+      const data = await response.json() as {
+        error?: string;
+        completed_workers?: number;
+        requested_workers?: number;
+        results?: Array<{ instance_id: string; status: string; result?: string; error?: string; usage?: { total_tokens?: number } | null }>;
+      };
+      if (!response.ok || !Array.isArray(data.results)) throw new Error(data.error || "Team run failed.");
+      setResults((current) => {
+        const next = { ...current };
+        for (const item of data.results ?? []) {
+          next[item.instance_id] = item.status === "completed" ? item.result ?? "" : `Worker failed: ${item.error ?? "Unknown error"}`;
+        }
+        return next;
+      });
+      setPendingTeamRun(null);
+      try { localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* State is also cleared in memory. */ }
+      setBuildState("idle");
+      const totalTokens = (data.results ?? []).reduce((sum, item) => sum + (item.usage?.total_tokens ?? 0), 0);
+      setNotice(`Team finished: ${data.completed_workers ?? 0} of ${data.requested_workers ?? selected.length} modules completed${totalTokens ? ` · ${totalTokens} tokens total` : ""}. Results are shown under each module.`);
+    } catch (caught) {
+      if (controller.signal.aborted || !navigator.onLine) {
+        setBuildState("paused");
+        setNotice("Team run paused. Reconnect and press Continue to retry the saved team task.");
+      } else {
+        setPendingTeamRun(null);
+        try { localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* Ignore local cleanup errors. */ }
+        setBuildState("idle");
+        setNotice(caught instanceof Error ? caught.message : "Team run failed.");
+      }
+    } finally {
+      if (activeRequest.current === controller) activeRequest.current = null;
+      setTeamRunning(false);
+    }
+  }
+
+  function pauseBuild() {
+    activeRequest.current?.abort();
+    setBuildState("paused");
+    setNotice("Module request cancellation sent. If the connection is unavailable, reconnect and choose Continue to retry the saved task.");
+  }
+
+  function submitResumeCommand() {
+    if (resumeCommand.trim().toLowerCase() !== "continue") {
+      setNotice("Type continue to retry the saved task.");
+      return;
+    }
+    setResumeCommand("");
+    continueBuild();
+  }
+
+  function continueBuild() {
+    if (!navigator.onLine) { setNotice("Klin is still offline. Reconnect before continuing."); return; }
+    if (pendingTeamRun) { void runTeam(pendingTeamRun.task, pendingTeamRun.projectId, pendingTeamRun.workerIds); return; }
+    if (pendingRun) {
+      const instance = modules.find((item) => item.id === pendingRun.moduleId);
+      if (instance?.enabled) { void runModule(instance, pendingRun.task, pendingRun.projectId); return; }
+      setNotice("The saved module was removed. Select a module and submit the task again.");
+      return;
+    }
+    setBuildState("idle");
+    setNotice("No interrupted task was saved. Select a module and start a task.");
+  }
+
+  return (
+    <section className="module-card">
+      <div className="module-card-title"><Users size={18} /><h2>Klin Modules · AI worker roster</h2></div>
+      <div className="module-alert module-alert-info"><strong>V7 Ultra Safe · Always on · Free</strong><br />Klin V7 safety rules apply to every module and every plan automatically. The local vault is available; Dignity Shield assistance and 21+ restricted services remain gated until their systems are ready. V7 cannot be disabled and uses no paid worker slot.</div>
+      <p className="offline-drafts-copy">Each module is a specialist worker profile. Copy a role to create more worker configurations; assign each copy a Klin intelligence level. Model requests run through Klin&apos;s server-side AI Gateway configuration.</p>
+      <div className="module-grid">
+        {KLIN_MODULE_LEVELS.map((level) => <div className="module-list-item" key={level.id}><ShieldCheck size={16} /><span><strong>{level.name}</strong><small className="block opacity-70">{level.description}</small></span></div>)}
+      </div>
+      <div className="module-estimate-total"><span>Configured modules</span><strong>{modules.length} / {KLIN_MODULE_MAX_INSTANCES}</strong><span>Enabled profiles: {activeCount} / {maxAgents} plan limit · Up to {maxModuleLevel.toUpperCase()} intelligence · V7 safety always on</span></div>
+      <div className="module-field mt-4"><label htmlFor="klin-module-task">Task to send to a module</label><textarea id="klin-module-task" rows={3} maxLength={12000} value={task} onChange={(event) => setTask(event.target.value)} placeholder="Describe the specific task for the selected specialist…" /></div>
+      {modules.some((item) => item.enabled && item.roleId === "builder") && <div className="module-field mt-3"><label htmlFor="klin-builder-project-id">Builder project ID (required for paid build work)</label><input id="klin-builder-project-id" value={projectId} onChange={(event) => setProjectId(event.target.value)} placeholder="Paste the project ID shown after saving your quote" /></div>}
+      <div className="mt-3 flex flex-wrap items-center gap-3"><button type="button" onClick={() => void runTeam()} disabled={teamRunning || runningId !== null || !task.trim() || activeCount < 1 || activeCount > maxAgents} className="rounded-lg bg-cyan-400/15 px-4 py-2 text-sm font-medium text-cyan-100 disabled:opacity-40">{teamRunning ? "Running module team…" : `Run enabled team · ${activeCount} modules`}</button><span className="text-xs text-slate-500">Runs enabled profiles in parallel. Each worker uses separate model tokens.</span></div>
+      <div className="space-y-3">
+        {modules.map((instance) => {
+          const role = KLIN_MODULE_ROLES.find((item) => item.id === instance.roleId)!;
+          return <article key={instance.id} className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <label className="mb-1 block text-[10px] uppercase tracking-wider text-slate-500">Worker name</label>
+                <input aria-label="Worker name" maxLength={60} value={instance.name} onChange={(event) => updateModule(instance.id, { name: event.target.value })} className="w-full rounded-lg border border-white/10 bg-[#080D18] px-3 py-2 text-sm text-white" />
+                <p className="mt-2 text-xs text-slate-400">{role.purpose}</p>
+              </div>
+              <span className={instance.enabled ? "rounded-full bg-emerald-400/10 px-2 py-1 text-[10px] text-emerald-200" : "rounded-full bg-white/5 px-2 py-1 text-[10px] text-slate-400"}>{instance.enabled ? "Enabled profile" : "Disabled profile"}</span>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <div><label className="mb-1 block text-[10px] uppercase tracking-wider text-slate-500">Intelligence level</label>
+                <select value={instance.level} onChange={(event) => updateModule(instance.id, { level: event.target.value as KlinModuleLevelId })} className="w-full rounded-lg border border-white/10 bg-[#080D18] px-3 py-2 text-sm text-white">
+                  {KLIN_MODULE_LEVELS.map((level) => <option key={level.id} value={level.id} disabled={level.rank > (KLIN_MODULE_LEVELS.find((item) => item.id === maxModuleLevel)?.rank ?? 1)}>{level.name}{level.rank > (KLIN_MODULE_LEVELS.find((item) => item.id === maxModuleLevel)?.rank ?? 1) ? " · Upgrade required" : ""}</option>)}
+                </select>
+              </div>
+              <button type="button" onClick={() => cloneModule(instance)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-cyan-300/20 px-3 py-2 text-xs text-cyan-100"><Copy size={14} /> Copy module</button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => updateModule(instance.id, { enabled: !instance.enabled })} className="rounded-lg border border-white/10 px-3 py-2 text-xs">{instance.enabled ? "Disable" : "Enable"}</button>
+                {modules.length > KLIN_MODULE_ROLES.length && <button type="button" aria-label={`Delete ${instance.name}`} onClick={() => setModules((current) => current.filter((item) => item.id !== instance.id))} className="rounded-lg border border-rose-300/20 px-3 py-2 text-rose-200"><Trash2 size={14} /></button>}
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" disabled={!instance.enabled || runningId !== null || teamRunning || !task.trim()} onClick={() => void runModule(instance)} className="rounded-lg bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100 disabled:opacity-40">{runningId === instance.id ? "Running module…" : "Run module"}</button></div>
+            {results[instance.id] && <div className="mt-3 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/20 p-3 text-xs leading-5 text-slate-200">{results[instance.id]}</div>}
+            <details className="mt-3"><summary className="cursor-pointer text-[11px] text-slate-500">Worker instructions</summary><p className="mt-2 text-xs text-slate-400">{role.instructions}</p></details>
+          </article>;
+        })}
+      </div>
+      <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.025] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><strong className="text-sm">Build pause control</strong><p className="mt-1 text-xs text-slate-400">If offline, cancel the active module request where possible. When back online, press Continue to retry the saved task.</p></div><span className="rounded-full bg-white/5 px-3 py-1 text-xs">{buildState === "running" ? "Running" : buildState === "paused" ? "Paused" : "Idle"}</span></div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={pauseBuild} disabled={buildState === "paused" || buildState === "idle"} className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"><Pause size={14} /> Pause</button>
+          <button type="button" onClick={continueBuild} disabled={buildState === "running"} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/20 px-3 py-2 text-xs text-emerald-100 disabled:opacity-40"><Play size={14} /> Continue</button>
+          <input aria-label="Resume command" value={resumeCommand} onChange={(event) => setResumeCommand(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitResumeCommand(); }} placeholder="Type continue and press Enter" className="min-w-[190px] flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-slate-500" />
+          <button type="button" onClick={() => { activeRequest.current?.abort(); setPendingRun(null); setPendingTeamRun(null); setBuildState("idle"); try { localStorage.removeItem(PENDING_RUN_KEY); localStorage.removeItem(PENDING_TEAM_KEY); } catch { /* Ignore local cleanup errors. */ } setNotice("Local build state reset."); }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs"><RotateCcw size={14} /> Reset</button>
+        </div>
+      </div>
+      {notice && <p className="mt-3 text-xs text-slate-300" role="status">{notice}</p>}
+      <p className="mt-3 text-[10px] text-slate-500">A copied profile is a saved local configuration. The UI reads your verified plan capacity and model-level ceiling. The API enforces the model-level ceiling for each request; server-side concurrent worker enforcement is not connected. Each run currently executes one AI Gateway request. Full autonomous file editing, parallel workers, cloud job snapshots and guaranteed provider-side cancellation are not connected yet.</p>
+    </section>
+  );
+}

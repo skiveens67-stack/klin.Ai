@@ -1,0 +1,9 @@
+create index if not exists checkin_sessions_emergency_contact_idx on public.checkin_sessions(emergency_contact_id);
+create index if not exists checkin_sessions_user_idx on public.checkin_sessions(user_id);
+create index if not exists creator_payouts_order_idx on public.creator_payouts(order_id);
+create index if not exists marketplace_listings_project_idx on public.marketplace_listings(project_id);
+create index if not exists marketplace_orders_listing_idx on public.marketplace_orders(listing_id);
+create index if not exists media_jobs_asset_idx on public.media_jobs(asset_id);
+create index if not exists scheduled_actions_user_idx on public.scheduled_actions(user_id);
+create index if not exists social_interactions_user_idx on public.social_interactions(user_id);
+create index if not exists social_posts_project_idx on public.social_posts(project_id);
