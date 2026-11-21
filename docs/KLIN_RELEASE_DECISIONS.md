@@ -31,9 +31,9 @@
 12. **Primary-domain delegation:** Cloudflare lists `klin.website` as `pending`. Its observed authoritative nameservers are still GoDaddy's `ns65.domaincontrol.com` and `ns66.domaincontrol.com`, while Cloudflare assigned `ganz.ns.cloudflare.com` and `kira.ns.cloudflare.com`. Cloudflare's zone records are therefore not yet authoritative. Do not change registrar nameservers without owner approval.
 13. **Support email receiving:** Resend confirms `klin.help` is verified and outbound sending is enabled, but inbound receiving is disabled. If `klin.help` is meant to receive support tickets, its inbound-mail workflow still needs to be selected and configured. If it is only for sending support replies, no change is needed.
 
-## C. Product roadmap decisions for the owner
+## C. Product roadmap decisions
 
-These are not code deletions. Decide whether each capability remains in the Klin roadmap, is postponed to a later version, or is removed from the product plan.
+These are not code deletions. The owner has decided to keep the existing product vision intact. Features previously categorized as postponed remain in the roadmap for later phases; they are not canceled. Business Exchange and escrow are explicitly retained. See section G for the new competitor-capability additions and release sequencing.
 
 - Thangie rover, drones, GPS tracker, and emergency hardware controls.
 - Tactile avatars, camera-based motion games, and multiplayer AR.
@@ -63,7 +63,6 @@ These are not code deletions. Decide whether each capability remains in the Klin
 - The draft backend pull request remains open and unmerged.
 - Kai.AI was not accessed or modified.
 
-
 ## F. Product requirements added 2026-11-20 and implementation status
 
 - **Agent capacity policy:** the source calculates 30 agents for Free and adds 10 for each distinct active paid plan. Unit tests cover Free, paid-plan stacking, duplicate subscription rows, and inactive/unknown plans. This is an entitlement calculation only; the agent scheduler and concurrency enforcement are not connected.
@@ -73,3 +72,32 @@ These are not code deletions. Decide whether each capability remains in the Klin
 - **Test-before-delivery policy:** the required test matrix and delivery states are documented. CI tests this repository itself; there is not yet an isolated project runner that tests each user's generated website, app, game, or video before delivery.
 
 The latest source commit reviewed for this update is `22f231ef085d07d74791fe7b0641b00b44469342`. GitHub Actions run #396 passed dependency installation, lint, TypeScript checking, unit tests, and the Next.js production build. This is CI evidence for the repository, not generated-project QA or launch certification.
+
+## G. Owner-approved competitor-capability additions — 2026-11-21
+
+**Product direction:** Klin.AI launches as a website first. Video creation remains visibly marked **Coming Soon**. All other capabilities in this section are approved additions to the Klin.AI product roadmap. This approval records product scope; it does not claim the features are already implemented.
+
+1. **Klin Voice:** live voice conversations, speech-to-text, text-to-speech, and selectable voice experiences.
+2. **Klin Deep Research:** multi-source web research, source citations, synthesis, report generation, and fact-checking workflows.
+3. **Klin Memory:** user-controlled long-term memory across conversations, with controls to inspect, correct, and disable memory.
+4. **Klin Computer Agent:** permissioned computer and browser interaction for multi-step tasks, with confirmations for consequential actions.
+5. **Klin Tasks:** scheduled, recurring, and condition-triggered tasks with visible run history and user controls.
+6. **Klin Code Agent:** repository-aware coding, file edits, test execution, debugging, and reviewable change sets.
+7. **Klin Data Lab:** spreadsheet and document analysis, calculations, code-assisted analysis, and chart/report generation.
+8. **Klin Connect:** secure integrations with services such as Google, Microsoft, Discord, GitHub, and other supported providers.
+9. **Klin Meeting Assistant:** consent-based meeting capture, transcription, summaries, decisions, and action items.
+10. **Klin Knowledge Base:** searchable user and team libraries for uploaded documents and connected knowledge sources, with source-aware answers and access controls.
+11. **Klin Custom Agents:** user-created assistants with configurable instructions, tools, knowledge, permissions, and sharing controls.
+12. **Klin Workspace:** collaborative projects, shared files, team roles, permissions, and administrative controls.
+
+**Release and safety boundaries:**
+- The first product surface is the Klin.AI website; mobile applications are a later delivery surface, not a prerequisite for the website launch.
+- Video generation stays **Coming Soon** until its provider, rendering pipeline, safety checks, costs, and delivery flow are implemented and tested.
+- New capabilities must be delivered in verified phases. Roadmap approval is not implementation or launch approval.
+- Computer use, integrations, scheduled tasks, and custom agents must use least-privilege permissions, clear user consent, auditable actions, and confirmation before high-impact external actions.
+- Research and knowledge answers must distinguish sourced facts from model inference and provide citations where sources are used.
+- Meeting recording/transcription must be consent-based and follow applicable privacy and retention requirements.
+- Memory must be user-controlled and support correction and disablement.
+- Code Agent changes must be reviewable and tested in an isolated workspace before merge or deployment.
+- No new feature may bypass existing security, age/guardian, financial, escrow, moderation, or production-release gates.
+- Business Exchange and escrow remain in the product plan. Real escrow deposits/releases remain disabled until the legal and approved-provider requirements are satisfied.
