@@ -101,6 +101,7 @@ export async function POST(request: Request) {
       deposit_high_usd: depositHigh,
       deposit_rule: high > 150 && isMultiDay ? "15_percent_for_multi_day_over_150" : "20_usd_or_total_if_lower",
       deposit_credit_percent: 100,
+      deposit_attempt: 0,
       remaining_balance_low_usd: Math.max(0, Math.round((low - depositLow) * 100) / 100),
       remaining_balance_high_usd: Math.max(0, Math.round((high - depositHigh) * 100) / 100),
       checkpoint_interval_percent: 10,
