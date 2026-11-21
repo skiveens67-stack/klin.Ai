@@ -1,5 +1,5 @@
-export const FREE_AGENT_LIMIT = 30;
-export const AGENTS_PER_PAID_PLAN = 10;
+export const FREE_AGENT_LIMIT = 3;
+export const AGENTS_PER_PAID_PLAN = 5;
 
 export const PAID_PLAN_CODES = new Set(["galaxy", "studio_pro", "ultimate"]);
 
