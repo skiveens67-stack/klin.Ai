@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
     if (!gatewayKey) return NextResponse.json({ error: "Klin's image provider is not configured on this deployment yet. You can use Gemini with your own API key in the meantime." }, { status: 503 });
-    const model = process.env.KLIN_IMAGE_MODEL || "minimax/minimax-h3-image";
+    const model = process.env.XZELLO_IMAGE_MODEL || process.env.KLIN_IMAGE_MODEL || "minimax/minimax-h3-image";
     const response = await fetch("https://ai-gateway.vercel.sh/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${gatewayKey}`, "Content-Type": "application/json" },
