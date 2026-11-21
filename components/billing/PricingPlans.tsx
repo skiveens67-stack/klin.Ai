@@ -75,7 +75,7 @@ export default function PricingPlans() {
             {plan.code === "enterprise" ? <a className="module-submit inline-block text-center" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact Klin support</a> : <button type="button" className="module-submit" disabled={busy !== "" || plan.code === "free" || loadingPlans || !enabledPlanCodes.includes(plan.code)} onClick={() => void checkout(plan.code)}>{busy === plan.code ? "Opening checkout…" : plan.code === "free" ? "Included" : loadingPlans ? "Checking availability…" : enabledPlanCodes.includes(plan.code) ? "Choose plan" : "Early access soon"}</button>}
           </article>)}
         </div>
-        <p className="offline-privacy-note">Published prices follow Klin's current V7 membership proposal plus the additional creator/developer tiers. A paid plan can be purchased only after its matching Stripe Price ID, feature entitlements and server-side checkout gate are enabled.</p>
+        <p className="offline-privacy-note">Published prices follow Klin&apos;s current V7 membership proposal plus the additional creator/developer tiers. A paid plan can be purchased only after its matching Stripe Price ID, feature entitlements and server-side checkout gate are enabled.</p>
       </section>
       <section className="module-card">
         <div className="module-card-title"><CreditCard size={18} /><h2>Autonomous Builder plans</h2></div>
