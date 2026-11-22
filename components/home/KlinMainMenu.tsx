@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BriefcaseBusiness, CreditCard, FlaskConical,
   FolderKanban, Globe2, MessageCircle, MonitorSmartphone, Palette, ShoppingBag,
-  Smartphone, Sparkles, Store,
+  Smartphone, Store,
 } from "lucide-react";
 
 const actions = [
@@ -29,7 +29,7 @@ export default function KlinMainMenu() {
       </section>
 
       <section className="klin-dashboard-section">
-        <div className="klin-section-heading"><div><span>START HERE</span><h2>Your main tools</h2></div><Link href="/chat/history">View chat history <ArrowUpRight size={14} /></Link></div>
+        <div className="klin-section-heading"><div><span>START HERE</span><h2>Your main tools</h2></div><Link href="/chat">View chat history <ArrowUpRight size={14} /></Link></div>
         <div className="klin-action-grid">
           {actions.map(({ title, description, href, icon: Icon, tone }) => (
             <Link href={href} className="klin-action-card" key={title}>
