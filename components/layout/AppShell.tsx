@@ -47,7 +47,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
-  const activeItem = [...primary, ...more].find((item) => item.href === pathname || (item.href !== "/" && pathname.startsWith(item.href)));
+  const activeItem = [...primary, ...more].find((item) => item.href === pathname) ?? [...primary, ...more].find((item) => item.href !== "/" && !["/chat", "/chat/xzello"].includes(item.href) && pathname.startsWith(item.href + "/"));
   const moreIsActive = more.some((item) => pathname === item.href || pathname.startsWith(item.href));
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
 
   const renderItem = (item: Item) => {
     const Icon = item.icon;
-    const selected = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
+    const selected = item.href === "/" ? pathname === "/" : pathname === item.href || (!["/chat", "/chat/xzello"].includes(item.href) && pathname.startsWith(item.href + "/"));
     return <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} aria-current={selected ? "page" : undefined} className={"klin-nav-item" + (selected ? " is-active" : "")}>
       <Icon size={17} strokeWidth={1.8} /><span>{item.label}</span>
     </Link>;
@@ -121,7 +121,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
           </div>
           <div className="klin-topbar-actions">
             <Link href="/plans" className="klin-plans-link"><CreditCard size={15} /> Plans & Pricing</Link>
-            <Link href="/chat/history" className="klin-history-link"><History size={15} /> Chat history</Link>
+            <Link href="/chat" className="klin-history-link"><History size={15} /> Chat history</Link>
           </div>
         </header>
         <div className="klin-main-content">{children}</div>
