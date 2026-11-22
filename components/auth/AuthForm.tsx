@@ -42,7 +42,6 @@ export default function AuthForm({ mode, initialError }: Props) {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(""); setMessage(""); setBusy(true);
-    const loadingStartedAt = Date.now();
     let redirectAfterLoading = false;
     try {
       if (mode === "login") {
@@ -76,9 +75,9 @@ export default function AuthForm({ mode, initialError }: Props) {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
     } finally {
-      const remaining = 3500 - (Date.now() - loadingStartedAt);
-      if (remaining > 0) await new Promise(resolve => window.setTimeout(resolve, remaining));
-      setBusy(false);
+      // Keep the loading screen visible while the successful route transition starts.
+      // Failed requests and completed signup-email requests release it immediately.
+      if (!redirectAfterLoading) setBusy(false);
     }
     if (redirectAfterLoading) { router.replace("/"); router.refresh(); }
   };
@@ -101,7 +100,7 @@ export default function AuthForm({ mode, initialError }: Props) {
             <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="verification-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} minLength={6} required value={verificationCode} onChange={e => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" /></div>
           </> : <>
             <label htmlFor="password">Password</label>
-            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={mode === "signup" ? 8 : 1} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
           </>}
           {error && <p className="auth-alert auth-error" role="alert">{error}</p>}
           {message && <p className="auth-alert auth-message" role="status">{message}</p>}
