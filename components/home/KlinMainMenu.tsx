@@ -1,69 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Bot, BriefcaseBusiness, Compass, FolderKanban, Globe2, LayoutDashboard, MessageCircle, Smartphone, Sparkles, Store, FlaskConical } from "lucide-react";
+import {
+  ArrowRight, ArrowUpRight, BriefcaseBusiness, CreditCard, FlaskConical,
+  FolderKanban, Globe2, MessageCircle, MonitorSmartphone, Palette, ShoppingBag,
+  Smartphone, Sparkles, Store,
+} from "lucide-react";
 
-const destinations = [
-  { title: "Create a Website", description: "Describe the website you want. Klin will guide the build.", href: "/builder?type=website", icon: Globe2 },
-  { title: "Create an App", description: "Plan and build an app with Klin's builder.", href: "/builder?type=mobile_app", icon: Smartphone },
-  { title: "Chat with Klinie", description: "Ask questions, plan ideas, or work through a task with Klinie.", href: "/chat", icon: MessageCircle },
-  { title: "Chat with Xzello", description: "Talk directly with Xzello about visual design, branding, layouts, and creative work.", href: "/chat/xzello", icon: Sparkles },
-  { title: "Testing", description: "Open your websites and apps to test them, and track recorded milestones, time estimates, and deposits.", href: "/testing", icon: FlaskConical },
-  { title: "Projects", description: "Continue working on saved websites, apps, and other projects.", href: "/projects", icon: FolderKanban },
+const actions = [
+  { title: "Chat with Klinie", description: "Ask questions, plan, learn, and get help.", href: "/chat", icon: MessageCircle, tone: "blue" },
+  { title: "Chat with Xzello", description: "Work on branding, design, and creative ideas.", href: "/chat/xzello", icon: Palette, tone: "violet" },
+  { title: "Create a Website", description: "Describe your idea and start building.", href: "/builder?type=website", icon: Globe2, tone: "blue" },
+  { title: "Create an App", description: "Plan and build an app with Klin.", href: "/builder?type=mobile_app", icon: Smartphone, tone: "violet" },
+  { title: "Testing", description: "Preview projects and follow saved build progress.", href: "/testing", icon: FlaskConical, tone: "blue" },
+  { title: "My Projects", description: "Open your saved work and continue where you left off.", href: "/projects", icon: FolderKanban, tone: "violet" },
 ];
-
-const quickLinks = [
-  ["Marketplace / Shop", "/marketplace"], ["Sell a Project", "/marketplace"], ["Social", "/social"],
-  ["Projects", "/projects"], ["Autonomous Builder", "/builder"], ["Agent Capacity", "/agents"],
-  ["Klin Modules", "/agents/modules"], ["Learning", "/learning"], ["Family Hub", "/family"],
-  ["Wallet & Gems", "/wallet"], ["Creative Studio & Assets", "/creative-studio"], ["Devices", "/devices"],
-  ["Safety Check-ins", "/checkins"], ["Communication Permissions", "/communications"],
-  ["Trusted Contacts", "/trusted-contacts"], ["V7 Secure Vault", "/vault"],
-  ["Plans & Pricing", "/plans"], ["Integrations", "/integrations"],
-  ["Notifications", "/notifications"], ["Settings", "/settings"], ["Help & Support", "/support"],
-] as const;
 
 export default function KlinMainMenu() {
   return (
-    <main className="klin-home">
-      <header className="klin-home-top">
-        <div className="klin-home-brand"><span className="klin-home-mark">K</span><div><strong>Klin</strong><small>Your workspace</small></div></div>
-        <Link className="klin-home-top-link" href="/chat"><MessageCircle size={16}/> Chat with Klinie <ArrowUpRight size={14}/></Link>
-      </header>
-
-      <section className="klin-home-hero">
-        <div className="klin-home-eyebrow"><Sparkles size={14}/> YOUR KLIN WORKSPACE</div>
-        <h1>What would you like to do?</h1>
-        <p>Explore projects made by the community, start a business, build something new, or talk with Klinie or Xzello.</p>
+    <main className="klin-dashboard">
+      <section className="klin-dashboard-welcome">
+        <div className="klin-dashboard-welcome-copy">
+          <div className="klin-eyebrow"><span /> YOUR WORKSPACE</div>
+          <h1>What are we working on?</h1>
+          <p>Choose one place to start. Your tools, chats, projects, and plans are organized here.</p>
+        </div>
+        <img src="/klin-mascot.svg" alt="" className="klin-dashboard-mascot" />
       </section>
 
-      <section className="klin-home-explore">
-        <div className="klin-home-section-heading"><div><span>DISCOVER</span><h2>Try websites and apps</h2><p>Explore public projects made by other Klin creators.</p></div><Link href="/marketplace">Browse marketplace <ArrowUpRight size={14}/></Link></div>
-        <div className="klin-home-empty">
-          <div className="klin-home-empty-icon"><Compass size={23}/></div>
-          <div><strong>Community previews</strong><p>Published websites and apps will appear here so you can open them, test them, and discover what other people have built. Public preview listings are not available yet.</p></div>
-          <Link href="/marketplace" className="klin-home-outline">Open Marketplace</Link>
+      <section className="klin-dashboard-section">
+        <div className="klin-section-heading"><div><span>START HERE</span><h2>Your main tools</h2></div><Link href="/chat/history">View chat history <ArrowUpRight size={14} /></Link></div>
+        <div className="klin-action-grid">
+          {actions.map(({ title, description, href, icon: Icon, tone }) => (
+            <Link href={href} className="klin-action-card" key={title}>
+              <span className={"klin-action-icon " + tone}><Icon size={20} strokeWidth={1.8} /></span>
+              <strong>{title}</strong><p>{description}</p>
+              <span className="klin-action-arrow"><ArrowUpRight size={16} /></span>
+            </Link>
+          ))}
         </div>
       </section>
 
-      <section className="klin-home-business">
-        <div><div className="klin-home-eyebrow"><BriefcaseBusiness size={14}/> BUSINESS EXCHANGE</div><h2>Shop or Create a Business</h2><p>Start a business with Klin, or explore businesses and products listed by other creators.</p></div>
-        <Link href="/business" className="klin-home-primary">Shop or Create a Business <ArrowUpRight size={16}/></Link>
-      </section>
-
-      <section className="klin-home-section">
-        <div className="klin-home-section-heading"><div><span>CREATE & WORK</span><h2>Choose where to start</h2></div></div>
-        <div className="klin-home-action-grid">
-          {destinations.map(({title,description,href,icon:Icon}) => <Link href={href} className="klin-home-action" key={title}><span className="klin-home-action-icon"><Icon size={20}/></span><strong>{title}</strong><p>{description}</p><span className="klin-home-action-arrow"><ArrowUpRight size={16}/></span></Link>)}
+      <section className="klin-dashboard-section">
+        <div className="klin-section-heading"><div><span>EXPLORE</span><h2>Shop, build, and publish</h2></div></div>
+        <div className="klin-explore-grid">
+          <Link href="/business" className="klin-explore-card klin-explore-business">
+            <span className="klin-action-icon blue"><BriefcaseBusiness size={20} /></span>
+            <div><strong>Shop or Create a Business</strong><p>Start a business with Klin or explore businesses listed by others.</p></div>
+            <ArrowRight size={18} />
+          </Link>
+          <Link href="/marketplace" className="klin-explore-card">
+            <span className="klin-action-icon violet"><ShoppingBag size={20} /></span>
+            <div><strong>Marketplace</strong><p>Browse projects, websites, apps, and business listings.</p></div>
+            <ArrowRight size={18} />
+          </Link>
+          <Link href="/social" className="klin-explore-card">
+            <span className="klin-action-icon blue"><Store size={20} /></span>
+            <div><strong>Community</strong><p>See what other creators are sharing.</p></div>
+            <ArrowRight size={18} />
+          </Link>
         </div>
       </section>
 
-      <section className="klin-home-section klin-home-tools">
-        <div className="klin-home-section-heading"><div><span>YOUR KLIN</span><h2>Workspace tools</h2></div></div>
-        <div className="klin-home-quick-grid">{quickLinks.map(([label,href])=><Link href={href} key={href}>{label}<ArrowUpRight size={13}/></Link>)}</div>
+      <section className="klin-plan-banner">
+        <div className="klin-plan-banner-icon"><CreditCard size={20} /></div>
+        <div><span>PLANS & PAYMENTS</span><strong>See all Klin plans in one place</strong><p>Compare memberships, builder capacity, and which checkouts are currently available.</p></div>
+        <Link href="/plans">View payment plans <ArrowUpRight size={15} /></Link>
       </section>
-      <section className="klin-home-coming-soon"><div><span>COMING SOON</span><strong>Image and video creation</strong><p>These creation tools are not available in this preview yet.</p></div></section>
-      <footer className="klin-home-footer">Klin · One place to explore, create, and work.</footer>
+
+      <section className="klin-coming-row">
+        <div className="klin-coming-icon"><MonitorSmartphone size={19} /></div>
+        <div><strong>Image and video creation</strong><p>Coming soon. These tools will appear here when they are ready.</p></div>
+        <span>COMING SOON</span>
+      </section>
+      <footer className="klin-dashboard-footer">Klin · One clear place to create, test, and manage your work.</footer>
     </main>
   );
 }
