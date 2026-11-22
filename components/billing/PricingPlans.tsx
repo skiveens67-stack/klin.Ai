@@ -62,7 +62,7 @@ export default function PricingPlans() {
     }
   }
 
-  const planButton = (code: string, label: string) => {
+  const planButton = (code: string) => {
     if (code === "free") return <span className="klin-plan-included">Included</span>;
     if (code === "enterprise") return <a className="klin-plan-button" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact support</a>;
     const enabled = enabledPlanCodes.includes(code);
@@ -87,7 +87,7 @@ export default function PricingPlans() {
             <div className="klin-plan-card-top"><strong>{plan.name}</strong>{plan.code === "pro" && <span className="klin-plan-recommended">POPULAR</span>}</div>
             <div className="klin-plan-price">{plan.price}</div><p>{plan.detail}</p>
             <div className="klin-plan-status">{plan.code === "free" ? "Available now" : plan.code === "enterprise" ? "Contact for details" : loadingPlans ? "Checking availability…" : enabledPlanCodes.includes(plan.code) ? "Checkout enabled" : "Early access / setup pending"}</div>
-            {planButton(plan.code, plan.name)}
+            {planButton(plan.code)}
           </article>)}
         </div>
       </section>
@@ -105,7 +105,7 @@ export default function PricingPlans() {
 
       <section className="klin-plans-section klin-intelligence-plan">
         <div className="klin-plans-section-title"><div><span>03 / INTELLIGENCE</span><h2>Klin V6 Ultra Smart</h2><p>A separate intelligence add-on. Worker capacity remains controlled by your Builder plan.</p></div></div>
-        <div className="klin-intelligence-card"><span className="klin-action-icon violet"><Sparkles size={20} /></span><div><strong>V6 Ultra Smart intelligence</strong><p>Its own subscription; it does not replace the free V7 Ultra Safe layer.</p></div>{planButton("klin_v6_ultra", "V6 Ultra Smart")}</div>
+        <div className="klin-intelligence-card"><span className="klin-action-icon violet"><Sparkles size={20} /></span><div><strong>V6 Ultra Smart intelligence</strong><p>Its own subscription; it does not replace the free V7 Ultra Safe layer.</p></div>{planButton("klin_v6_ultra")}</div>
         <p className="klin-plan-footnote">Klin V7 Ultra Safe is free and always on. It is not a paid upgrade.</p>
       </section>
 
