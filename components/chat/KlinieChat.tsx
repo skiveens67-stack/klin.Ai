@@ -56,6 +56,7 @@ export default function KlinieChat() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [loadingConversation, setLoadingConversation] = useState(false);
   const [sending, setSending] = useState(false);
+  const [creatingConversation, setCreatingConversation] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
@@ -107,6 +108,8 @@ export default function KlinieChat() {
   }, [messages.length]);
 
   const startConversation = async () => {
+    if (creatingConversation) return;
+    setCreatingConversation(true);
     setHistoryError("");
     setNotice("");
     try {
@@ -121,6 +124,8 @@ export default function KlinieChat() {
       requestAnimationFrame(() => textareaRef.current?.focus());
     } catch (error) {
       setHistoryError(error instanceof Error ? error.message : "Could not create a conversation.");
+    } finally {
+      setCreatingConversation(false);
     }
   };
 
@@ -247,9 +252,9 @@ export default function KlinieChat() {
         </div>
 
         <div className="p-3">
-          <button onClick={() => void startConversation()}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-3 text-sm font-medium text-cyan-200 transition hover:border-cyan-300/50 hover:bg-cyan-400/15">
-            <Plus size={17} /> New chat
+          <button type="button" onClick={() => void startConversation()} disabled={creatingConversation}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/[0.09] px-3 py-3 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/[0.15] disabled:opacity-60">
+            <Plus size={17} /> {creatingConversation ? "Creating chat…" : "New chat"}
           </button>
         </div>
 
@@ -302,7 +307,7 @@ export default function KlinieChat() {
               <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> AI connection pending</div>
             </div>
           </div>
-          <button onClick={() => void startConversation()} className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/5"><SquarePen size={14} /> <span className="hidden sm:inline">New chat</span></button>
+          <button type="button" onClick={() => void startConversation()} disabled={creatingConversation} className="flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs text-slate-200 hover:bg-white/10 disabled:opacity-50"><SquarePen size={14} /> <span className="hidden sm:inline">New chat</span></button>
         </header>
 
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
