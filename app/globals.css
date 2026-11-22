@@ -1111,3 +1111,36 @@ body{background:#07090d;color:#f5f7fb}
 [class*="text-cyan-"]{color:#8bb4ff!important}
 [class*="border-cyan-"]{border-color:#2d5aa0!important}
 [class*="bg-cyan-"]{background-color:#0b5fff22!important}
+
+
+/* Monochrome loading screen and compact walker alignment */
+.klin-loading-screen{background:#000!important}
+.klin-loading-card{background:#090909!important;border-color:#333!important;box-shadow:0 28px 100px #000!important}
+.klin-loading-stage{width:184px!important;height:88px!important;overflow:visible}
+.klin-loading-wordmark{gap:3px!important;font-size:43px!important;color:#fff!important;position:relative;z-index:1}
+.klin-loading-wordmark span{color:#fff!important}
+.klin-loading-wordmark span:nth-child(2),.klin-loading-wordmark span:nth-child(3),.klin-loading-wordmark span:nth-child(4){animation-name:klin-letter-pop-mono}
+.klin-loading-walker{width:29px!important;height:42px!important;left:1px!important;bottom:17px!important;object-fit:contain;filter:drop-shadow(0 3px 3px #000)!important;z-index:3}
+.klin-loading-sfx{border-color:#666!important;background:#111!important;color:#fff!important}
+.klin-loading-title{color:#fff!important}
+.klin-loading-subtitle{color:#aaa!important}
+.klin-loading-progress{background:#333!important}
+.klin-loading-progress span{background:#fff!important}
+.klin-loading-oops{left:36%!important}
+.klin-loading-laugh{right:0!important}
+@keyframes klin-letter-pop-mono{0%,100%{transform:translateY(0);color:#fff}45%{transform:translateY(-5px);color:#bbb}}
+@keyframes klin-loading-adventure{
+  0%{transform:translate(0,0) rotate(-5deg)}
+  12%{transform:translate(20px,-3px) rotate(5deg)}
+  24%{transform:translate(42px,0) rotate(-4deg)}
+  36%{transform:translate(64px,-5px) rotate(5deg)}
+  43%{transform:translate(75px,1px) rotate(-8deg)}
+  47%{transform:translate(80px,7px) rotate(-68deg)}
+  53%{transform:translate(85px,0) rotate(18deg)}
+  60%{transform:translate(100px,-14px) rotate(0)}
+  68%{transform:translate(112px,-2px) rotate(-8deg)}
+  76%{transform:translate(125px,-19px) rotate(10deg)}
+  84%{transform:translate(138px,-4px) rotate(-5deg)}
+  94%{transform:translate(146px,-10px) rotate(3deg)}
+  100%{transform:translate(0,0) rotate(-5deg)}
+}
