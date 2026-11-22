@@ -894,3 +894,179 @@ body { background-image:none !important; }
 .klin-testing-empty strong{color:#eee}.klin-testing-empty p{font-size:12px;line-height:1.6;max-width:460px}
 .klin-testing-error{color:#fca5a5;font-size:12px}.klin-testing-foot{display:flex;align-items:center;gap:8px;margin-top:22px;color:#777;font-size:10px;line-height:1.6}
 @media(max-width:650px){.klin-testing-header,.klin-testing-cardtop{align-items:flex-start;flex-direction:column}.klin-testing-header button{width:100%;justify-content:center}.klin-testing-stats{grid-template-columns:1fr}}
+
+/* Klin brand refresh: black, white and blue */
+:root{--klin-bg:#07090d;--klin-surface:#10141c;--klin-surface-raised:#171d28;--klin-border:rgba(255,255,255,.1);--klin-text:#f5f7fb;--klin-muted:#98a2b3;--klin-cyan:#0B5FFF;--klin-blue:#0B5FFF;--klin-violet:#477FFF;--klin-purple:#A8C5FF}
+body{background:#07090d;color:#f5f7fb}
+.klin-shell{display:flex;width:100%;height:100dvh;min-height:560px;overflow:hidden;background:#07090d;color:#f5f7fb;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.klin-sidebar{position:relative;z-index:20;display:flex;flex:0 0 252px;flex-direction:column;min-width:0;border-right:1px solid #202632;background:#0b0e14;padding:18px 14px 14px}
+.klin-sidebar-brand{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 13px;border-bottom:1px solid #202632}
+.klin-sidebar-brand img{display:block;width:136px;height:auto}
+.klin-sidebar-close,.klin-menu-trigger{display:none!important}
+.klin-workspace-label{display:flex;align-items:center;gap:8px;margin:18px 10px 22px;color:#7e8a9e;font-size:9px;font-weight:750;letter-spacing:.15em}
+.klin-status-dot{width:6px;height:6px;border-radius:50%;background:#0B5FFF;box-shadow:0 0 10px #0B5FFF88}
+.klin-sidebar-nav{min-height:0;flex:1;overflow:auto;scrollbar-width:thin;scrollbar-color:#293244 transparent}
+.klin-nav-caption{padding:0 10px 9px;color:#647084;font-size:9px;font-weight:750;letter-spacing:.16em}
+.klin-nav-item{width:100%;min-height:42px;display:flex;align-items:center;gap:11px;padding:0 11px;margin:2px 0;border:1px solid transparent;border-radius:10px;background:transparent;color:#a8b0be;text-decoration:none;text-align:left;font-size:12px;font-weight:550;transition:background .16s,border-color .16s,color .16s}
+.klin-nav-item svg{flex:none;color:#778398}
+.klin-nav-item:hover{background:#141b27;color:#fff}
+.klin-nav-item.is-active{border-color:#234c91;background:#102348;color:#fff}
+.klin-nav-item.is-active svg{color:#70a3ff}
+.klin-more-toggle{cursor:pointer}
+.klin-more-toggle>span{flex:1}
+.klin-more-toggle>svg:last-child{transition:transform .16s}
+.klin-more-toggle>svg.is-rotated{transform:rotate(180deg)}
+.klin-more-list{padding:3px 0 5px 12px;border-left:1px solid #273246;margin:2px 0 8px 18px}
+.klin-more-list .klin-nav-item{min-height:36px;font-size:11px}
+.klin-sidebar-bottom{border-top:1px solid #202632;padding-top:12px}
+.klin-account-card{display:flex;align-items:center;gap:10px;margin-top:10px;padding:11px 9px;border:1px solid #222b39;border-radius:12px;background:#101620}
+.klin-account-avatar{width:31px;height:31px;display:grid;place-items:center;flex:none;border-radius:10px;background:#0B5FFF;color:white;font-size:12px;font-weight:750}
+.klin-account-meta{display:grid;gap:3px;min-width:0;flex:1}
+.klin-account-meta strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e7ebf2;font-size:11px;font-weight:650}
+.klin-account-meta span{color:#788397;font-size:9px}
+.klin-icon-button{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:9px;background:transparent;color:#8c98aa;cursor:pointer}
+.klin-icon-button:hover{border-color:#303b4e;background:#171f2c;color:white}
+.klin-shell-error{padding:0 8px;color:#fda4af;font-size:10px}
+.klin-main-column{display:flex;min-width:0;flex:1;flex-direction:column}
+.klin-topbar{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;padding:0 clamp(16px,3vw,36px);border-bottom:1px solid #1e2632;background:#0a0d13}
+.klin-topbar-left,.klin-topbar-actions{display:flex;align-items:center;gap:12px}
+.klin-topbar-title{color:#e7ebf2;font-size:12px;font-weight:650}
+.klin-topbar-actions{gap:8px}
+.klin-plans-link,.klin-history-link{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #29364b;border-radius:9px;background:#111a29;color:#dbe8ff;text-decoration:none;font-size:11px;font-weight:650}
+.klin-plans-link{border-color:#2a5bb0;background:#102348;color:#fff}
+.klin-plans-link svg{color:#80aaff}
+.klin-history-link{background:transparent;color:#aeb8c8}
+.klin-main-content{min-width:0;min-height:0;flex:1;overflow:auto}
+.klin-mobile-scrim{display:none}
+.klin-dashboard{width:min(100%,1240px);margin:0 auto;padding:clamp(22px,3.2vw,42px) clamp(16px,3vw,38px) 32px}
+.klin-dashboard-welcome{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:170px;overflow:hidden;padding:30px 34px;border:1px solid #24344c;border-radius:18px;background:radial-gradient(ellipse at 90% 50%,#12326a 0,transparent 42%),linear-gradient(115deg,#101824,#0d121b)}
+.klin-dashboard-welcome-copy{position:relative;z-index:1;max-width:680px}
+.klin-eyebrow{display:flex;align-items:center;gap:8px;color:#83aefb;font-size:9px;font-weight:800;letter-spacing:.17em}
+.klin-eyebrow>span{width:6px;height:6px;border-radius:50%;background:#0B5FFF;box-shadow:0 0 12px #0B5FFF}
+.klin-dashboard-welcome h1{margin:13px 0 8px;color:#f8fafc;font-size:clamp(27px,4vw,42px);font-weight:720;letter-spacing:-.05em;line-height:1.08}
+.klin-dashboard-welcome p{max-width:570px;margin:0;color:#9ca9bc;font-size:13px;line-height:1.7}
+.klin-dashboard-mascot{width:112px;height:136px;object-fit:contain;align-self:flex-end;margin:-12px 12px -17px 18px;filter:drop-shadow(0 12px 25px #0b5fff35)}
+.klin-dashboard-section{margin-top:30px}
+.klin-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:13px}
+.klin-section-heading>div>span{color:#6f7d92;font-size:9px;font-weight:800;letter-spacing:.17em}
+.klin-section-heading h2{margin:5px 0 0;color:#f1f5fb;font-size:18px;font-weight:680;letter-spacing:-.03em}
+.klin-section-heading>a{display:inline-flex;align-items:center;gap:6px;color:#8eaff0;text-decoration:none;font-size:10px}
+.klin-action-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.klin-action-card{position:relative;display:flex;min-height:154px;flex-direction:column;align-items:flex-start;padding:17px;border:1px solid #242d3b;border-radius:14px;background:#10151e;color:#f2f5fa;text-decoration:none;transition:transform .16s,border-color .16s,background .16s}
+.klin-action-card:hover{transform:translateY(-2px);border-color:#3c65a8;background:#121d2e}
+.klin-action-icon{width:37px;height:37px;display:grid;place-items:center;flex:none;border-radius:11px}
+.klin-action-icon.blue{background:#0b5fff20;color:#78a5ff}
+.klin-action-icon.violet{background:#5269b31f;color:#a5b5ff}
+.klin-action-card>strong{margin-top:13px;color:#f5f7fb;font-size:13px;font-weight:650}
+.klin-action-card>p{max-width:290px;margin:5px 0 0;color:#8e9aad;font-size:11px;line-height:1.55}
+.klin-action-arrow{position:absolute;right:15px;top:18px;color:#73839a}
+.klin-explore-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.klin-explore-card{display:flex;align-items:center;gap:12px;min-height:94px;padding:15px;border:1px solid #242d3b;border-radius:13px;background:#10151e;color:#f3f6fb;text-decoration:none}
+.klin-explore-card>div{min-width:0;flex:1}
+.klin-explore-card strong{font-size:12px;font-weight:650}
+.klin-explore-card p{margin:5px 0 0;color:#8d9aad;font-size:10px;line-height:1.5}
+.klin-explore-card>svg:last-child{flex:none;color:#8092ac}
+.klin-explore-card:hover{border-color:#3c65a8;background:#121d2e}
+.klin-plan-banner{display:flex;align-items:center;gap:14px;margin-top:24px;padding:17px;border:1px solid #2b4f86;border-radius:14px;background:linear-gradient(100deg,#102348,#111a2a)}
+.klin-plan-banner-icon{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:11px;background:#0b5fff25;color:#8db4ff}
+.klin-plan-banner>div:nth-child(2){min-width:0;flex:1}
+.klin-plan-banner>div:nth-child(2)>span{display:block;color:#83aefb;font-size:8px;font-weight:800;letter-spacing:.15em}
+.klin-plan-banner strong{display:block;margin-top:4px;color:#fff;font-size:13px}
+.klin-plan-banner p{margin:4px 0 0;color:#a3b2c9;font-size:10px;line-height:1.5}
+.klin-plan-banner>a{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:#fff;text-decoration:none;font-size:10px;font-weight:650}
+.klin-coming-row{display:flex;align-items:center;gap:12px;margin-top:13px;padding:13px 15px;border:1px solid #252d39;border-radius:12px;background:#0d121a}
+.klin-coming-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:#1a2230;color:#9aabc2}
+.klin-coming-row>div:nth-child(2){min-width:0;flex:1}
+.klin-coming-row strong{color:#e7ebf2;font-size:11px}
+.klin-coming-row p{margin:3px 0 0;color:#7f8a9b;font-size:10px}
+.klin-coming-row>span{color:#8d9ab0;font-size:8px;font-weight:800;letter-spacing:.13em}
+.klin-dashboard-footer{padding-top:23px;color:#667285;font-size:9px}
+.klin-plans-page{width:min(100%,1160px);margin:0 auto;padding:clamp(22px,3.2vw,42px) clamp(16px,3vw,38px) 36px;color:#f4f6fa}
+.klin-plans-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}
+.klin-plans-header h1{margin:10px 0 8px;font-size:clamp(29px,4vw,42px);letter-spacing:-.05em}
+.klin-plans-header p{max-width:650px;margin:0;color:#9aa6b8;font-size:12px;line-height:1.7}
+.klin-plans-header-mark{width:58px;height:58px;display:grid;place-items:center;border:1px solid #2b4f86;border-radius:16px;background:#102348;color:#8db4ff}
+.klin-plan-explainer{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid #283b59;border-radius:12px;background:#101a2a;color:#b9c9e2}
+.klin-plan-explainer svg{flex:none;color:#80aaff;margin-top:1px}
+.klin-plan-explainer p{margin:0;font-size:11px;line-height:1.65}
+.klin-plan-explainer strong{color:#fff}
+.klin-plans-section{margin-top:29px}
+.klin-plans-section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:13px}
+.klin-plans-section-title>div>span{color:#6f7d92;font-size:9px;font-weight:800;letter-spacing:.16em}
+.klin-plans-section-title h2{margin:6px 0 4px;font-size:18px;letter-spacing:-.03em}
+.klin-plans-section-title p{margin:0;color:#8d9aad;font-size:11px}
+.klin-plans-count{color:#8795aa;font-size:9px}
+.klin-plans-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.klin-plan-card{display:flex;min-height:170px;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border:1px solid #252e3d;border-radius:13px;background:#10151e}
+.klin-plan-card.is-featured{border-color:#2f65b8;background:linear-gradient(145deg,#12213a,#10151e)}
+.klin-plan-card-top{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px}
+.klin-plan-card-top strong{color:#f2f5fa;font-size:13px;font-weight:650}
+.klin-plan-recommended{padding:4px 6px;border-radius:5px;background:#0b5fff25;color:#8db4ff;font-size:7px;font-weight:800;letter-spacing:.1em}
+.klin-plan-price{color:#fff;font-size:22px;font-weight:720;letter-spacing:-.04em}
+.klin-plan-card p{min-height:31px;margin:0;color:#9aa6b8;font-size:10px;line-height:1.55}
+.klin-plan-status{margin-top:auto;color:#8190a4;font-size:9px}
+.klin-plan-button{width:100%;min-height:36px;display:flex;align-items:center;justify-content:center;padding:8px 10px;border:1px solid #34445c;border-radius:8px;background:#192334;color:#e7efff;text-decoration:none;font-size:10px;font-weight:650;cursor:pointer}
+.klin-plan-button:disabled{opacity:.55;cursor:not-allowed}
+.klin-plan-card.is-featured .klin-plan-button{border-color:#0b5fff;background:#0b5fff;color:#fff}
+.klin-plan-included{width:100%;padding:9px 10px;border:1px solid #34445c;border-radius:8px;background:#151d29;color:#d8e1f0;text-align:center;font-size:10px}
+.klin-intelligence-card{display:flex;align-items:center;gap:14px;padding:17px;border:1px solid #293a55;border-radius:13px;background:#101825}
+.klin-intelligence-card>div{min-width:0;flex:1}
+.klin-intelligence-card strong{font-size:12px}
+.klin-intelligence-card p{margin:4px 0 0;color:#93a1b5;font-size:10px;line-height:1.5}
+.klin-intelligence-card .klin-plan-button{width:auto;min-width:150px}
+.klin-plan-footnote,.klin-plans-footer{color:#7f8b9e;font-size:10px;line-height:1.6}
+.klin-included-card{padding:16px;border:1px solid #252e3d;border-radius:13px;background:#0f141d}
+.klin-included-card>div{display:flex;align-items:center;gap:8px;color:#e5ebf4;font-size:12px}
+.klin-included-card>div svg{color:#7eacff}
+.klin-included-card p{margin:8px 0 0;color:#8f9bad;font-size:10px;line-height:1.65}
+.klin-plan-error{margin-bottom:15px;padding:12px;border:1px solid #7f3039;border-radius:10px;background:#2b1217;color:#fecdd3;font-size:11px}
+.klin-plans-footer{padding-top:20px}
+.klin-chat-history-trigger{display:none}
+.klin-loading-screen{position:fixed;z-index:2000;inset:0;display:grid;place-items:center;padding:20px;background:#07090df7;backdrop-filter:blur(14px)}
+.klin-loading-card{width:min(92vw,380px);padding:28px 26px 24px;border:1px solid #26354c;border-radius:18px;background:#0e131c;text-align:center;box-shadow:0 28px 100px #0009}
+.klin-loading-stage{position:relative;width:245px;height:92px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center}
+.klin-loading-wordmark{display:flex;align-items:center;gap:5px;color:#fff;font-size:46px;font-weight:800;letter-spacing:-.08em}
+.klin-loading-wordmark span{display:inline-block;animation:klin-letter-pop 1.6s ease-in-out infinite}
+.klin-loading-wordmark span:nth-child(2){animation-delay:.18s}.klin-loading-wordmark span:nth-child(3){animation-delay:.36s}.klin-loading-wordmark span:nth-child(4){animation-delay:.54s}
+.klin-loading-walker{position:absolute;left:0;bottom:0;width:48px;height:65px;object-fit:contain;animation:klin-walk-letters 2.8s ease-in-out infinite;filter:drop-shadow(0 6px 12px #0b5fff55)}
+.klin-loading-title{margin:0;color:#f6f8fc;font-size:14px;font-weight:700}
+.klin-loading-subtitle{margin:7px 0 0;color:#91a0b4;font-size:11px}
+.klin-loading-progress{height:3px;overflow:hidden;margin-top:22px;border-radius:99px;background:#253044}
+.klin-loading-progress span{display:block;width:35%;height:100%;border-radius:99px;background:#0B5FFF;animation:klin-progress-run 1.3s ease-in-out infinite}
+@keyframes klin-letter-pop{0%,100%{transform:translateY(0);color:#fff}45%{transform:translateY(-7px);color:#8bb4ff}}
+@keyframes klin-walk-letters{0%{transform:translate(0,0) rotate(-4deg)}12%{transform:translate(22px,-7px) rotate(3deg)}25%{transform:translate(55px,-1px) rotate(-3deg)}38%{transform:translate(85px,-10px) rotate(4deg)}52%{transform:translate(115px,0) rotate(-3deg)}66%{transform:translate(145px,-12px) rotate(4deg)}80%{transform:translate(175px,-1px) rotate(-3deg)}100%{transform:translate(205px,-7px) rotate(0)}}
+@keyframes klin-progress-run{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+.klin-chat-workspace{background:#080c13!important;color:#f2f5fa!important}
+.klin-chat-workspace .text-cyan-100,.klin-chat-workspace .text-cyan-200,.klin-chat-workspace .text-cyan-300{color:#8bb4ff!important}
+.klin-chat-workspace .bg-cyan-400\/\[0\.09\],.klin-chat-workspace .bg-gradient-to-br.from-cyan-400{background:#0b5fff!important}
+.klin-chat-workspace .border-cyan-300\/15{border-color:#2c5cab!important}
+.klin-chat-history-trigger{align-items:center;gap:7px;padding:8px 10px;border:1px solid #2a3c59;border-radius:9px;background:#101b2c;color:#dce8ff;font-size:11px;font-weight:650}
+@media(max-width:900px){.klin-sidebar{flex-basis:226px}.klin-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.klin-explore-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){
+.klin-sidebar{position:fixed;inset:0 auto 0 0;width:min(86vw,300px);transform:translateX(-105%);transition:transform .2s ease;box-shadow:none}
+.klin-sidebar.is-open{transform:translateX(0);box-shadow:20px 0 80px #0009}
+.klin-mobile-scrim{position:fixed;z-index:19;inset:0;display:block;border:0;background:#0009}
+.klin-sidebar-close,.klin-menu-trigger{display:inline-flex!important}
+.klin-topbar{height:58px;padding:0 13px}
+.klin-topbar-title{font-size:11px}
+.klin-history-link{display:none}
+.klin-chat-history-trigger{display:inline-flex}
+.klin-dashboard{padding:18px 14px 28px}
+.klin-dashboard-welcome{min-height:150px;padding:22px 19px}
+.klin-dashboard-mascot{width:76px;height:106px;margin-right:-8px}
+.klin-action-grid{grid-template-columns:1fr 1fr;gap:9px}
+.klin-action-card{min-height:150px;padding:13px}
+.klin-action-card>strong{font-size:11px}
+.klin-action-card>p{font-size:10px}
+.klin-explore-grid{grid-template-columns:1fr}
+.klin-plan-banner{align-items:flex-start;flex-wrap:wrap;padding:14px}
+.klin-plan-banner>a{margin-left:54px}
+.klin-plans-page{padding:20px 14px 30px}
+.klin-plans-grid{grid-template-columns:1fr 1fr;gap:9px}
+.klin-plan-card{min-height:166px;padding:12px}
+.klin-plan-price{font-size:19px}
+.klin-intelligence-card{align-items:flex-start;flex-wrap:wrap}
+.klin-intelligence-card .klin-plan-button{width:100%}
+}
+@media(max-width:420px){.klin-action-grid,.klin-plans-grid{grid-template-columns:1fr}.klin-coming-row>span{display:none}.klin-plans-header-mark{width:45px;height:45px}.klin-dashboard-welcome h1{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.klin-loading-wordmark span,.klin-loading-walker,.klin-loading-progress span,.klin-action-card{animation:none!important;transition:none!important}}
