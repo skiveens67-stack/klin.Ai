@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { LucideIcon, ReactNode } from "react";
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
