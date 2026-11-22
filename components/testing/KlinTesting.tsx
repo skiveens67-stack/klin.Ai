@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Clock3, ExternalLink, FlaskConical, RefreshCw } from "lucide-react";
 
@@ -14,7 +14,8 @@ type Quote = {
   estimated_total_low_usd?: number; estimated_total_high_usd?: number;
 };
 const stages = [
-  { keys: ["draft", "awaiting_deposit"], title: "Planning & quote" },
+  { keys: ["draft"], title: "Planning" },
+  { keys: ["awaiting_deposit"], title: "Awaiting deposit" },
   { keys: ["deposit_paid", "deposit_confirmed"], title: "Deposit confirmed" },
   { keys: ["building", "in_progress"], title: "Build in progress" },
   { keys: ["testing", "qa"], title: "Quality testing" },
@@ -89,7 +90,7 @@ export default function KlinTesting() {
     () => filter === "all" ? projects : projects.filter((project) => ["website", "app", "game"].includes(project.project_type)),
     [filter, projects]
   );
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true); setError("");
     fetch("/api/projects", { credentials: "same-origin", cache: "no-store" })
       .then(async (response) => {
@@ -99,8 +100,8 @@ export default function KlinTesting() {
       })
       .catch((caught) => setError(caught instanceof Error ? caught.message : "Unable to load projects."))
       .finally(() => setLoading(false));
-  };
-  useEffect(() => { load(); }, []);
+  }, []);
+  useEffect(() => { load(); }, [load]);
   return (
     <main className="klin-testing-page">
       <header className="klin-testing-header">
