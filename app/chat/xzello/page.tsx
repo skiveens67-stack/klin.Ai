@@ -1,0 +1,19 @@
+import { redirect } from "next/navigation";
+import AppShell from "@/components/layout/AppShell";
+import KlinieChat from "@/components/chat/KlinieChat";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+export default async function XzelloChatPage() {
+  let email = "";
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) redirect("/login");
+    email = user.email ?? "";
+  } catch {
+    redirect("/login?error=configuration");
+  }
+  return <AppShell userEmail={email}><KlinieChat assistantKey="xzello" assistantName="Xzello" /></AppShell>;
+}
