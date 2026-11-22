@@ -25,7 +25,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         setEmail(savedEmail);
         setUsername(window.localStorage.getItem("klin.pendingSignupUsername") || "");
         setVerificationPending(true);
-        setMessage("Your signup is saved. Enter the eight-digit code from your email to continue.");
+        setMessage("Your signup is saved. Enter the six-digit code from your email to continue.");
       }
     } catch { /* Storage may be unavailable; signup still works in the current tab. */ }
   }, [mode]);
@@ -70,7 +70,7 @@ export default function AuthForm({ mode, initialError }: Props) {
         if (!response.ok) throw new Error(data.error || "Unable to create your account.");
         setPassword(""); setVerificationPending(true);
         try { window.localStorage.setItem("klin.pendingSignupEmail", email.trim()); window.localStorage.setItem("klin.pendingSignupUsername", username); } catch { /* Keep current-tab flow working if storage is unavailable. */ }
-        setMessage(data.message || "Check your email for an eight-digit verification code from Klin.");
+        setMessage(data.message || "Check your email for an six-digit verification code from Klin.");
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
@@ -90,17 +90,17 @@ export default function AuthForm({ mode, initialError }: Props) {
         <Link className="auth-brand" href="/" aria-label="Klin home"><img src="/klin-logo.svg" alt="Klin" className="h-10 w-auto" /></Link>
         <div className="auth-kicker">{mode === "login" ? "WELCOME BACK TO KLIN" : "START WITH KLIN"}</div>
         <h1>{title}</h1>
-        <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the eight-digit code we sent to your email to activate your account." : "Create a workspace account for your conversations, projects, and tools."}</p>
+        <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the six-digit code we sent to your email to activate your account." : "Create a workspace account for your conversations, projects, and tools."}</p>
         <form onSubmit={submit} className="auth-form">
           {mode === "signup" && !verificationPending && <><label htmlFor="username">Username</label><div className="auth-input-wrap"><input id="username" type="text" autoComplete="username" required minLength={4} maxLength={49} value={username} onChange={e => setUsername(e.target.value)} placeholder="Choose a username" /></div><p className="auth-email-help">Use any name you like, from 4 to 49 characters.</p></>}
           <label htmlFor="email">Email address</label>
           <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" readOnly={mode === "signup" && verificationPending} /></div>
           {mode === "signup" && verificationPending ? <>
-            <label htmlFor="verification-code">Eight-digit email code</label>
-            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="verification-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} minLength={8} required value={verificationCode} onChange={e => setVerificationCode(e.target.value.replace(/\\D/g, "").slice(0, 8))} placeholder="000000" /></div>
+            <label htmlFor="verification-code">Six-digit email code</label>
+            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="verification-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} minLength={6} required value={verificationCode} onChange={e => setVerificationCode(e.target.value.replace(/\\D/g, "").slice(0, 6))} placeholder="000000" /></div>
           </> : <>
             <label htmlFor="password">Password</label>
-            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
+            <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} maxLength={128} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" /><button className="auth-show-password" type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
           </>}
           {error && <p className="auth-alert auth-error" role="alert">{error}</p>}
           {message && <p className="auth-alert auth-message" role="status">{message}</p>}
