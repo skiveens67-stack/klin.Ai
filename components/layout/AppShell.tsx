@@ -1,51 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { LucideIcon, ReactNode } from "react";
 import Link from "next/link";
 import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
 import {
-  Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole, LayoutDashboard,
-  Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
-  ShieldCheck, Users, WalletCards, X, Palette, FlaskConical, Sparkles,
+  Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp,
+  ClipboardCheck, Compass, Cpu, CreditCard, FolderKanban, Hammer, History,
+  Home, LockKeyhole, LogOut, Menu, MessageCircle, Palette, Radio, Settings,
+  ShieldCheck, Sparkles, Users, WalletCards, X, FlaskConical,
 } from "lucide-react";
 
-type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
-
-const navigation: NavigationItem[] = [
-  { label: "Main menu", href: "/", icon: LayoutDashboard },
+type Item = { label: string; href: string; icon: LucideIcon };
+const primary: Item[] = [
+  { label: "Home", href: "/", icon: Home },
   { label: "Chat with Klinie", href: "/chat", icon: MessageCircle },
   { label: "Chat with Xzello", href: "/chat/xzello", icon: Sparkles },
+  { label: "Create", href: "/builder", icon: Hammer },
   { label: "Testing", href: "/testing", icon: FlaskConical },
-  { label: "Shop or Create a Business", href: "/business", icon: BriefcaseBusiness },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Agent capacity", href: "/agents", icon: Bot },
-  { label: "Klin Modules", href: "/agents/modules", icon: Blocks },
-  { label: "Autonomous Builder", href: "/builder", icon: Hammer },
   { label: "Marketplace", href: "/marketplace", icon: Compass },
+];
+const more: Item[] = [
+  { label: "Shop or Create a Business", href: "/business", icon: BriefcaseBusiness },
   { label: "Social", href: "/social", icon: Users },
   { label: "Learning", href: "/learning", icon: BookOpen },
   { label: "Wallet", href: "/wallet", icon: WalletCards },
-  { label: "Plans & Pricing", href: "/plans", icon: CreditCard },
-  { label: "V7 Secure Vault", href: "/vault", icon: LockKeyhole },
+  { label: "Agent capacity", href: "/agents", icon: Bot },
+  { label: "Klin Modules", href: "/agents/modules", icon: Blocks },
   { label: "Family Hub", href: "/family", icon: ShieldCheck },
-  { label: "Devices", href: "/devices", icon: Cpu },
-  { label: "Communication Rules", href: "/communications", icon: Radio },
-  { label: "Safety Check-ins", href: "/checkins", icon: ClipboardCheck },
-  { label: "Trusted Contacts", href: "/trusted-contacts", icon: Contact },
-  { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Creative Studio", href: "/creative-studio", icon: Palette },
   { label: "Integrations", href: "/integrations", icon: Blocks },
+  { label: "Devices", href: "/devices", icon: Cpu },
+  { label: "Safety Check-ins", href: "/checkins", icon: ClipboardCheck },
+  { label: "Communication Rules", href: "/communications", icon: Radio },
+  { label: "Trusted Contacts", href: "/trusted-contacts", icon: Users },
+  { label: "V7 Secure Vault", href: "/vault", icon: LockKeyhole },
+  { label: "Notifications", href: "/notifications", icon: Bell },
 ];
 
 export default function AppShell({ userEmail, children }: { userEmail: string; children: ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
+  const activeItem = [...primary, ...more].find((item) => item.href === pathname || (item.href !== "/" && pathname.startsWith(item.href)));
+  const moreIsActive = more.some((item) => pathname === item.href || pathname.startsWith(item.href));
+
+  useEffect(() => {
+    if (moreIsActive) setMoreOpen(true);
+  }, [moreIsActive]);
 
   useEffect(() => {
     let active = true;
@@ -56,7 +63,6 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
     return () => { active = false; };
   }, []);
 
-  const activeLabel = navigation.find((item) => item.href === pathname)?.label ?? "Klin";
   const signOut = async () => {
     setSigningOut(true);
     setSignOutError("");
@@ -70,56 +76,55 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
     }
   };
 
+  const renderItem = (item: Item) => {
+    const Icon = item.icon;
+    const selected = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
+    return <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} aria-current={selected ? "page" : undefined} className={"klin-nav-item" + (selected ? " is-active" : "")}>
+      <Icon size={17} strokeWidth={1.8} /><span>{item.label}</span>
+    </Link>;
+  };
+
   return (
-    <div className="app-shell flex h-[100dvh] min-h-[560px] w-full overflow-hidden bg-[#060913] text-slate-100">
-      {sidebarOpen && <button aria-label="Close navigation" onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-30 bg-black/60 lg:hidden" />}
-      <aside className={`app-sidebar fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-white/[0.07] bg-[#090F1D] transition-transform lg:relative lg:z-0 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex h-[72px] items-center justify-between border-b border-white/[0.07] px-5">
-          <Link href="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3" aria-label="Klin home">
-            <img src="/klin-logo.svg" alt="Klin" className="h-9 w-auto" />
-          </Link>
-          <button aria-label="Close navigation" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 lg:hidden"><X size={18} /></button>
+    <div className="klin-shell">
+      {sidebarOpen && <button aria-label="Close navigation" className="klin-mobile-scrim" onClick={() => setSidebarOpen(false)} />}
+      <aside className={"klin-sidebar" + (sidebarOpen ? " is-open" : "")}>
+        <div className="klin-sidebar-brand">
+          <Link href="/" onClick={() => setSidebarOpen(false)} aria-label="Klin home"><img src="/klin-logo.svg" alt="Klin" /></Link>
+          <button className="klin-icon-button klin-sidebar-close" aria-label="Close navigation" onClick={() => setSidebarOpen(false)}><X size={18} /></button>
         </div>
-
-        <div className="px-4 pb-3 pt-5"><div className="rounded-xl border border-cyan-300/10 bg-gradient-to-r from-cyan-400/[0.08] to-indigo-500/[0.08] p-3"><div className="flex items-center gap-2 text-xs font-semibold"><ShieldCheck size={14} className="text-cyan-300" /> Personal workspace</div><div className="mt-1 text-[10px] text-slate-500">Your tools, projects and conversations</div></div></div>
-
-        <nav aria-label="Main navigation" className="app-nav min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-2">
-          <div className="px-3 pb-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">Workspace</div>
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const selected = item.href === pathname;
-            const classes = `flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-xs transition ${selected ? "border border-cyan-300/15 bg-cyan-400/[0.09] text-cyan-100" : "border-transparent text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"}`;
-            return item.href ? (
-              <Link key={item.label} href={item.href} onClick={() => setSidebarOpen(false)} aria-current={selected ? "page" : undefined} className={classes}>
-                <Icon size={16} className={selected ? "text-cyan-300" : "text-slate-500"} />
-                <span className="flex-1">{item.label}</span>
-              </Link>
-            ) : (
-              <div key={item.label} aria-disabled="true" className="flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-xs text-slate-600">
-                <Icon size={16} className="text-slate-700" /><span className="flex-1">{item.label}</span>
-                <span className="rounded-md bg-white/[0.05] px-1.5 py-1 text-[8px] uppercase tracking-wider text-slate-600">Soon</span>
-              </div>
-            );
-          })}
+        <div className="klin-workspace-label"><span className="klin-status-dot" /> PERSONAL WORKSPACE</div>
+        <nav className="klin-sidebar-nav" aria-label="Main navigation">
+          <div className="klin-nav-caption">WORKSPACE</div>
+          {primary.map(renderItem)}
+          <button type="button" className={"klin-nav-item klin-more-toggle" + (moreIsActive ? " is-active" : "")} aria-expanded={moreOpen} onClick={() => setMoreOpen(value => !value)}>
+            <Blocks size={17} strokeWidth={1.8} /><span>More tools</span><ChevronDown size={15} className={moreOpen ? "is-rotated" : ""} />
+          </button>
+          {moreOpen && <div className="klin-more-list">{more.map(renderItem)}</div>}
         </nav>
-
-        <div className="space-y-1 border-t border-white/[0.07] p-3">
-          <Link href="/settings" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><Settings size={15} /> Settings</Link>
-          <a href="https://klin.help" target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><CircleHelp size={15} /> Help &amp; support</a>
-          <button onClick={() => void signOut()} disabled={signingOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs text-slate-400 hover:bg-white/[0.04]"><LogOut size={15} /> {signingOut ? "Signing out…" : "Sign out"}</button>
-          {signOutError && <p role="alert" className="px-3 text-[10px] text-rose-300">{signOutError}</p>}
-          <div className="mt-2 flex items-center gap-3 rounded-xl bg-white/[0.035] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold">K</div><div className="min-w-0 flex-1"><div className="truncate text-xs font-medium text-slate-200">{accountProfile?.username ? "@" + accountProfile.username : userEmail || "Klin account"}</div><div className="text-[10px] text-slate-500">{accountProfile?.account_number ? "Klin ID: " + accountProfile.account_number : "Signed-in workspace"}</div></div><ChevronDown size={14} className="text-slate-600" /></div>
+        <div className="klin-sidebar-bottom">
+          <Link href="/settings" className="klin-nav-item"><Settings size={17} /><span>Settings</span></Link>
+          <a href="https://klin.help" target="_blank" rel="noopener noreferrer" className="klin-nav-item"><CircleHelp size={17} /><span>Help & support</span></a>
+          <div className="klin-account-card">
+            <div className="klin-account-avatar">{(accountProfile?.username || userEmail || "K").slice(0,1).toUpperCase()}</div>
+            <div className="klin-account-meta"><strong>{accountProfile?.username ? "@" + accountProfile.username : userEmail || "Klin account"}</strong><span>{accountProfile?.account_number ? "Klin ID " + accountProfile.account_number : "Signed-in account"}</span></div>
+            <button className="klin-icon-button" onClick={() => void signOut()} disabled={signingOut} aria-label="Sign out" title={signingOut ? "Signing out" : "Sign out"}><LogOut size={16} /></button>
+          </div>
+          {signOutError && <p className="klin-shell-error" role="alert">{signOutError}</p>}
         </div>
       </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="klin-main-column">
         <OfflineSupport />
-        <header className="flex h-[56px] shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#080D18] px-4 lg:hidden">
-          <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5"><Menu size={18} /></button>
-          <img src="/klin-logo.svg" alt="Klin" className="h-7 w-auto" />
-          <span className="ml-auto text-[10px] text-slate-500">{activeLabel}</span>
+        <header className="klin-topbar">
+          <div className="klin-topbar-left">
+            <button aria-label="Open navigation" className="klin-icon-button klin-menu-trigger" onClick={() => setSidebarOpen(true)}><Menu size={19} /></button>
+            <span className="klin-topbar-title">{activeItem?.label ?? "Klin workspace"}</span>
+          </div>
+          <div className="klin-topbar-actions">
+            <Link href="/plans" className="klin-plans-link"><CreditCard size={15} /> Plans & Pricing</Link>
+            <Link href="/chat/history" className="klin-history-link"><History size={15} /> Chat history</Link>
+          </div>
         </header>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="klin-main-content">{children}</div>
       </div>
     </div>
   );
