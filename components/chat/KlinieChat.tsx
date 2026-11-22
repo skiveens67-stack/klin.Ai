@@ -335,7 +335,7 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
                   <div className="grid gap-2">
                     {conversations.slice(0, 4).map((conversation) => (
                       <button key={conversation.id} type="button" onClick={() => void openConversation(conversation.id)}
-                        className="flex w-full items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-left transition hover:border-blue-400/40 hover:bg-blue-500/[0.06]">
+                        className="flex w-full items-center gap-3 rounded-xl border border-cyan-300/15 bg-white/[0.025] px-4 py-3 text-left transition hover:border-cyan-300/25 hover:bg-cyan-400/[0.06]">
                         <MessageSquare size={15} className="shrink-0 text-cyan-300" />
                         <span className="min-w-0 flex-1 truncate text-xs text-slate-200">{conversation.title || "New conversation"}</span>
                         <span className="shrink-0 text-[9px] text-slate-500">{formatTime(conversation.updated_at)}</span>
