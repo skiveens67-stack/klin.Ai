@@ -98,7 +98,7 @@ export default function PricingPlans() {
           {builderPlans.map(plan => <article className="klin-plan-card" key={plan.code}>
             <div className="klin-plan-card-top"><strong>{plan.name}</strong></div><div className="klin-plan-price">{plan.price}</div>
             <p>{plan.agents} · {plan.duration}</p><div className="klin-plan-status">{plan.discount}</div>
-            {planButton(plan.code, plan.name)}
+            {planButton(plan.code)}
           </article>)}
         </div>
       </section>
