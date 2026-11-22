@@ -9,14 +9,16 @@ import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole, LayoutDashboard,
   Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
-  ShieldCheck, Users, WalletCards, X, Palette,
+  ShieldCheck, Users, WalletCards, X, Palette, FlaskConical, Sparkles,
 } from "lucide-react";
 
 type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
 
 const navigation: NavigationItem[] = [
   { label: "Main menu", href: "/", icon: LayoutDashboard },
-  { label: "Klinie Chat", href: "/chat", icon: MessageCircle },
+  { label: "Chat with Klinie", href: "/chat", icon: MessageCircle },
+  { label: "Chat with Xzello", href: "/chat/xzello", icon: Sparkles },
+  { label: "Testing", href: "/testing", icon: FlaskConical },
   { label: "Shop or Create a Business", href: "/business", icon: BriefcaseBusiness },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Agent capacity", href: "/agents", icon: Bot },
