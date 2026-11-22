@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Bot, BriefcaseBusiness, Compass, FolderKanban, Globe2, LayoutDashboard, MessageCircle, Smartphone, Sparkles, Store } from "lucide-react";
+import { ArrowUpRight, Bot, BriefcaseBusiness, Compass, FolderKanban, Globe2, LayoutDashboard, MessageCircle, Smartphone, Sparkles, Store, FlaskConical } from "lucide-react";
 
 const destinations = [
   { title: "Create a Website", description: "Describe the website you want. Klin will guide the build.", href: "/builder?type=website", icon: Globe2 },
   { title: "Create an App", description: "Plan and build an app with Klin's builder.", href: "/builder?type=mobile_app", icon: Smartphone },
-  { title: "Talk to Klinie", description: "Ask questions, plan ideas, or work through a task.", href: "/chat", icon: MessageCircle },
+  { title: "Chat with Klinie", description: "Ask questions, plan ideas, or work through a task with Klinie.", href: "/chat", icon: MessageCircle },
+  { title: "Chat with Xzello", description: "Talk directly with Xzello about visual design, branding, layouts, and creative work.", href: "/chat/xzello", icon: Sparkles },
+  { title: "Testing", description: "Open your websites and apps to test them, and track recorded milestones, time estimates, and deposits.", href: "/testing", icon: FlaskConical },
   { title: "Projects", description: "Continue working on saved websites, apps, and other projects.", href: "/projects", icon: FolderKanban },
 ];
 
@@ -26,13 +28,13 @@ export default function KlinMainMenu() {
     <main className="klin-home">
       <header className="klin-home-top">
         <div className="klin-home-brand"><span className="klin-home-mark">K</span><div><strong>Klin</strong><small>Your workspace</small></div></div>
-        <Link className="klin-home-top-link" href="/chat"><MessageCircle size={16}/> Open chat <ArrowUpRight size={14}/></Link>
+        <Link className="klin-home-top-link" href="/chat"><MessageCircle size={16}/> Chat with Klinie <ArrowUpRight size={14}/></Link>
       </header>
 
       <section className="klin-home-hero">
         <div className="klin-home-eyebrow"><Sparkles size={14}/> YOUR KLIN WORKSPACE</div>
         <h1>What would you like to do?</h1>
-        <p>Explore projects made by the community, start a business, build something new, or talk with Klinie.</p>
+        <p>Explore projects made by the community, start a business, build something new, or talk with Klinie or Xzello.</p>
       </section>
 
       <section className="klin-home-explore">
