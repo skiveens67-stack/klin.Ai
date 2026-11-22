@@ -11,6 +11,7 @@ export async function GET() {
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     const { data, error } = await supabase.from("creator_projects")
       .select("id,project_type,title,description,visibility,status,content_reference,metadata,created_at,updated_at,published_at")
+      .eq("owner_user_id", user.id)
       .order("updated_at", { ascending: false }).limit(100);
     if (error) return NextResponse.json({ error: "Unable to load projects." }, { status: 500 });
     return NextResponse.json({ projects: data ?? [] }, { headers: { "Cache-Control": "no-store" } });
