@@ -867,3 +867,7 @@ body { background-image:none !important; }
 .klin-business-option b{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:18px;font-size:12px}
 @media(max-width:900px){.klin-home-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.klin-home{padding:18px 15px 30px}.klin-home-hero{padding:43px 0 22px}.klin-home-empty,.klin-home-business{align-items:flex-start;flex-direction:column}.klin-home-outline,.klin-home-primary{width:100%}.klin-home-action-grid,.klin-home-quick-grid,.klin-business-options{grid-template-columns:1fr}.klin-home-action{min-height:150px}.klin-business-page{padding:28px 18px}.klin-business-back{margin-bottom:42px}}
+
+.klin-home-coming-soon{display:flex;justify-content:flex-end;margin-top:20px;padding:16px 18px;border:1px dashed #353535;border-radius:13px;background:#0a0a0a}
+.klin-home-coming-soon>div{width:100%}.klin-home-coming-soon span{display:block;margin-bottom:6px;color:#777;font-size:9px;font-weight:750;letter-spacing:.17em}
+.klin-home-coming-soon strong{font-size:12px;color:#ddd}.klin-home-coming-soon p{margin:5px 0 0;color:#777;font-size:11px}
