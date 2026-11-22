@@ -75,7 +75,7 @@ export default function AuthForm({ mode, initialError }: Props) {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
     } finally {
-      const remaining = 10000 - (Date.now() - loadingStartedAt);
+      const remaining = 3500 - (Date.now() - loadingStartedAt);
       if (remaining > 0) await new Promise(resolve => window.setTimeout(resolve, remaining));
       setBusy(false);
     }
