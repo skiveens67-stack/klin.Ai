@@ -11,9 +11,14 @@ const destinations = [
 ];
 
 const quickLinks = [
-  ["Marketplace", "/marketplace"], ["Social", "/social"], ["Learning", "/learning"],
-  ["Family Hub", "/family"], ["Wallet", "/wallet"], ["Creative Studio", "/creative-studio"],
-  ["Klin Modules", "/agents/modules"], ["Notifications", "/notifications"], ["Settings", "/settings"],
+  ["Marketplace / Shop", "/marketplace"], ["Sell a Project", "/marketplace"], ["Social", "/social"],
+  ["Projects", "/projects"], ["Autonomous Builder", "/builder"], ["Agent Capacity", "/agents"],
+  ["Klin Modules", "/agents/modules"], ["Learning", "/learning"], ["Family Hub", "/family"],
+  ["Wallet & Gems", "/wallet"], ["Creative Studio & Assets", "/creative-studio"], ["Devices", "/devices"],
+  ["Safety Check-ins", "/checkins"], ["Communication Permissions", "/communications"],
+  ["Trusted Contacts", "/trusted-contacts"], ["V7 Secure Vault", "/vault"],
+  ["Plans & Pricing", "/plans"], ["Integrations", "/integrations"],
+  ["Notifications", "/notifications"], ["Settings", "/settings"], ["Help & Support", "/support"],
 ] as const;
 
 export default function KlinMainMenu() {
@@ -55,6 +60,7 @@ export default function KlinMainMenu() {
         <div className="klin-home-section-heading"><div><span>YOUR KLIN</span><h2>Workspace tools</h2></div></div>
         <div className="klin-home-quick-grid">{quickLinks.map(([label,href])=><Link href={href} key={href}>{label}<ArrowUpRight size={13}/></Link>)}</div>
       </section>
+      <section className="klin-home-coming-soon"><div><span>COMING SOON</span><strong>Image and video creation</strong><p>These creation tools are not available in this preview yet.</p></div></section>
       <footer className="klin-home-footer">Klin · One place to explore, create, and work.</footer>
     </main>
   );
