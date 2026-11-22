@@ -42,6 +42,7 @@ export default function AuthForm({ mode, initialError }: Props) {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(""); setMessage(""); setBusy(true);
+    const loadingStartedAt = Date.now();
     let redirectAfterLoading = false;
     try {
       if (mode === "login") {
@@ -75,8 +76,10 @@ export default function AuthForm({ mode, initialError }: Props) {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed. Try again.");
     } finally {
-      // Keep the loading screen visible while the successful route transition starts.
-      // Failed requests and completed signup-email requests release it immediately.
+      // Keep the branded loading screen visible for at least 3.5 seconds,
+      // while allowing slower authentication requests to take as long as needed.
+      const remainingMinimum = Math.max(0, 3500 - (Date.now() - loadingStartedAt));
+      if (remainingMinimum > 0) await new Promise(resolve => setTimeout(resolve, remainingMinimum));
       if (!redirectAfterLoading) setBusy(false);
     }
     if (redirectAfterLoading) { router.replace("/"); router.refresh(); }
