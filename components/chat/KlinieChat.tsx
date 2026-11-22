@@ -326,6 +326,24 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
                     className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-left text-xs text-slate-300 transition hover:border-cyan-300/25 hover:bg-cyan-400/[0.06]">{prompt}</button>
                 ))}
               </div>
+              {!loadingHistory && conversations.length > 0 && (
+                <div className="mt-9 w-full max-w-xl text-left">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Your recent chats</span>
+                    <button type="button" onClick={() => setMobileHistoryOpen(true)} className="text-[11px] text-blue-300 hover:text-white">See all</button>
+                  </div>
+                  <div className="grid gap-2">
+                    {conversations.slice(0, 4).map((conversation) => (
+                      <button key={conversation.id} type="button" onClick={() => void openConversation(conversation.id)}
+                        className="flex w-full items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-left transition hover:border-blue-400/40 hover:bg-blue-500/[0.06]">
+                        <MessageSquare size={15} className="shrink-0 text-blue-300" />
+                        <span className="min-w-0 flex-1 truncate text-xs text-slate-200">{conversation.title || "New conversation"}</span>
+                        <span className="shrink-0 text-[9px] text-slate-500">{formatTime(conversation.updated_at)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="mx-auto max-w-3xl space-y-7 px-4 py-8 sm:px-6">
