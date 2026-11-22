@@ -231,7 +231,7 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
   const visibleMessages = messages;
 
   return (
-    <section className="flex h-full min-h-0 w-full overflow-hidden bg-[#070B16] text-slate-100">
+    <section className="klin-chat-workspace flex h-full min-h-0 w-full overflow-hidden bg-[#070B16] text-slate-100">
       {mobileHistoryOpen && (
         <button aria-label="Close chat history" onClick={() => setMobileHistoryOpen(false)}
           className="fixed inset-0 z-30 bg-black/60 md:hidden" />
