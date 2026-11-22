@@ -79,7 +79,7 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
     } finally {
       setLoadingHistory(false);
     }
-  }, []);
+  }, [assistantKey]);
 
   const openConversation = useCallback(async (id: string) => {
     setLoadingConversation(true);
