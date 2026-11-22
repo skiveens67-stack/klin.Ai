@@ -1028,13 +1028,32 @@ body{background:#07090d;color:#f5f7fb}
 .klin-loading-wordmark{display:flex;align-items:center;gap:5px;color:#fff;font-size:46px;font-weight:800;letter-spacing:-.08em}
 .klin-loading-wordmark span{display:inline-block;animation:klin-letter-pop 1.6s ease-in-out infinite}
 .klin-loading-wordmark span:nth-child(2){animation-delay:.18s}.klin-loading-wordmark span:nth-child(3){animation-delay:.36s}.klin-loading-wordmark span:nth-child(4){animation-delay:.54s}
-.klin-loading-walker{position:absolute;left:0;bottom:0;width:48px;height:65px;object-fit:contain;animation:klin-walk-letters 2.8s ease-in-out infinite;filter:drop-shadow(0 6px 12px #0b5fff55)}
+.klin-loading-walker{position:absolute;left:0;bottom:0;width:48px;height:65px;object-fit:contain;animation:klin-loading-adventure 7.2s ease-in-out infinite;transform-origin:50% 88%;filter:drop-shadow(0 6px 12px #0b5fff55);z-index:2}
+.klin-loading-sfx{position:absolute;z-index:3;padding:4px 7px;border:1px solid #35598f;border-radius:8px;background:#142440;color:#dce9ff;font-size:9px;font-weight:900;letter-spacing:.08em;opacity:0}
+.klin-loading-oops{left:42%;top:0;animation:klin-loading-oops 7.2s ease-in-out infinite}
+.klin-loading-laugh{right:3%;top:4px;animation:klin-loading-laugh 7.2s ease-in-out infinite}
 .klin-loading-title{margin:0;color:#f6f8fc;font-size:14px;font-weight:700}
 .klin-loading-subtitle{margin:7px 0 0;color:#91a0b4;font-size:11px}
 .klin-loading-progress{height:3px;overflow:hidden;margin-top:22px;border-radius:99px;background:#253044}
 .klin-loading-progress span{display:block;width:35%;height:100%;border-radius:99px;background:#0B5FFF;animation:klin-progress-run 1.3s ease-in-out infinite}
 @keyframes klin-letter-pop{0%,100%{transform:translateY(0);color:#fff}45%{transform:translateY(-7px);color:#8bb4ff}}
-@keyframes klin-walk-letters{0%{transform:translate(0,0) rotate(-4deg)}12%{transform:translate(22px,-7px) rotate(3deg)}25%{transform:translate(55px,-1px) rotate(-3deg)}38%{transform:translate(85px,-10px) rotate(4deg)}52%{transform:translate(115px,0) rotate(-3deg)}66%{transform:translate(145px,-12px) rotate(4deg)}80%{transform:translate(175px,-1px) rotate(-3deg)}100%{transform:translate(205px,-7px) rotate(0)}}
+@keyframes klin-loading-adventure{
+  0%{transform:translate(0,0) rotate(-5deg)}
+  12%{transform:translate(28px,-5px) rotate(5deg)}
+  24%{transform:translate(58px,0) rotate(-4deg)}
+  36%{transform:translate(91px,-7px) rotate(5deg)}
+  43%{transform:translate(105px,1px) rotate(-8deg)}
+  47%{transform:translate(112px,8px) rotate(-68deg)}
+  53%{transform:translate(118px,0) rotate(18deg)}
+  60%{transform:translate(137px,-18px) rotate(0)}
+  68%{transform:translate(153px,-2px) rotate(-8deg)}
+  76%{transform:translate(170px,-25px) rotate(10deg)}
+  84%{transform:translate(190px,-5px) rotate(-5deg)}
+  94%{transform:translate(205px,-13px) rotate(3deg)}
+  100%{transform:translate(0,0) rotate(-5deg)}
+}
+@keyframes klin-loading-oops{0%,38%,56%,100%{opacity:0;transform:translateY(8px) scale(.7)}43%,51%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes klin-loading-laugh{0%,62%,88%,100%{opacity:0;transform:translateY(8px) scale(.7)}68%,82%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes klin-progress-run{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
 .klin-chat-workspace{background:#080c13!important;color:#f2f5fa!important}
 .klin-chat-workspace .text-cyan-100,.klin-chat-workspace .text-cyan-200,.klin-chat-workspace .text-cyan-300{color:#8bb4ff!important}
@@ -1069,7 +1088,7 @@ body{background:#07090d;color:#f5f7fb}
 .klin-intelligence-card .klin-plan-button{width:100%}
 }
 @media(max-width:420px){.klin-action-grid,.klin-plans-grid{grid-template-columns:1fr}.klin-coming-row>span{display:none}.klin-plans-header-mark{width:45px;height:45px}.klin-dashboard-welcome h1{font-size:28px}}
-@media(prefers-reduced-motion:reduce){.klin-loading-wordmark span,.klin-loading-walker,.klin-loading-progress span,.klin-action-card{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){.klin-loading-wordmark span,.klin-loading-walker,.klin-loading-oops,.klin-loading-laugh,.klin-loading-progress span,.klin-action-card{animation:none!important;transition:none!important}}
 
 /* Bring remaining legacy screens into the Klin blue identity */
 .auth-brand-mark{background:linear-gradient(135deg,#4a8bff,#0b5fff)!important;box-shadow:0 10px 35px #0b5fff33!important}
