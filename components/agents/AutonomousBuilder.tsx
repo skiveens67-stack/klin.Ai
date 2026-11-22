@@ -34,6 +34,10 @@ const deliverables = [
 
 export default function AutonomousBuilder() {
   const [projectType, setProjectType] = useState("website");
+  useEffect(() => {
+    const requestedType = new URLSearchParams(window.location.search).get("type");
+    if (requestedType && ["website", "mobile_app", "business"].includes(requestedType)) setProjectType(requestedType);
+  }, []);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [features, setFeatures] = useState(4);
