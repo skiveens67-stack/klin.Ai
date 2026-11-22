@@ -7,7 +7,7 @@ import Link from "next/link";
 import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
 import {
-  Bell, Blocks, BookOpen, Bot, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole,
+  Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp, ClipboardCheck, Compass, Hammer, LockKeyhole, LayoutDashboard,
   Contact, Cpu, FolderKanban, LogOut, Menu, MessageCircle, Radio, Settings, CreditCard,
   ShieldCheck, Users, WalletCards, X, Palette,
 } from "lucide-react";
@@ -15,7 +15,9 @@ import {
 type NavigationItem = { label: string; href?: string; icon: LucideIcon; soon?: boolean };
 
 const navigation: NavigationItem[] = [
-  { label: "Klinie Chat", href: "/", icon: MessageCircle },
+  { label: "Main menu", href: "/", icon: LayoutDashboard },
+  { label: "Klinie Chat", href: "/chat", icon: MessageCircle },
+  { label: "Shop or Create a Business", href: "/business", icon: BriefcaseBusiness },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Agent capacity", href: "/agents", icon: Bot },
   { label: "Klin Modules", href: "/agents/modules", icon: Blocks },
