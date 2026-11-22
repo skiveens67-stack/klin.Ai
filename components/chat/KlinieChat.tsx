@@ -48,7 +48,7 @@ function formatTime(value: string) {
   return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
-export default function KlinieChat() {
+export default function KlinieChat({ assistantKey = "klinie", assistantName = "Klinie" }: { assistantKey?: "klinie" | "xzello"; assistantName?: string }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -71,7 +71,7 @@ export default function KlinieChat() {
     setHistoryError("");
     try {
       const result = await api<{ conversations: Conversation[] }>(
-        `/api/conversations?archived=${archived ? "true" : "false"}`,
+        `/api/conversations?archived=${archived ? "true" : "false"}&assistant=${assistantKey}`,
       );
       setConversations(result.conversations ?? []);
     } catch (error) {
@@ -115,7 +115,7 @@ export default function KlinieChat() {
     try {
       const result = await api<{ conversation: Conversation }>("/api/conversations", {
         method: "POST",
-        body: JSON.stringify({ title: "New conversation" }),
+        body: JSON.stringify({ title: "New conversation", assistant_key: assistantKey }),
       });
       setConversations((current) => [result.conversation, ...current.filter((item) => item.id !== result.conversation.id)]);
       setActiveId(result.conversation.id);
@@ -158,7 +158,7 @@ export default function KlinieChat() {
       if (!conversationId) {
         const created = await api<{ conversation: Conversation }>("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ title: content.slice(0, 80) || "New conversation" }),
+          body: JSON.stringify({ title: content.slice(0, 80) || "New conversation", assistant_key: assistantKey }),
         });
         conversationId = created.conversation.id;
         setActiveId(conversationId);
@@ -244,8 +244,8 @@ export default function KlinieChat() {
               <Sparkles size={17} className="text-white" />
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-wide">Klinie</div>
-              <div className="text-[10px] text-slate-500">Klin AI assistant</div>
+              <div className="text-sm font-semibold tracking-wide">{assistantName}</div>
+              <div className="text-[10px] text-slate-500">{assistantKey === "xzello" ? "Creative & visual assistant" : "Klin AI assistant"}</div>
             </div>
           </div>
           <button onClick={() => setMobileHistoryOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 md:hidden" aria-label="Close history"><X size={18} /></button>
@@ -292,7 +292,7 @@ export default function KlinieChat() {
 
         <div className="border-t border-white/[0.07] p-4">
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><Sparkles size={14} className="text-cyan-300" /> Klinie workspace</div>
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><Sparkles size={14} className="text-cyan-300" /> {assistantName} workspace</div>
             <p className="mt-1.5 text-[10px] leading-4 text-slate-500">Your conversations are saved to your Klin account.</p>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function KlinieChat() {
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/15 to-indigo-500/15 shadow-2xl shadow-cyan-950/30"><Sparkles size={28} className="text-cyan-200" /></div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">Klin AI</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">What can I help you build?</h1>
-              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Start a conversation with Klinie. Your chats will be saved in your history.</p>
+              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Start a conversation with {assistantName}. Your chats will be saved in your history.</p>
               <div className="mt-8 grid w-full max-w-xl grid-cols-1 gap-2 sm:grid-cols-2">
                 {["Help me plan a project", "Explain something clearly", "Write or improve an idea", "Help me solve a problem"].map((prompt) => (
                   <button key={prompt} onClick={() => { setInput(prompt); textareaRef.current?.focus(); }}
@@ -348,10 +348,10 @@ export default function KlinieChat() {
             {(historyError || notice) && <div role="status" className={`mb-3 rounded-xl border px-3 py-2 text-xs leading-5 ${historyError ? "border-rose-400/20 bg-rose-400/[0.06] text-rose-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-100"}`}>{historyError || notice}</div>}
             <form onSubmit={(event) => void sendMessage(event)} className="relative rounded-2xl border border-white/[0.12] bg-[#101827] p-2 shadow-xl shadow-black/20 transition focus-within:border-cyan-300/35">
               <textarea ref={textareaRef} value={input} onChange={(event) => onInputChange(event.target.value)} onKeyDown={onComposerKeyDown}
-                placeholder="Message Klinie…" rows={1}
+                placeholder={`Message ${assistantName}…`} rows={1}
                 style={{ height: composerHeight }}
                 className="block max-h-40 min-h-6 w-full resize-none bg-transparent px-3 py-2.5 text-sm leading-6 text-white outline-none placeholder:text-slate-600 disabled:opacity-60"
-                aria-label="Message Klinie" />
+                aria-label={`Message ${assistantName}`} />
               <div className="flex items-center justify-between px-1 pb-1">
                 <span className="pl-2 text-[10px] text-slate-600">Enter to send · Shift + Enter for a new line</span>
                 <button type="submit" disabled={!input.trim() || sending}
@@ -360,7 +360,7 @@ export default function KlinieChat() {
                 </button>
               </div>
             </form>
-            <p className="mt-2 text-center text-[10px] text-slate-600">Klinie can make mistakes. Check important information.</p>
+            <p className="mt-2 text-center text-[10px] text-slate-600">{assistantName} can make mistakes. Check important information.</p>
           </div>
         </div>
       </main>
