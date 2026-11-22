@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import KlinLoading from "@/components/brand/KlinLoading";
 
 type Props = { mode: "login" | "signup"; initialError?: string };
 
@@ -125,9 +126,7 @@ export default function AuthForm({ mode, initialError }: Props) {
           <div className="auth-side-grid"><span>PRIVATE BY DEFAULT</span><span>BUILT TO EXPAND</span><span>ONE WORKSPACE</span></div>
         </div>
       </aside>
-      {busy && <div className="auth-loading-screen" role="status" aria-live="polite">
-        <div className="auth-loading-content"><div className="auth-loading-mark"><span /></div><p className="auth-loading-title">{mode === "login" ? "Opening your workspace" : verificationPending ? "Verifying your email" : "Creating your workspace"}</p><p className="auth-loading-subtitle">Klin is securely processing your request.</p><div className="auth-loading-track"><span /></div></div>
-      </div>}
+      {busy && <KlinLoading title={mode === "login" ? "Opening your workspace" : verificationPending ? "Verifying your email" : "Creating your workspace"} subtitle="Klin is securely processing your request." />}
     </main>
   );
 }
