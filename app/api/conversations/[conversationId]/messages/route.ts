@@ -14,12 +14,6 @@ type GatewayResponse = {
   usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
 };
 
-function getGatewayConfiguration() {
-  const apiKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
-  const model = process.env.KLINIE_MODEL || process.env.AI_GATEWAY_MODEL;
-  return apiKey && model ? { apiKey, model } : null;
-}
-
 export async function POST(request: Request, context: { params: Promise<{ conversationId: string }> }) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
 
@@ -71,7 +65,7 @@ export async function POST(request: Request, context: { params: Promise<{ conver
         message,
         assistant: {
           status: "not_connected",
-          detail: "Your message is saved. Add AI_GATEWAY_API_KEY (or VERCEL_OIDC_TOKEN on Vercel) and KLINIE_MODEL to enable Klinie's replies.",
+          detail: assistantKey === "xzello" ? "Your message is saved, but Xzello is not connected yet. Configure the AI Gateway and XZELLO_MODEL (or KLINIE_MODEL fallback) to enable replies." : "Your message is saved, but Klinie is not connected yet. Configure the AI Gateway and KLINIE_MODEL to enable replies.",
         },
       }, { status: 201, headers: { "Cache-Control": "no-store" } });
     }
