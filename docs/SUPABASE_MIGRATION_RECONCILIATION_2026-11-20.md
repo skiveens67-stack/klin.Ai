@@ -7,7 +7,7 @@ Project: `Klin.Ai` (`jkujzqvxzkzgpdlntoek`)
 ## Observed counts
 
 - Live Supabase migration history: 16 applied records.
-- Repository branch `chatgpt/backend-foundation`: 12 SQL migration files.
+- Repository branch `chatgpt/backend-foundation`: 15 SQL migration files at the latest inspected branch tree (the historical count in the first audit was 12).
 - The live history uses 14-digit timestamp versions and descriptive names. Repository filenames use the shorter `20261114_NN_...` pattern.
 - The counts and naming do not prove a one-to-one mapping. Do not run `db push`, `apply_migration`, direct DDL, reset, or historical migration edits until source SQL for all live records is reconciled.
 
@@ -45,6 +45,14 @@ The twelfth local file, `20261121_12_project_draft_idempotency.sql`, was added a
 - `20261114_09_backend_foreign_key_indexes.sql`
 - `20261114_10_wallet_idempotency_and_privacy.sql`
 - `20261114_11_moderation_service_activation.sql`
+- `20261121_12_project_draft_idempotency.sql`
+- `20261121_13_support_email_agent.sql`
+- `20261121_14_internal_agents_feedback_appeals.sql`
+- `20261121_15_klin_account_identity.sql`
+
+## New pending feature schema
+
+The file `docs/sql/medium_features_pending_reconciliation.sql` is a draft only and is not in the automatic Supabase migrations directory. It contains proposed Business Talk conversations/messages, notification preferences and email delivery queue, moderation queue/review procedure, and private project version history/restore procedures. These objects have not been applied. Review this draft against the live schema and the exact historical migration source before considering a forward-only migration.
 
 ## Reconciliation work still required
 
