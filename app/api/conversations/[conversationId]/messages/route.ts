@@ -164,6 +164,22 @@ export async function POST(request: Request, context: { params: Promise<{ conver
       }, { status: 201, headers: { "Cache-Control": "no-store" } });
     }
 
+    // Usage is recorded server-side after the assistant reply is persisted. The
+    // gateway does not return a verified USD cost, so the event marks cost unknown.
+    try {
+      const usageAdmin = createSupabaseAdminClient();
+      const { createAiUsageEvent } = await import("@/lib/ai-usage");
+      await usageAdmin.from("ai_usage_events").insert(createAiUsageEvent({
+        provider: "vercel-ai-gateway",
+        model: result.model || config.model,
+        feature: `assistant:${assistantKey}`,
+        requestId: result.id ?? null,
+        usage: result.usage,
+      }));
+    } catch {
+      // Usage telemetry must not make a successfully saved chat response fail.
+    }
+
     await supabase.from("conversations").update({ updated_at: new Date().toISOString() })
       .eq("id", conversationId).eq("user_id", user.id);
 
