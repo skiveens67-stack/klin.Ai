@@ -1,5 +1,5 @@
 export type KlinLesson = { key: string; title: string; summary: string; estimated_minutes: number };
-export type KlinCourse = { key: string; title: string; description: string; level: "beginner" | "intermediate"; lessons: KlinLesson[] };
+export type KlinCourse = { key: string; title: string; description: string; level: "beginner" | "intermediate"; lessons: KlinLesson[]; estimated_minutes_total: number };
 
 export const KLIN_LEARNING_COURSES: KlinCourse[] = [
   {
@@ -39,6 +39,10 @@ export const KLIN_LEARNING_COURSES: KlinCourse[] = [
     ],
   },
 ];
+
+for (const course of KLIN_LEARNING_COURSES) {
+  course.estimated_minutes_total = course.lessons.reduce((total, lesson) => total + lesson.estimated_minutes, 0);
+}
 
 export function getKlinCourse(courseKey: string): KlinCourse | null {
   return KLIN_LEARNING_COURSES.find((course) => course.key === courseKey) ?? null;
