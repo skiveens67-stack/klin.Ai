@@ -60,6 +60,8 @@ The connected Stripe account verified for this project is named `Klin.ai` and is
 - New messages enqueue in-app/email notifications according to per-category preferences when the required tables are present.
 
 ## AI usage, notifications, and integrations
+- `GET /api/integrations` — read connected integration metadata without exposing secret references.
+- `GET|POST /api/integrations/jobs` — read the user's queued sync jobs or enqueue an idempotent sync request for a verified connected provider. Jobs remain queued until a provider-specific OAuth and worker adapter is configured.
 - `GET /api/usage?since=<ISO date>` — current user's AI usage aggregates and events. Successful assistant replies now record gateway token counts server-side when the provider supplies them. Gateway cost is explicitly reported as unavailable unless a verified cost field is added; the database's required numeric zero is not presented as proof of free usage.
 - `GET /api/notifications` — list notifications.
 - `PATCH /api/notifications` — mark one or all notifications read.
@@ -69,9 +71,15 @@ The connected Stripe account verified for this project is named `Klin.ai` and is
 - `connected_integrations` stores provider metadata and secret references only; OAuth tokens must remain in a secure secret store.
 - `integration_jobs` is a service-only queue. Provider-specific OAuth callbacks, refresh-token storage, and sync workers remain unconnected; no provider is represented as connected merely because its catalog entry exists.
 
+## Moderation
+- `POST /api/moderation/submit` — submit an owned draft project, social post, or marketplace listing for review. Repeated submissions return the existing queue record.
+- `POST /api/internal/moderation/review` — moderator-secret-protected atomic approval/rejection procedure. Approval activates only the submitted draft; rejection archives/removes/closes it. This endpoint requires the pending moderation schema and `KLIN_MODERATOR_SECRET`.
+- The queue schema and atomic review function are in `docs/sql/medium_features_pending_reconciliation.sql`; they are not applied to Supabase. Public publishing remains disabled until migration reconciliation, human review controls, and moderation testing are complete.
+
 ## Projects, social, marketplace, and learning
 - `GET|POST /api/projects` — list visible projects/create a private draft.
 - `GET|POST /api/marketplace/listings` — view eligible listings/create a draft listing.
+- `GET /api/marketplace/orders?role=buyer|seller` — read order history for the signed-in buyer or seller. No order payment or settlement is initiated by this route.
 - `GET|POST /api/marketplace/bids` — view eligible bids/place a bid on an active auction.
 - `GET|POST /api/social/posts` — view eligible posts/create a draft post.
 - `PATCH /api/social/posts/:postId` — edit an owned social post only while it remains a draft. The endpoint validates body and visibility, rejects owner/status changes, and cannot publish a post.
