@@ -1159,7 +1159,7 @@ body {
   background:radial-gradient(ellipse at 50% -30%,rgba(255,255,255,.055),transparent 38rem),#050505!important;
 }
 .auth-brand {min-height:42px}
-.auth-brand img {display:block;width:148px;height:auto;filter:grayscale(1) brightness(1.35)}
+.auth-brand img {display:block;width:112px;height:auto;filter:grayscale(1);background:#fff;border-radius:8px;padding:3px}
 .auth-brand-mark {background:#fff!important;color:#050505!important;box-shadow:none!important}
 .auth-brand-dot,.auth-kicker,.auth-switch a,.auth-side-label {color:#fff!important}
 .auth-input-wrap:focus-within {border-color:#fff!important;box-shadow:0 0 0 3px #ffffff16!important}
@@ -1210,4 +1210,4 @@ body {
   .klin-loading-logo {animation:none!important}
 }
 
-.klin-loading-logo {display:block;width:min(100%,220px);height:58px;object-fit:contain;filter:grayscale(1) brightness(1.4);}
+.klin-loading-logo {display:block;width:auto;max-width:min(100%,160px);height:128px;object-fit:contain;filter:grayscale(1);background:#fff;border-radius:8px;padding:4px;}

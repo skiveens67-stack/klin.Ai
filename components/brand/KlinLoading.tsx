@@ -5,7 +5,7 @@ export default function KlinLoading({ title = "Loading Klin", subtitle = "Gettin
     <div className="klin-loading-screen" role="status" aria-live="polite">
       <div className="klin-loading-card">
         <div className="klin-loading-stage">
-          <img className="klin-loading-logo" src="/klin-logo.svg" alt="Klin" />
+          <img className="klin-loading-logo" src="/klin-logo.webp" alt="Klin" />
         </div>
         <p className="klin-loading-title">{title}</p>
         <p className="klin-loading-subtitle">{subtitle}</p>

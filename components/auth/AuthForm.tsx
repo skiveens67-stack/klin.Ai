@@ -90,7 +90,7 @@ export default function AuthForm({ mode, initialError }: Props) {
   return (
     <main className={"auth-page " + (mode === "signup" ? "auth-page-signup" : "auth-page-login")}>
       <section className="auth-panel">
-        <Link className="auth-brand" href="/" aria-label="Klin home"><img src="/klin-logo.svg" alt="Klin" className="h-10 w-auto" /></Link>
+        <Link className="auth-brand" href="/" aria-label="Klin home"><img src="/klin-logo.webp" alt="Klin" className="h-10 w-auto" /></Link>
         <div className="auth-kicker">{mode === "login" ? "WELCOME BACK TO KLIN" : "START WITH KLIN"}</div>
         <h1>{title}</h1>
         <p className="auth-intro">{mode === "login" ? "Sign in to continue to your conversations and workspace." : verificationPending ? "Enter the six-digit code we sent to your email to activate your account." : "Create a workspace account for your conversations, projects, and tools."}</p>
