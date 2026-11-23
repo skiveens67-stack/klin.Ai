@@ -91,7 +91,7 @@ create policy business_conversations_creator_delete on public.business_conversat
   for delete to authenticated using(created_by_user_id=(select auth.uid()));
 
 create policy business_members_member_select on public.business_conversation_members
-  for select to authenticated using (public.business_is_active_member(conversation_id,(select auth.uid())));
+  for select to authenticated using (private.business_is_active_member(conversation_id));
 create or replace function public.business_is_creator(p_conversation_id uuid, p_user_id uuid)
 returns boolean language sql stable security definer set search_path=public,pg_temp as $
   select exists(select 1 from public.business_conversations c
@@ -156,7 +156,7 @@ revoke insert,update,delete on public.content_moderation_queue from anon,authent
 grant select on public.content_moderation_queue to authenticated;
 grant select,insert,update,delete on public.content_moderation_queue to service_role;
 
-create or replace function public.moderation_review_content(
+create or replace function private.moderation_review_content(
   p_queue_id uuid, p_decision text, p_reason text, p_reviewer_reference text
 ) returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare q public.content_moderation_queue%rowtype;
@@ -184,6 +184,13 @@ begin
   return jsonb_build_object('id',q.id,'content_type',q.content_type,'content_id',q.content_id,'status',p_decision);
 end;
 $$;
+revoke all on function private.moderation_review_content(uuid,text,text,text) from public,anon,authenticated;
+grant execute on function private.moderation_review_content(uuid,text,text,text) to service_role;
+create or replace function public.moderation_review_content(
+  p_queue_id uuid, p_decision text, p_reason text, p_reviewer_reference text
+) returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
+  select private.moderation_review_content($1,$2,$3,$4);
+$;
 revoke all on function public.moderation_review_content(uuid,text,text,text) from public,anon,authenticated;
 grant execute on function public.moderation_review_content(uuid,text,text,text) to service_role;
 
@@ -207,7 +214,7 @@ revoke insert,update,delete on public.project_versions from anon,authenticated;
 grant select on public.project_versions to authenticated;
 grant select,insert,update,delete on public.project_versions to service_role;
 
-create or replace function public.create_project_version(p_project_id uuid,p_label text default 'Checkpoint')
+create or replace function private.create_project_version(p_project_id uuid,p_label text default 'Checkpoint')
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare p public.creator_projects%rowtype; next_version integer; v public.project_versions%rowtype;
 begin
@@ -224,10 +231,16 @@ begin
   return jsonb_build_object('id',v.id,'project_id',v.project_id,'version_number',v.version_number,'label',v.label,'created_at',v.created_at);
 end;
 $$;
+revoke all on function private.create_project_version(uuid,text) from public,anon;
+grant execute on function private.create_project_version(uuid,text) to authenticated;
+create or replace function public.create_project_version(p_project_id uuid,p_label text default 'Checkpoint')
+returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
+  select private.create_project_version($1,$2);
+$;
 revoke all on function public.create_project_version(uuid,text) from public,anon;
 grant execute on function public.create_project_version(uuid,text) to authenticated;
 
-create or replace function public.restore_project_version(p_project_id uuid,p_version_id uuid)
+create or replace function private.restore_project_version(p_project_id uuid,p_version_id uuid)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare p public.creator_projects%rowtype; v public.project_versions%rowtype; s jsonb; next_version integer;
 begin
@@ -254,5 +267,11 @@ begin
   return jsonb_build_object('project_id',p.id,'restored_version_id',v.id,'backup_version_number',next_version);
 end;
 $$;
+revoke all on function private.restore_project_version(uuid,uuid) from public,anon;
+grant execute on function private.restore_project_version(uuid,uuid) to authenticated;
+create or replace function public.restore_project_version(p_project_id uuid,p_version_id uuid)
+returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
+  select private.restore_project_version($1,$2);
+$;
 revoke all on function public.restore_project_version(uuid,uuid) from public,anon;
 grant execute on function public.restore_project_version(uuid,uuid) to authenticated;
