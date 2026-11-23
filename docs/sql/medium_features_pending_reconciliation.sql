@@ -192,9 +192,8 @@ revoke all on function private.moderation_review_content(uuid,text,text,text) fr
 grant execute on function private.moderation_review_content(uuid,text,text,text) to service_role;
 create or replace function public.moderation_review_content(
   p_queue_id uuid, p_decision text, p_reason text, p_reviewer_reference text
-) returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
-  select private.moderation_review_content($1,$2,$3,$4);
-$;
+) returns jsonb language sql security invoker set search_path=public,private,pg_temp as $fn$1moderation_review_content($1,$2,$3,$4);
+$fn$;
 revoke all on function public.moderation_review_content(uuid,text,text,text) from public,anon,authenticated;
 grant execute on function public.moderation_review_content(uuid,text,text,text) to service_role;
 
@@ -238,9 +237,8 @@ $$;
 revoke all on function private.create_project_version(uuid,text) from public,anon;
 grant execute on function private.create_project_version(uuid,text) to authenticated;
 create or replace function public.create_project_version(p_project_id uuid,p_label text default 'Checkpoint')
-returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
-  select private.create_project_version($1,$2);
-$;
+returns jsonb language sql security invoker set search_path=public,private,pg_temp as $fn$1create_project_version($1,$2);
+$fn$;
 revoke all on function public.create_project_version(uuid,text) from public,anon;
 grant execute on function public.create_project_version(uuid,text) to authenticated;
 
@@ -274,8 +272,7 @@ $$;
 revoke all on function private.restore_project_version(uuid,uuid) from public,anon;
 grant execute on function private.restore_project_version(uuid,uuid) to authenticated;
 create or replace function public.restore_project_version(p_project_id uuid,p_version_id uuid)
-returns jsonb language sql security invoker set search_path=public,private,pg_temp as $
-  select private.restore_project_version($1,$2);
-$;
+returns jsonb language sql security invoker set search_path=public,private,pg_temp as $fn$1restore_project_version($1,$2);
+$fn$;
 revoke all on function public.restore_project_version(uuid,uuid) from public,anon;
 grant execute on function public.restore_project_version(uuid,uuid) to authenticated;
