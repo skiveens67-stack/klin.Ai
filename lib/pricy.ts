@@ -19,7 +19,7 @@ function assertBasisPoints(value: number, name: string) {
 }
 
 function calculateBasisPointAmount(amountCents: number, basisPoints: number) {
-  return Number((BigInt(amountCents) * BigInt(basisPoints) + 5000n) / 10000n);
+  return Number((BigInt(amountCents) * BigInt(basisPoints) + BigInt(5000)) / BigInt(10000));
 }
 
 function safeAdd(left: number, right: number) {
