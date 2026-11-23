@@ -70,21 +70,25 @@ alter table public.business_messages enable row level security;
 alter table public.notification_preferences enable row level security;
 alter table public.notification_deliveries enable row level security;
 
--- SECURITY DEFINER avoids recursive RLS evaluation when membership policies
--- need to check the membership table itself.
-create or replace function public.business_is_active_member(p_conversation_id uuid, p_user_id uuid)
-returns boolean language sql stable security definer set search_path=public,pg_temp as $
+-- SECURITY DEFINER helpers are kept in the non-exposed private schema.
+-- They bind authorization to auth.uid() instead of accepting a caller-selected user.
+create schema if not exists private;
+revoke all on schema private from public,anon;
+grant usage on schema private to authenticated,service_role;
+
+create or replace function private.business_is_active_member(p_conversation_id uuid)
+returns boolean language sql stable security definer set search_path=public,pg_temp as $fn$
   select exists(select 1 from public.business_conversation_members m
-    where m.conversation_id=p_conversation_id and m.user_id=p_user_id and m.status='active');
-$;
-revoke all on function public.business_is_active_member(uuid,uuid) from public,anon;
-grant execute on function public.business_is_active_member(uuid,uuid) to authenticated;
+    where m.conversation_id=p_conversation_id and m.user_id=(select auth.uid()) and m.status='active');
+$fn$;
+revoke all on function private.business_is_active_member(uuid) from public,anon;
+grant execute on function private.business_is_active_member(uuid) to authenticated;
 
 create policy business_conversations_member_select on public.business_conversations
-  for select to authenticated using (public.business_is_active_member(id,(select auth.uid())));
+  for select to authenticated using (private.business_is_active_member(id));
 create policy business_conversations_member_update on public.business_conversations
-  for update to authenticated using (public.business_is_active_member(id,(select auth.uid())))
-  with check (public.business_is_active_member(id,(select auth.uid())));
+  for update to authenticated using (private.business_is_active_member(id))
+  with check (private.business_is_active_member(id));
 create policy business_conversations_creator_insert on public.business_conversations
   for insert to authenticated with check(created_by_user_id=(select auth.uid()));
 create policy business_conversations_creator_delete on public.business_conversations
@@ -92,13 +96,13 @@ create policy business_conversations_creator_delete on public.business_conversat
 
 create policy business_members_member_select on public.business_conversation_members
   for select to authenticated using (private.business_is_active_member(conversation_id));
-create or replace function public.business_is_creator(p_conversation_id uuid, p_user_id uuid)
-returns boolean language sql stable security definer set search_path=public,pg_temp as $
+create or replace function private.business_is_creator(p_conversation_id uuid)
+returns boolean language sql stable security definer set search_path=public,pg_temp as $fn$
   select exists(select 1 from public.business_conversations c
-    where c.id=p_conversation_id and c.created_by_user_id=p_user_id);
-$;
-revoke all on function public.business_is_creator(uuid,uuid) from public,anon;
-grant execute on function public.business_is_creator(uuid,uuid) to authenticated;
+    where c.id=p_conversation_id and c.created_by_user_id=(select auth.uid()));
+$fn$;
+revoke all on function private.business_is_creator(uuid) from public,anon;
+grant execute on function private.business_is_creator(uuid) to authenticated;
 
 create policy business_members_creator_insert on public.business_conversation_members
   for insert to authenticated with check (public.business_is_creator(conversation_id,(select auth.uid())));
