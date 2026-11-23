@@ -1200,8 +1200,8 @@ body {
 .klin-coming-row>span {color:#ddd!important}
 .klin-chat-workspace {background:#080808!important}
 .klin-chat-workspace .text-cyan-100,.klin-chat-workspace .text-cyan-200,.klin-chat-workspace .text-cyan-300 {color:#fff!important}
-.klin-chat-workspace .bg-cyan-400\\/\\[0\\.09\\],.klin-chat-workspace .bg-gradient-to-br.from-cyan-400 {background:#fff!important;color:#050505!important}
-.klin-chat-workspace .border-cyan-300\\/15 {border-color:#666!important}
+.klin-chat-workspace [class*="bg-cyan-400"],.klin-chat-workspace .bg-gradient-to-br.from-cyan-400 {background:#fff!important;color:#050505!important}
+.klin-chat-workspace [class*="border-cyan-300"] {border-color:#666!important}
 [class*="text-cyan-"],[class*="text-blue-"],[class*="text-indigo-"] {color:#e5e5e5!important}
 [class*="border-cyan-"],[class*="border-blue-"],[class*="border-indigo-"] {border-color:#555!important}
 [class*="bg-cyan-"],[class*="bg-blue-"],[class*="bg-indigo-"] {background-color:#ffffff12!important}
