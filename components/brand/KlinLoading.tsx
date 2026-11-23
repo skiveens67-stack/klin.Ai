@@ -5,8 +5,7 @@ export default function KlinLoading({ title = "Loading Klin", subtitle = "Gettin
     <div className="klin-loading-screen" role="status" aria-live="polite">
       <div className="klin-loading-card">
         <div className="klin-loading-stage">
-          <div className="klin-loading-wordmark" aria-label="Klin"><span>K</span><span>l</span><span>i</span><span>n</span></div>
-          <img className="klin-loading-walker" src="/klin-mascot.svg" alt="" /><span className="klin-loading-sfx klin-loading-oops" aria-hidden="true">OOPS!</span><span className="klin-loading-sfx klin-loading-laugh" aria-hidden="true">HA HA!</span>
+          <img className="klin-loading-logo" src="/klin-logo.svg" alt="Klin" />
         </div>
         <p className="klin-loading-title">{title}</p>
         <p className="klin-loading-subtitle">{subtitle}</p>
