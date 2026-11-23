@@ -186,3 +186,72 @@ end;
 $$;
 revoke all on function public.moderation_review_content(uuid,text,text,text) from public,anon,authenticated;
 grant execute on function public.moderation_review_content(uuid,text,text,text) to service_role;
+
+
+create table if not exists public.project_versions (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.creator_projects(id) on delete cascade,
+  owner_user_id uuid not null references auth.users(id) on delete cascade,
+  version_number integer not null check(version_number > 0),
+  label text not null default 'Checkpoint' check(char_length(label) between 1 and 120),
+  snapshot jsonb not null,
+  created_at timestamptz not null default now(),
+  unique(project_id,version_number)
+);
+create index if not exists project_versions_owner_idx
+  on public.project_versions(owner_user_id,project_id,version_number desc);
+alter table public.project_versions enable row level security;
+create policy project_versions_owner_select on public.project_versions
+  for select to authenticated using(owner_user_id=(select auth.uid()));
+revoke insert,update,delete on public.project_versions from anon,authenticated;
+grant select on public.project_versions to authenticated;
+grant select,insert,update,delete on public.project_versions to service_role;
+
+create or replace function public.create_project_version(p_project_id uuid,p_label text default 'Checkpoint')
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+declare p public.creator_projects%rowtype; next_version integer; v public.project_versions%rowtype;
+begin
+  select * into p from public.creator_projects
+    where id=p_project_id and owner_user_id=(select auth.uid()) for update;
+  if not found then raise exception 'Owned project not found'; end if;
+  if p.status not in ('draft','archived') then raise exception 'Only private drafts can be versioned'; end if;
+  select coalesce(max(version_number),0)+1 into next_version from public.project_versions where project_id=p.id;
+  insert into public.project_versions(project_id,owner_user_id,version_number,label,snapshot)
+  values(p.id,p.owner_user_id,next_version,left(coalesce(nullif(trim(p_label),''),'Checkpoint'),120),
+    jsonb_build_object('project_type',p.project_type,'title',p.title,'description',p.description,
+      'visibility',p.visibility,'status',p.status,'content_reference',p.content_reference,'metadata',p.metadata))
+  returning * into v;
+  return jsonb_build_object('id',v.id,'project_id',v.project_id,'version_number',v.version_number,'label',v.label,'created_at',v.created_at);
+end;
+$$;
+revoke all on function public.create_project_version(uuid,text) from public,anon;
+grant execute on function public.create_project_version(uuid,text) to authenticated;
+
+create or replace function public.restore_project_version(p_project_id uuid,p_version_id uuid)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+declare p public.creator_projects%rowtype; v public.project_versions%rowtype; s jsonb; next_version integer;
+begin
+  select * into p from public.creator_projects
+    where id=p_project_id and owner_user_id=(select auth.uid()) for update;
+  if not found then raise exception 'Owned project not found'; end if;
+  if p.status not in ('draft','archived') then raise exception 'Only private drafts can be restored'; end if;
+  select * into v from public.project_versions
+    where id=p_version_id and project_id=p.id and owner_user_id=p.owner_user_id;
+  if not found then raise exception 'Project version not found'; end if;
+  s:=v.snapshot;
+  select coalesce(max(version_number),0)+1 into next_version from public.project_versions where project_id=p.id;
+  insert into public.project_versions(project_id,owner_user_id,version_number,label,snapshot)
+  values(p.id,p.owner_user_id,next_version,'Before restore',
+    jsonb_build_object('project_type',p.project_type,'title',p.title,'description',p.description,
+      'visibility',p.visibility,'status',p.status,'content_reference',p.content_reference,'metadata',p.metadata));
+  update public.creator_projects set
+    title=s->>'title', description=coalesce(s->>'description',''),
+    visibility=case when s->>'visibility' in ('private','unlisted') then s->>'visibility' else 'private' end,
+    status=case when s->>'status'='archived' then 'archived' else 'draft' end,
+    content_reference=s->>'content_reference', metadata=coalesce(s->'metadata','{}'::jsonb)
+  where id=p.id and owner_user_id=p.owner_user_id;
+  return jsonb_build_object('project_id',p.id,'restored_version_id',v.id,'backup_version_number',next_version);
+end;
+$$;
+revoke all on function public.restore_project_version(uuid,uuid) from public,anon;
+grant execute on function public.restore_project_version(uuid,uuid) to authenticated;
