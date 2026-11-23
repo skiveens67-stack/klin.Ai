@@ -15,6 +15,7 @@ export async function createUserNotification(input: {
     .select("in_app_enabled,email_enabled").eq("user_id", input.userId).eq("category", input.category).maybeSingle();
   const inAppEnabled = preference?.in_app_enabled ?? true;
   const emailEnabled = preference?.email_enabled ?? false;
+  if (!inAppEnabled && !emailEnabled) return { notificationId: null, inAppEnabled, emailQueued: false };
   const { data: notification, error } = await admin.from("notifications").insert({
     user_id: input.userId, category: input.category, title: input.title,
     body: input.body, action_url: input.actionUrl ?? null,
