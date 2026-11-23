@@ -85,7 +85,7 @@ export default function AccountOverview({ email }: { email: string }) {
               Manage payment method / subscription
             </button>
           </div>
-          <small>Payment management opens Stripe's secure customer portal when a billing account is linked.</small>
+          <small>Payment management opens Stripe&apos;s secure customer portal when a billing account is linked.</small>
         </div>
       </section>
       <section className="klin-account-card">
