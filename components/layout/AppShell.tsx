@@ -10,7 +10,7 @@ import {
   Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp,
   ClipboardCheck, Compass, Cpu, CreditCard, FolderKanban, Hammer, History,
   Home, LockKeyhole, LogOut, Menu, MessageCircle, Palette, Radio, Settings,
-  ShieldCheck, Sparkles, Users, WalletCards, X, FlaskConical,
+  ShieldCheck, Sparkles, Users, WalletCards, X, FlaskConical, UserRound,
 } from "lucide-react";
 
 type Item = { label: string; href: string; icon: LucideIcon };
@@ -24,6 +24,7 @@ const primary: Item[] = [
   { label: "Marketplace", href: "/marketplace", icon: Compass },
 ];
 const more: Item[] = [
+  { label: "Account Center", href: "/account", icon: UserRound },
   { label: "Shop or Create a Business", href: "/business", icon: BriefcaseBusiness },
   { label: "Social", href: "/social", icon: Users },
   { label: "Learning", href: "/learning", icon: BookOpen },
