@@ -4,6 +4,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { KLIN_V7_SAFETY_POLICY } from "@/lib/klin-v7-safety";
 import { getPrivateAgentNotes } from "@/lib/klin-internal-agents";
+import { createAiUsageEvent } from "@/lib/ai-usage";
 
 export const dynamic = "force-dynamic";
 
@@ -168,7 +169,6 @@ export async function POST(request: Request, context: { params: Promise<{ conver
     // gateway does not return a verified USD cost, so the event marks cost unknown.
     try {
       const usageAdmin = createSupabaseAdminClient();
-      const { createAiUsageEvent } = await import("@/lib/ai-usage");
       await usageAdmin.from("ai_usage_events").insert(createAiUsageEvent({
         provider: "vercel-ai-gateway",
         model: result.model || config.model,
