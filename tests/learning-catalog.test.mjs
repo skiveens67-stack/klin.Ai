@@ -10,6 +10,7 @@ test("learning catalog has unique courses and lesson keys", () => {
     const lessonKeys = course.lessons.map((lesson) => lesson.key);
     assert.equal(new Set(lessonKeys).size, lessonKeys.length);
     assert.ok(course.lessons.every((lesson) => lesson.estimated_minutes > 0));
+    assert.equal(course.estimated_minutes_total, course.lessons.reduce((sum, lesson) => sum + lesson.estimated_minutes, 0));
   }
 });
 
