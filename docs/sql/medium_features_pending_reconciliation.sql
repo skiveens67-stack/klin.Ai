@@ -128,3 +128,56 @@ grant select,insert,update,delete on public.notification_preferences to authenti
 -- Membership changes are intentionally restricted: only the conversation
 -- creator can add initial participants through the API; moderation, blocking,
 -- leave/rejoin and role management require dedicated reviewed operations.
+
+ 
+create table if not exists public.content_moderation_queue (
+  id uuid primary key default gen_random_uuid(),
+  owner_user_id uuid not null references auth.users(id) on delete cascade,
+  content_type text not null check(content_type in ('project','social_post','marketplace_listing')),
+  content_id uuid not null,
+  status text not null default 'pending' check(status in ('pending','approved','rejected')),
+  submitted_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  reviewer_reference text,
+  review_reason text,
+  unique(content_type,content_id)
+);
+create index if not exists content_moderation_queue_status_idx
+  on public.content_moderation_queue(status,submitted_at);
+alter table public.content_moderation_queue enable row level security;
+create policy content_moderation_queue_owner_select on public.content_moderation_queue
+  for select to authenticated using(owner_user_id=(select auth.uid()));
+revoke insert,update,delete on public.content_moderation_queue from anon,authenticated;
+grant select on public.content_moderation_queue to authenticated;
+grant select,insert,update,delete on public.content_moderation_queue to service_role;
+
+create or replace function public.moderation_review_content(
+  p_queue_id uuid, p_decision text, p_reason text, p_reviewer_reference text
+) returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+declare q public.content_moderation_queue%rowtype;
+begin
+  if p_decision not in ('approved','rejected') then raise exception 'Invalid moderation decision'; end if;
+  select * into q from public.content_moderation_queue where id=p_queue_id for update;
+  if not found or q.status <> 'pending' then raise exception 'Pending moderation item not found'; end if;
+  if q.content_type='project' then
+    update public.creator_projects set
+      status=case when p_decision='approved' then 'published' else 'archived' end,
+      visibility=case when p_decision='approved' then 'public' else 'private' end,
+      published_at=case when p_decision='approved' then now() else null end
+    where id=q.content_id and owner_user_id=q.owner_user_id and status='draft';
+  elsif q.content_type='social_post' then
+    update public.social_posts set status=case when p_decision='approved' then 'published' else 'removed' end
+    where id=q.content_id and user_id=q.owner_user_id and status='draft';
+  elsif q.content_type='marketplace_listing' then
+    update public.marketplace_listings set status=case when p_decision='approved' then 'active' else 'closed' end
+    where id=q.content_id and seller_user_id=q.owner_user_id and status='draft';
+  end if;
+  if not found then raise exception 'Draft content no longer exists or is not eligible'; end if;
+  update public.content_moderation_queue set status=p_decision,reviewed_at=now(),
+    reviewer_reference=left(coalesce(p_reviewer_reference,''),120),review_reason=left(coalesce(p_reason,''),1000)
+    where id=q.id;
+  return jsonb_build_object('id',q.id,'content_type',q.content_type,'content_id',q.content_id,'status',p_decision);
+end;
+$$;
+revoke all on function public.moderation_review_content(uuid,text,text,text) from public,anon,authenticated;
+grant execute on function public.moderation_review_content(uuid,text,text,text) to service_role;
