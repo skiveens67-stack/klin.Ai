@@ -96,7 +96,7 @@ export default function AccountOverview({ email }: { email: string }) {
           <p>Review account alerts and choose available notification controls.</p>
           <div className="klin-account-actions">
             <Link className="klin-account-action" href="/notifications">Open notification center</Link>
-            <Link className="klin-account-action" href="/settings#notifications">Notification preferences</Link>
+            <Link className="klin-account-action" href="/settings">Account settings</Link>
           </div>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function AccountOverview({ email }: { email: string }) {
           <div className="klin-account-label">SECURITY</div>
           <h2>Account protection</h2>
           <p>Update your password and review your account identity settings.</p>
-          <Link className="klin-account-action" href="/settings#security">Security settings</Link>
+          <Link className="klin-account-action" href="/settings">Security settings</Link>
         </div>
       </section>
     </main>
