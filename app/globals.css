@@ -1209,3 +1209,5 @@ body {
 @media(prefers-reduced-motion:reduce) {
   .klin-loading-logo {animation:none!important}
 }
+
+.klin-loading-logo {display:block;width:min(100%,220px);height:58px;object-fit:contain;filter:grayscale(1) brightness(1.4);}
