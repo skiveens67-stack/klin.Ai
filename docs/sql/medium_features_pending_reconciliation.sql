@@ -125,7 +125,7 @@ create policy notification_deliveries_deny_clients on public.notification_delive
   for all to anon,authenticated using(false) with check(false);
 revoke all on public.notification_deliveries from anon,authenticated;
 
-grant select,insert,delete on public.business_conversations to authenticated;
+grant select,insert,delete on public.business_conversations to authenticated;\ngrant update(last_message_at) on public.business_conversations to authenticated;
 grant select,insert,update on public.business_conversation_members to authenticated;
 grant select,insert on public.business_messages to authenticated;
 grant select,insert,update,delete on public.notification_preferences to authenticated;
@@ -245,10 +245,11 @@ begin
     jsonb_build_object('project_type',p.project_type,'title',p.title,'description',p.description,
       'visibility',p.visibility,'status',p.status,'content_reference',p.content_reference,'metadata',p.metadata));
   update public.creator_projects set
+    project_type=case when s->>'project_type' in ('website','app','game','music','image','video','other') then s->>'project_type' else p.project_type end,
     title=s->>'title', description=coalesce(s->>'description',''),
     visibility=case when s->>'visibility' in ('private','unlisted') then s->>'visibility' else 'private' end,
     status=case when s->>'status'='archived' then 'archived' else 'draft' end,
-    content_reference=s->>'content_reference', metadata=coalesce(s->'metadata','{}'::jsonb)
+    content_reference=s->>'content_reference', metadata=coalesce(s->'metadata','{}'::jsonb), published_at=null
   where id=p.id and owner_user_id=p.owner_user_id;
   return jsonb_build_object('project_id',p.id,'restored_version_id',v.id,'backup_version_number',next_version);
 end;
