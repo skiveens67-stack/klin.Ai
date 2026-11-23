@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (!draft) return NextResponse.json({ error: "Owned draft not found or already submitted." }, { status: 404 });
     const admin = createSupabaseAdminClient();
     const { data: existing, error: lookupError } = await admin.from("content_moderation_queue")
-      .select("id,content_type,content_id,status,submitted_at")
+      .select("id,owner_user_id,content_type,content_id,status,submitted_at")
       .eq("content_type", input.content_type).eq("content_id", input.content_id).maybeSingle();
     if (lookupError) return NextResponse.json({ error: "Moderation queue is not ready. Reconcile and approve the pending schema first." }, { status: 503 });
     if (existing) {
