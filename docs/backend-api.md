@@ -84,6 +84,11 @@ The connected Stripe account verified for this project is named `Klin.ai` and is
 - `GET|POST /api/social/posts` — view eligible posts/create a draft post.
 - `PATCH /api/social/posts/:postId` — edit an owned social post only while it remains a draft. The endpoint validates body and visibility, rejects owner/status changes, and cannot publish a post.
 - `GET|PUT /api/learning/progress` — read/update the current user's progress.
+- `GET /api/learning/courses` — return the initial AI Foundations, Web Development Basics, and Creator Business Basics courses with the signed-in user's progress.
+- `GET /api/learning/courses/:courseKey` — return an individual course and progress.
+- `GET|POST /api/projects/:projectId/versions` — list/create a named private project snapshot.
+- `POST /api/projects/:projectId/versions/restore` — restore a prior snapshot for an owned private draft; the current draft is saved as a backup first.
+- Project version storage and RPC procedures are included in `docs/sql/medium_features_pending_reconciliation.sql`; these routes remain unavailable until the pending schema is reviewed and approved.
 - `GET /api/media/assets` — list private media metadata.
 - `POST /api/media/upload-url` — create a signed upload URL for the private `klin-user-assets` bucket (100 MB per file).
 - `POST /api/media/assets/:assetId/confirm` — verify that the uploaded object exists and that its stored size and content type match the registered asset before marking it uploaded.
