@@ -32,11 +32,9 @@ export default function AuthForm({ mode, initialError }: Props) {
   }, [mode]);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(initialError === "configuration"
-    ? "Klin sign-in is not configured in this deployment. Add the public Supabase URL and publishable key."
-    : initialError === "callback"
-      ? "Your sign-in link could not be verified. Request a new link or sign in again."
-      : "");
+  const [message, setMessage] = useState(initialError === "callback"
+    ? "Your sign-in link could not be verified. Request a new link or sign in again."
+    : "");
   const [error, setError] = useState("");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
