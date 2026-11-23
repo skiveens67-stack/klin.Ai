@@ -23,11 +23,24 @@ export async function GET(request: Request) {
       acc.requests += 1;
       acc.input_units += Number(event.input_units ?? 0);
       acc.output_units += Number(event.output_units ?? 0);
-      acc.cost_microusd += Number(event.cost_microusd ?? 0);
+      if (event.metadata && typeof event.metadata === "object" && (event.metadata as Record<string, unknown>).cost_status === "reported") {
+        acc.cost_microusd += Number(event.cost_microusd ?? 0);
+        acc.cost_events += 1;
+      }
       return acc;
-    }, { requests: 0, input_units: 0, output_units: 0, cost_microusd: 0 });
+    }, { requests: 0, input_units: 0, output_units: 0, cost_microusd: 0, cost_events: 0 });
 
-    return NextResponse.json({ since: start, summary, events }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({
+      since: start,
+      summary: {
+        requests: summary.requests,
+        input_units: summary.input_units,
+        output_units: summary.output_units,
+        cost_microusd: summary.cost_events > 0 ? summary.cost_microusd : null,
+        cost_reporting: summary.cost_events > 0 ? "partial_or_reported" : "not_reported",
+      },
+      events,
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Usage service unavailable." }, { status: 503 });
   }
