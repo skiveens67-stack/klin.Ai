@@ -92,11 +92,16 @@ create policy business_conversations_creator_delete on public.business_conversat
 
 create policy business_members_member_select on public.business_conversation_members
   for select to authenticated using (public.business_is_active_member(conversation_id,(select auth.uid())));
+create or replace function public.business_is_creator(p_conversation_id uuid, p_user_id uuid)
+returns boolean language sql stable security definer set search_path=public,pg_temp as $
+  select exists(select 1 from public.business_conversations c
+    where c.id=p_conversation_id and c.created_by_user_id=p_user_id);
+$;
+revoke all on function public.business_is_creator(uuid,uuid) from public,anon;
+grant execute on function public.business_is_creator(uuid,uuid) to authenticated;
+
 create policy business_members_creator_insert on public.business_conversation_members
-  for insert to authenticated with check (
-    exists(select 1 from public.business_conversations c
-      where c.id=conversation_id and c.created_by_user_id=(select auth.uid()))
-  );
+  for insert to authenticated with check (public.business_is_creator(conversation_id,(select auth.uid())));
 create policy business_members_self_update on public.business_conversation_members
   for update to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
 
