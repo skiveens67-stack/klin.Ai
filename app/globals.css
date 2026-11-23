@@ -1144,3 +1144,68 @@ body{background:#07090d;color:#f5f7fb}
   94%{transform:translate(146px,-10px) rotate(3deg)}
   100%{transform:translate(0,0) rotate(-5deg)}
 }
+
+
+/* Klin monochrome workspace refresh */
+:root {
+  --klin-cyan:#fff;
+  --klin-blue:#fff;
+  --klin-violet:#d4d4d4;
+  --klin-purple:#fff;
+  --klin-border:rgba(255,255,255,.16);
+  --klin-muted:#a3a3a3;
+}
+body {
+  background:radial-gradient(ellipse at 50% -30%,rgba(255,255,255,.055),transparent 38rem),#050505!important;
+}
+.auth-brand {min-height:42px}
+.auth-brand img {display:block;width:148px;height:auto;filter:grayscale(1) brightness(1.35)}
+.auth-brand-mark {background:#fff!important;color:#050505!important;box-shadow:none!important}
+.auth-brand-dot,.auth-kicker,.auth-switch a,.auth-side-label {color:#fff!important}
+.auth-input-wrap:focus-within {border-color:#fff!important;box-shadow:0 0 0 3px #ffffff16!important}
+.auth-submit {border:1px solid #fff!important;background:#fff!important;color:#050505!important;box-shadow:none!important}
+.auth-submit:hover {background:#dedede!important}
+.auth-message {border-color:#555!important;background:#171717!important;color:#eee!important}
+.auth-side {background:radial-gradient(ellipse at 65% 38%,#171717 0%,#0b0b0b 45%,#050505 80%)!important}
+.auth-side-label span {background:#fff!important;box-shadow:0 0 12px #fff!important}
+.auth-orb {border-color:#ffffff22!important;box-shadow:inset 0 0 80px #ffffff0b,0 0 100px #ffffff0b!important}
+.auth-side-grid span {background:#111!important;border-color:#444!important;color:#ddd!important}
+.klin-sidebar-brand img {display:block;width:148px;max-width:100%;height:auto;filter:grayscale(1) brightness(1.3)}
+.klin-sidebar {background:#080808!important;border-color:#242424!important}
+.klin-workspace-label,.klin-nav-caption,.klin-dashboard-section .klin-section-heading>div>span {color:#929292!important}
+.klin-status-dot {background:#fff!important;box-shadow:0 0 10px #ffffff66!important}
+.klin-nav-item.is-active {background:#fff!important;color:#050505!important;border-color:#fff!important}
+.klin-nav-item.is-active svg {color:#050505!important}
+.klin-topbar {background:#080808!important;border-color:#252525!important}
+.klin-plans-link,.klin-history-link {border-color:#444!important;background:#111!important;color:#eee!important}
+.klin-dashboard-welcome,.klin-action-card,.klin-explore-card,.klin-plan-banner,.klin-coming-row,.klin-included-card,.klin-plan-card,.klin-intelligence-card {
+  border-color:#303030!important;background:#101010!important;box-shadow:none!important;
+}
+.klin-dashboard-welcome {background:linear-gradient(120deg,#151515,#090909)!important}
+.klin-dashboard-welcome .klin-eyebrow,.klin-dashboard-welcome .klin-eyebrow span {color:#fff!important}
+.klin-dashboard-welcome .klin-eyebrow span {background:#fff!important}
+.klin-action-icon.blue,.klin-action-icon.violet,.klin-plan-banner-icon,.klin-coming-icon,.klin-plans-header-mark {
+  background:#202020!important;color:#fff!important;border:1px solid #444!important;
+}
+.klin-action-card:hover,.klin-explore-card:hover,.klin-plan-card:hover {border-color:#777!important;background:#171717!important}
+.klin-action-card>strong,.klin-explore-card strong,.klin-plan-card-top strong,.klin-intelligence-card strong {color:#fff!important}
+.klin-action-card>p,.klin-explore-card p,.klin-plan-card p,.klin-intelligence-card p {color:#aaa!important}
+.klin-plan-banner>div:nth-child(2)>span,.klin-plan-recommended,.klin-plans-section-title>div>span {color:#ddd!important}
+.klin-plan-recommended {background:#252525!important}
+.klin-plan-button,.klin-plan-card.is-featured .klin-plan-button {border-color:#fff!important;background:#fff!important;color:#050505!important}
+.klin-plan-card.is-featured {border-color:#666!important;background:#151515!important}
+.klin-plan-explainer,.klin-plan-included,.klin-plan-error {border-color:#444!important;background:#171717!important;color:#eee!important}
+.klin-plan-explainer svg,.klin-included-card>div svg {color:#fff!important}
+.klin-plan-status,.klin-plan-footnote,.klin-plans-footer {color:#aaa!important}
+.klin-coming-row>span {color:#ddd!important}
+.klin-chat-workspace {background:#080808!important}
+.klin-chat-workspace .text-cyan-100,.klin-chat-workspace .text-cyan-200,.klin-chat-workspace .text-cyan-300 {color:#fff!important}
+.klin-chat-workspace .bg-cyan-400\\/\\[0\\.09\\],.klin-chat-workspace .bg-gradient-to-br.from-cyan-400 {background:#fff!important;color:#050505!important}
+.klin-chat-workspace .border-cyan-300\\/15 {border-color:#666!important}
+[class*="text-cyan-"],[class*="text-blue-"],[class*="text-indigo-"] {color:#e5e5e5!important}
+[class*="border-cyan-"],[class*="border-blue-"],[class*="border-indigo-"] {border-color:#555!important}
+[class*="bg-cyan-"],[class*="bg-blue-"],[class*="bg-indigo-"] {background-color:#ffffff12!important}
+:focus-visible {outline-color:#fff!important}
+@media(prefers-reduced-motion:reduce) {
+  .klin-loading-logo {animation:none!important}
+}
