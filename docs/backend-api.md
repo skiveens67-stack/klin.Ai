@@ -65,6 +65,7 @@ The connected Stripe account verified for this project is named `Klin.ai` and is
 - `GET|POST /api/marketplace/listings` — view eligible listings/create a draft listing.
 - `GET|POST /api/marketplace/bids` — view eligible bids/place a bid on an active auction.
 - `GET|POST /api/social/posts` — view eligible posts/create a draft post.
+- `PATCH /api/social/posts/:postId` — edit an owned social post only while it remains a draft. The endpoint validates body and visibility, rejects owner/status changes, and cannot publish a post.
 - `GET|PUT /api/learning/progress` — read/update the current user's progress.
 - `GET /api/media/assets` — list private media metadata.
 - `POST /api/media/upload-url` — create a signed upload URL for the private `klin-user-assets` bucket (100 MB per file).
