@@ -90,3 +90,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Family invitation service unavailable." }, { status: 503 });
   }
 }
+
+export async function DELETE(request: Request) {
+  if (!hasTrustedOrigin(request)) return NextResponse.json({ error: "Untrusted request origin." }, { status: 403 });
+  const parsed = await readLimitedJson(request, 4096);
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+  if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
+    return NextResponse.json({ error: "Invalid invitation revocation request." }, { status: 400 });
+  }
+  const id = (parsed.value as Record<string, unknown>).id;
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) {
+    return NextResponse.json({ error: "A valid invitation id is required." }, { status: 400 });
+  }
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    const { data: family, error: familyError } = await supabase
+      .from("families").select("id").eq("owner_user_id", user.id).maybeSingle();
+    if (familyError) return NextResponse.json({ error: "Unable to verify family ownership." }, { status: 500 });
+    if (!family) return NextResponse.json({ error: "Family not found." }, { status: 404 });
+
+    const { data, error } = await supabase.from("family_invitations")
+      .delete().eq("id", id).eq("family_id", family.id).is("accepted_at", null)
+      .select("id").maybeSingle();
+    if (error) return NextResponse.json({ error: "Unable to revoke family invitation." }, { status: 500 });
+    if (!data) return NextResponse.json({ error: "Pending invitation not found." }, { status: 404 });
+    return NextResponse.json({ revoked: true }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "Family invitation service unavailable." }, { status: 503 });
+  }
+}
