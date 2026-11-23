@@ -91,8 +91,6 @@ create policy business_conversations_member_update on public.business_conversati
   with check (private.business_is_active_member(id));
 create policy business_conversations_creator_insert on public.business_conversations
   for insert to authenticated with check(created_by_user_id=(select auth.uid()));
-create policy business_conversations_creator_delete on public.business_conversations
-  for delete to authenticated using(created_by_user_id=(select auth.uid()));
 
 create policy business_members_member_select on public.business_conversation_members
   for select to authenticated using (private.business_is_active_member(conversation_id));
@@ -129,7 +127,7 @@ create policy notification_deliveries_deny_clients on public.notification_delive
   for all to anon,authenticated using(false) with check(false);
 revoke all on public.notification_deliveries from anon,authenticated;
 
-grant select,insert,delete on public.business_conversations to authenticated;\ngrant update(last_message_at) on public.business_conversations to authenticated;
+grant select,insert on public.business_conversations to authenticated;\ngrant update(last_message_at) on public.business_conversations to authenticated;
 grant select,insert,update on public.business_conversation_members to authenticated;
 grant select,insert on public.business_messages to authenticated;
 grant select,insert,update,delete on public.notification_preferences to authenticated;
