@@ -131,3 +131,9 @@ The current module execution endpoint returns a specialist model response only. 
 
 
 **Abuse-control limitation:** Module endpoints cap tokens per worker and enforce the verified plan limit within each team batch, but a durable per-user rate limit, daily usage quota and global concurrency lock across separate browser sessions are not implemented yet. Set AI Gateway account spending limits before enabling module execution for public users.
+
+
+## Creator project draft management
+- `PATCH /api/projects/:projectId` — update an owned project draft's title, description, visibility, or draft/archive status.
+- The endpoint accepts only allowlisted fields, trims text, enforces title/description limits, and rejects attempts to set public visibility or published status while moderation and public publishing remain disabled.
+- Project ownership is enforced in the update query. The route does not change project type, owner, content reference, published timestamp, or listing/payment state.
