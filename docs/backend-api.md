@@ -53,12 +53,21 @@ Required server-only environment variables:
 
 The connected Stripe account verified for this project is named `Klin.ai` and is currently in test mode. A read-only inspection returned zero products, zero prices, and zero webhook endpoints. Checkout and webhook routes therefore remain fail-closed until the `Klin.ai` account's own server-side keys, approved price IDs, and webhook secret are configured. Do not use credentials from the separate account named `Klin` or from Kai.AI.
 
+## Business Talk
+- `GET|POST /api/business/conversations` — list conversations for the signed-in participant or create a private conversation with 1–10 other account IDs.
+- `GET|POST /api/business/conversations/:conversationId/messages` — list messages for an active participant or create an idempotent message (1–10,000 characters).
+- Business Talk is separate from Klinie's AI conversations. Membership checks are enforced on every read/write. A pending schema draft is in `docs/sql/medium_features_pending_reconciliation.sql`; these routes fail closed until that schema is reconciled and approved.
+- New messages enqueue in-app/email notifications according to per-category preferences when the required tables are present.
+
 ## AI usage, notifications, and integrations
 - `GET /api/usage?since=<ISO date>` — current user's AI usage aggregates and events. Successful assistant replies now record gateway token counts server-side when the provider supplies them. Gateway cost is explicitly reported as unavailable unless a verified cost field is added; the database's required numeric zero is not presented as proof of free usage.
 - `GET /api/notifications` — list notifications.
 - `PATCH /api/notifications` — mark one or all notifications read.
+- `GET|PUT /api/notifications/preferences` — read/update per-category in-app and email preferences.
+- `POST /api/internal/notifications/dispatch` — worker-secret-protected Resend email delivery, with bounded retries and service-role-only queue access.
+- Notification preference and delivery tables are defined in the pending schema draft; email delivery also requires `KLIN_WORKER_SECRET`, `KLIN_NOTIFICATION_FROM_EMAIL`, `RESEND_API_KEY`, and the Supabase service-role key.
 - `connected_integrations` stores provider metadata and secret references only; OAuth tokens must remain in a secure secret store.
-- `integration_jobs` is a service-only queue. Provider workers and OAuth callback handlers remain to be connected.
+- `integration_jobs` is a service-only queue. Provider-specific OAuth callbacks, refresh-token storage, and sync workers remain unconnected; no provider is represented as connected merely because its catalog entry exists.
 
 ## Projects, social, marketplace, and learning
 - `GET|POST /api/projects` — list visible projects/create a private draft.
@@ -88,13 +97,14 @@ The command route only records requests; it does not actuate hardware. Thangie r
 - Mutating JSON API routes use route-specific request-body byte limits before JSON parsing.
 
 ## Required next integrations
-1. Configure Klin's own Stripe keys, product/price IDs, webhook endpoint, and Supabase service-role key in Vercel.
-2. Configure a 32-byte base64 `KLIN_CONTACT_ENCRYPTION_KEY`.
-3. Select and configure Klinie's model provider(s), API keys, streaming runtime, and usage accounting.
-4. Connect communication OAuth/SMS/voice/calendar providers and background workers.
-5. Build moderation/review workers before enabling public content.
-6. Build the authenticated device gateway and firmware safety controls before enabling hardware commands.
-7. Complete runtime tests with verified test accounts and Stripe test-mode events before merging to production.
+1. Reconcile the 16 live Supabase migrations against exact source SQL, then independently review the pending Business Talk and notification schema before applying it.
+2. Configure Klin's own Stripe keys, product/price IDs, webhook endpoint, and Supabase service-role key in Vercel.
+3. Configure a 32-byte base64 `KLIN_CONTACT_ENCRYPTION_KEY`.
+4. Select and configure Klinie's model provider(s), API keys, streaming runtime, and usage accounting.
+5. Select approved OAuth/SMS/voice/calendar providers, register their OAuth apps, and configure provider credentials and workers.
+6. Build moderation/review workers before enabling public content.
+7. Build the authenticated device gateway and firmware safety controls before enabling hardware commands.
+8. Complete runtime tests with verified test accounts and Stripe test-mode events before merging to production.
 
 
 ## Autonomous Builder
