@@ -117,7 +117,7 @@ export default function SettingsPanel({ email }: { email: string }) {
         <div className="settings-card-heading"><ShieldCheck size={18} /><div><h2>Account</h2><p>Your current signed-in identity.</p></div></div>
         <div className="settings-field"><span>Email address</span><strong>{email || "Unavailable"}</strong></div>
       </section>
-      <section className="settings-card">
+      <section className="settings-card" id="profile">
         <div className="settings-card-heading"><UserRound size={18} /><div><h2>Profile</h2><p>Update the profile fields permitted by Klin.</p></div></div>
         {loadingProfile ? <p className="settings-muted">Loading profile…</p> : (
           <form className="settings-form" onSubmit={updateProfile}>
@@ -138,7 +138,7 @@ export default function SettingsPanel({ email }: { email: string }) {
           </form>
         )}
       </section>
-      <section className="settings-card">
+      <section className="settings-card" id="security">
         <div className="settings-card-heading"><KeyRound size={18} /><div><h2>Change password</h2><p>Choose a unique password with at least 8 characters.</p></div></div>
         <form className="settings-form" onSubmit={updatePassword}>
           <label htmlFor="new-password">New password</label>
