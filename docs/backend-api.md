@@ -13,7 +13,7 @@ Email, phone, verification timestamps, account activation, waitlist position, an
 
 ## Family and trusted circle
 - `GET|POST /api/family` — read/create the account's family. One family per owner.
-- `POST /api/family/profiles` — create a managed family profile. Database limit: five managed profiles.
+- `POST /api/family/profiles` — create a managed family profile. Database limit: five managed profiles.\n- `PATCH|DELETE /api/family/members/:memberId` — family owners can update a member's role and allowlisted feature permissions, or remove a non-owner member. The owner role cannot be changed or removed.
 - `GET|POST /api/trusted-contacts` — list/add trusted contacts. Contact destinations are encrypted server-side and the ciphertext column is not selectable by authenticated clients.
 - `DELETE /api/trusted-contacts/:contactId` — remove a trusted contact.
 - `GET|PUT /api/communications/rules` — read/save channel permission tiers.
