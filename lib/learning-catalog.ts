@@ -1,5 +1,5 @@
 export type KlinLesson = { key: string; title: string; summary: string; estimated_minutes: number };
-export type KlinCourse = { key: string; title: string; description: string; level: "beginner" | "intermediate"; lessons: KlinLesson[]; estimated_minutes_total: number };
+export type KlinCourse = { key: string; title: string; description: string; level: "beginner" | "intermediate"; lessons: KlinLesson[]; estimated_minutes_total?: number };
 
 export const KLIN_LEARNING_COURSES: KlinCourse[] = [
   {
