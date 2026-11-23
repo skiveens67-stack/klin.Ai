@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const start = since && !Number.isNaN(Date.parse(since)) ? new Date(since).toISOString() : new Date(Date.now() - 30 * 86400000).toISOString();
 
     const { data, error } = await supabase.from("ai_usage_events")
-      .select("provider,model,feature,input_units,output_units,cost_microusd,created_at")
+      .select("provider,model,feature,input_units,output_units,cost_microusd,metadata,created_at")
       .eq("user_id", user.id).gte("created_at", start).order("created_at", { ascending: false }).limit(1000);
     if (error) return NextResponse.json({ error: "Unable to load AI usage." }, { status: 500 });
 
