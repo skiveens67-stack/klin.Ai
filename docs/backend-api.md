@@ -54,7 +54,7 @@ Required server-only environment variables:
 The connected Stripe account verified for this project is named `Klin.ai` and is currently in test mode. A read-only inspection returned zero products, zero prices, and zero webhook endpoints. Checkout and webhook routes therefore remain fail-closed until the `Klin.ai` account's own server-side keys, approved price IDs, and webhook secret are configured. Do not use credentials from the separate account named `Klin` or from Kai.AI.
 
 ## AI usage, notifications, and integrations
-- `GET /api/usage?since=<ISO date>` — current user's AI usage aggregates and events.
+- `GET /api/usage?since=<ISO date>` — current user's AI usage aggregates and events. Successful assistant replies now record gateway token counts server-side when the provider supplies them. Gateway cost is explicitly reported as unavailable unless a verified cost field is added; the database's required numeric zero is not presented as proof of free usage.
 - `GET /api/notifications` — list notifications.
 - `PATCH /api/notifications` — mark one or all notifications read.
 - `connected_integrations` stores provider metadata and secret references only; OAuth tokens must remain in a secure secret store.
