@@ -30,13 +30,20 @@ export async function POST(request: Request) {
     if (draftError) return NextResponse.json({ error: "Moderation storage is not ready." }, { status: 503 });
     if (!draft) return NextResponse.json({ error: "Owned draft not found or already submitted." }, { status: 404 });
     const admin = createSupabaseAdminClient();
-    const { data, error } = await admin.from("content_moderation_queue").upsert({
+    const { data: existing, error: lookupError } = await admin.from("content_moderation_queue")
+      .select("id,content_type,content_id,status,submitted_at")
+      .eq("content_type", input.content_type).eq("content_id", input.content_id).maybeSingle();
+    if (lookupError) return NextResponse.json({ error: "Moderation queue is not ready. Reconcile and approve the pending schema first." }, { status: 503 });
+    if (existing) {
+      if (existing.owner_user_id && existing.owner_user_id !== user.id) return NextResponse.json({ error: "Moderation submission not found." }, { status: 404 });
+      return NextResponse.json({ submission: existing, replayed: true }, { status: 200, headers: { "Cache-Control": "no-store" } });
+    }
+    const { data, error } = await admin.from("content_moderation_queue").insert({
       owner_user_id: user.id, content_type: input.content_type, content_id: input.content_id,
       status: "pending", submitted_at: new Date().toISOString(),
-    }, { onConflict: "content_type,content_id", ignoreDuplicates: true })
-      .select("id,content_type,content_id,status,submitted_at").maybeSingle();
-    if (error) return NextResponse.json({ error: "Moderation queue is not ready. Reconcile and approve the pending schema first." }, { status: 503 });
-    return NextResponse.json({ submission: data, status: "pending", note: "Submission is queued for review. It is not public or purchasable while pending." }, { status: 202, headers: { "Cache-Control": "no-store" } });
+    }).select("id,content_type,content_id,status,submitted_at").single();
+    if (error || !data) return NextResponse.json({ error: "Unable to queue moderation submission." }, { status: 503 });
+    return NextResponse.json({ submission: data, replayed: false, status: "pending", note: "Submission is queued for review. It is not public or purchasable while pending." }, { status: 202, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Moderation service unavailable." }, { status: 503 });
   }
