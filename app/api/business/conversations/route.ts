@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { parseBusinessConversationInput } from "@/lib/business-talk";
 
@@ -45,7 +46,12 @@ export async function POST(request: Request) {
     }));
     const { error: membersError } = await supabase.from("business_conversation_members").insert(members);
     if (membersError) {
-      await supabase.from("business_conversations").delete().eq("id", conversation.id).eq("created_by_user_id", user.id);
+      try {
+        await createSupabaseAdminClient().from("business_conversations").delete()
+          .eq("id", conversation.id).eq("created_by_user_id", user.id);
+      } catch {
+        // The failed conversation remains inaccessible unless all member rows exist.
+      }
       return NextResponse.json({ error: "Unable to add conversation participants. No conversation was kept." }, { status: 503 });
     }
     return NextResponse.json({ conversation, participant_count: members.length }, { status: 201, headers: { "Cache-Control": "no-store" } });
