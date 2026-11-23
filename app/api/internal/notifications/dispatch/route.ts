@@ -32,11 +32,19 @@ export async function POST(request: Request) {
 
     try {
       const [{ data: notification, error: notificationError }, { data: authResult, error: userError }] = await Promise.all([
-        admin.from("notifications").select("title,body,action_url").eq("id", job.notification_id).single(),
+        admin.from("notifications").select("title,body,action_url,category").eq("id", job.notification_id).single(),
         admin.auth.admin.getUserById(job.user_id),
       ]);
       const email = authResult?.user?.email;
       if (notificationError || !notification || userError || !email) throw new Error("Notification recipient or content is unavailable.");
+      const { data: preference } = await admin.from("notification_preferences")
+        .select("email_enabled").eq("user_id", job.user_id).eq("category", notification.category).maybeSingle();
+      if (!preference?.email_enabled) {
+        await admin.from("notification_deliveries").update({ status: "canceled", locked_at: null, last_error: "Email notifications are disabled for this category." })
+          .eq("id", job.id).eq("status", "processing");
+        skipped++;
+        continue;
+      }
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
