@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasTrustedOrigin, readLimitedJson } from "@/lib/request-security";
 import { parseBusinessMessageInput } from "@/lib/business-talk";
+import { createUserNotification } from "@/lib/notification-delivery";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,14 @@ export async function POST(request: Request, context: { params: Promise<{ conver
       return NextResponse.json({ error: "Unable to save message." }, { status: 503 });
     }
     await supabase.from("business_conversations").update({ last_message_at: new Date().toISOString() }).eq("id", conversationId);
+    const { data: recipients } = await supabase.from("business_conversation_members")
+      .select("user_id").eq("conversation_id", conversationId).eq("status", "active");
+    await Promise.all((recipients ?? []).filter((member) => member.user_id !== user.id).map((member) =>
+      createUserNotification({
+        userId: member.user_id, category: "business", title: "New Business Talk message",
+        body: input.value.body.slice(0, 240), actionUrl: "/business?conversation=" + conversationId,
+      }).catch(() => null)
+    ));
     return NextResponse.json({ message: data, replayed: false }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Business Talk service unavailable." }, { status: 503 });
