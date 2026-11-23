@@ -10,12 +10,16 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
-    const { data, error } = await supabase.from("notifications")
-      .select("id,category,title,body,action_url,read_at,created_at")
-      .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
+    const [{ data, error }, { data: preferences, error: preferenceError }] = await Promise.all([
+      supabase.from("notifications").select("id,category,title,body,action_url,read_at,created_at")
+        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
+      supabase.from("notification_preferences").select("category,in_app_enabled").eq("user_id", user.id),
+    ]);
     if (error) return NextResponse.json({ error: "Unable to load notifications." }, { status: 500 });
-
-    return NextResponse.json({ notifications: data ?? [] }, { headers: { "Cache-Control": "no-store" } });
+    // Keep the existing inbox usable if the optional preferences schema has not
+    // been reconciled yet; once available, disabled categories are hidden.
+    const disabled = preferenceError ? new Set<string>() : new Set((preferences ?? []).filter((p) => !p.in_app_enabled).map((p) => p.category));
+    return NextResponse.json({ notifications: (data ?? []).filter((item) => !disabled.has(item.category)).slice(0, 50) }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Notification service unavailable." }, { status: 503 });
   }
