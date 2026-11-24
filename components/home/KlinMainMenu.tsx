@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BriefcaseBusiness, CheckCircle2, FlaskConical,
   FolderKanban, Gamepad2, Globe2, MessageCircle, MonitorSmartphone, Palette,
-  ShoppingBag, Smartphone, Sparkles,
+  ShoppingBag, Sparkles,
 } from "lucide-react";
 
 const startActions = [
