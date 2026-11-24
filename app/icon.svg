@@ -1,10 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Klin">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#22d3ee"/>
-      <stop offset="1" stop-color="#6366f1"/>
+    <linearGradient id="klinBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8DB7FF"/>
+      <stop offset="1" stop-color="#3478F6"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="18" fill="#080d18"/>
-  <path d="M32 8 36.5 25.5 54 32 36.5 38.5 32 56 27.5 38.5 10 32 27.5 25.5Z" fill="url(#g)"/>
+  <rect width="64" height="64" rx="18" fill="#111722" stroke="#2B3A50" stroke-width="1.5"/>
+  <path d="M18 13h8v16l17-16h11L36 31l19 20H44L31 37l-5 5v9h-8z" fill="#F7FAFF"/>
+  <path d="M43 13h11L36 32H26zM36 32h10l9 19H44z" fill="url(#klinBlue)"/>
 </svg>
