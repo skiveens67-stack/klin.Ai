@@ -104,7 +104,9 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
     const Icon = item.icon;
     const selected = item.href === "/"
       ? pathname === "/"
-      : pathname === item.href || pathname.startsWith(item.href + "/");
+      : item.href === "/chat" || item.href === "/chat/xzello"
+        ? pathname === item.href
+        : pathname === item.href || pathname.startsWith(item.href + "/");
     return (
       <Link
         key={item.href}
