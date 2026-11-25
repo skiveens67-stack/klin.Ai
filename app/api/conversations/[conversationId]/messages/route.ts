@@ -56,17 +56,31 @@ export async function POST(request: Request, context: { params: Promise<{ conver
     await supabase.from("conversations").update(conversationUpdates).eq("id", conversationId).eq("user_id", user.id);
 
     const assistantKey = conversation.assistant_key === "xzello" ? "xzello" : "klinie";
-    const gatewayKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
-    const gatewayModel = assistantKey === "xzello"
-      ? process.env.XZELLO_MODEL || process.env.KLINIE_MODEL || process.env.AI_GATEWAY_MODEL
-      : process.env.KLINIE_MODEL || process.env.AI_GATEWAY_MODEL;
-    const config = gatewayKey && gatewayModel ? { apiKey: gatewayKey, model: gatewayModel } : null;
+    // OpenScale is an optional server-side provider for Klinie. Xzello and the
+    // existing Vercel AI Gateway remain unchanged unless explicitly configured.
+    const useOpenScale = assistantKey === "klinie" && process.env.KLINIE_PROVIDER === "openscale";
+    const providerKey = useOpenScale
+      ? process.env.OPENSCALE_API_KEY
+      : process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+    const providerModel = useOpenScale
+      ? process.env.OPENSCALE_KLINIE_MODEL || "deepseek/deepseek-v4.1-flash"
+      : assistantKey === "xzello"
+        ? process.env.XZELLO_MODEL || process.env.KLINIE_MODEL || process.env.AI_GATEWAY_MODEL
+        : process.env.KLINIE_MODEL || process.env.AI_GATEWAY_MODEL;
+    const config = providerKey && providerModel ? {
+      apiKey: providerKey,
+      model: providerModel,
+      provider: useOpenScale ? "openscale" : "vercel-ai-gateway",
+      endpoint: useOpenScale
+        ? "https://api.openscale.so/v1/chat/completions"
+        : "https://ai-gateway.vercel.sh/v1/chat/completions",
+    } : null;
     if (!config) {
       return NextResponse.json({
         message,
         assistant: {
           status: "not_connected",
-          detail: assistantKey === "xzello" ? "Your message is saved, but Xzello is not connected yet. Configure the AI Gateway and XZELLO_MODEL (or KLINIE_MODEL fallback) to enable replies." : "Your message is saved, but Klinie is not connected yet. Configure the AI Gateway and KLINIE_MODEL to enable replies.",
+          detail: assistantKey === "xzello" ? "Your message is saved, but Xzello is not connected yet. Configure the AI Gateway and XZELLO_MODEL (or KLINIE_MODEL fallback) to enable replies." : useOpenScale ? "Your message is saved, but OpenScale is not configured. Add OPENSCALE_API_KEY and configure an OpenScale model." : "Your message is saved, but Klinie is not connected yet. Configure the AI Gateway and KLINIE_MODEL to enable replies.",
         },
       }, { status: 201, headers: { "Cache-Control": "no-store" } });
     }
@@ -92,7 +106,7 @@ export async function POST(request: Request, context: { params: Promise<{ conver
 
     let gatewayResponse: Response;
     try {
-      gatewayResponse = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+      gatewayResponse = await fetch(config.endpoint, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
@@ -110,21 +124,21 @@ export async function POST(request: Request, context: { params: Promise<{ conver
     } catch {
       return NextResponse.json({
         message,
-        assistant: { status: "failed", detail: "Klinie's model gateway could not be reached. Your message remains saved; try again later." },
+        assistant: { status: "failed", detail: "Klinie's selected AI provider could not be reached. Your message remains saved; try again later." },
       }, { status: 201, headers: { "Cache-Control": "no-store" } });
     }
 
     if (!gatewayResponse.ok) {
       const status = gatewayResponse.status;
       const detail = status === 401 || status === 403
-        ? "The AI Gateway credentials are invalid or not authorized."
+        ? "The selected AI provider credentials are invalid or not authorized."
         : status === 402
-          ? "The AI Gateway has no available credits or a spending limit has been reached."
+          ? "The selected AI provider has no available credits or a spending limit has been reached."
           : status === 429
             ? "The AI Gateway is rate-limiting requests. Wait a moment and retry."
             : status >= 500
               ? "The selected model provider is temporarily unavailable."
-              : "The AI Gateway rejected this request. Check the configured model ID.";
+              : "The selected AI provider rejected this request. Check the configured model ID.";
       return NextResponse.json({
         message,
         assistant: { status: "failed", detail },
@@ -151,10 +165,10 @@ export async function POST(request: Request, context: { params: Promise<{ conver
         role: "assistant",
         content: reply,
         status: "complete",
-        provider: "vercel-ai-gateway",
+        provider: config.provider,
         model: result.model || config.model,
         token_count: tokenCount,
-        metadata: { gateway_request_id: result.id ?? null },
+        metadata: { provider_request_id: result.id ?? null },
       }).select("id,conversation_id,role,content,status,created_at").single();
       if (error || !data) throw new Error("Assistant message persistence failed.");
       assistantMessage = data;
@@ -166,7 +180,7 @@ export async function POST(request: Request, context: { params: Promise<{ conver
     }
 
     // Usage is recorded server-side after the assistant reply is persisted. The
-    // gateway does not return a verified USD cost, so the event marks cost unknown.
+    // provider does not return a verified USD cost here, so cost remains unknown.
     try {
       const usageAdmin = createSupabaseAdminClient();
       await usageAdmin.from("ai_usage_events").insert(createAiUsageEvent({
