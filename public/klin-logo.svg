@@ -7,7 +7,6 @@
       <stop offset="1" stop-color="#3478F6"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="17" fill="#111722" stroke="#2B3A50" stroke-width="1.5"/>
   <path d="M20 15h8v13l15-13h11L37 31l18 18H44L31 36l-3 3v10h-8z" fill="url(#klinBlue)"/>
   <text x="78" y="43" fill="#8DB7FF" font-family="Inter,Arial,sans-serif" font-size="38" font-weight="740" letter-spacing="-2">Klin</text>
 </svg>
