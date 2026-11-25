@@ -114,7 +114,12 @@ export default function AuthForm({ mode, initialError }: Props) {
         {mode === "signup" && verificationPending && <p className="auth-email-help">Can’t access this inbox? <Link href="/support">Contact Klin Support</Link> if you need help recovering access.</p>}
         {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Sign up for Klin" : "Sign in instead"}</Link></p>
-        <p className="auth-support-link">Need help? <Link href="/support">Contact Klin Support without an account</Link></p>
+        <div className="auth-support-link auth-contact-options">
+          <a href="mailto:support@klin.help?subject=Klin%20Support%20Request">Send a support email</a>
+          <a href="mailto:support@klin.help?subject=Klin%20Product%20Feedback">Send feedback</a>
+          <a href="mailto:partnerships@klin.help?subject=Klin%20Partnership%20Inquiry&body=Hello%20Klin%20team%2C%0A%0AI%20would%20like%20to%20discuss%20a%20partnership%20with%20Klin.%0A%0AOrganization%3A%0APartnership%20idea%3A%0AContact%20information%3A">Partner with Klin</a>
+          <span> · </span><Link href="/support">Support form</Link>
+        </div>
         <p className="auth-footnote">Your account is protected by Klin&apos;s authenticated session and private conversation access controls.</p>
       </section>
       <aside className="auth-side">
