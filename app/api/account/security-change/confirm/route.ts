@@ -44,10 +44,12 @@ export async function POST(request: Request) {
     const suppliedHash = hashSecurityCode(user.id, challengeId, code);
     if (!safeCodeMatch(challenge.code_hash, suppliedHash)) {
       const attempts = challenge.attempts + 1;
-      await admin.from("klin_security_change_challenges").update({
-        attempts,
-        consumed_at: attempts >= 5 ? new Date().toISOString() : null,
-      }).eq("id", challengeId);
+      const attemptUpdate = admin.from("klin_security_change_challenges").update(
+        attempts >= 5
+          ? { attempts, consumed_at: new Date().toISOString() }
+          : { attempts },
+      ).eq("id", challengeId).is("consumed_at", null);
+      await attemptUpdate;
       await recordSecurityEvent(user.id, "sensitive_change_verification_failed", "blocked", {
         changeType: challenge.change_type,
         attempts,
