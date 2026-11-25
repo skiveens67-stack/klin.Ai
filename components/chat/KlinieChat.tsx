@@ -320,6 +320,19 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">Klin AI</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">What can I help you build?</h1>
               <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Start a conversation with {assistantName}. Your chats will be saved in your history.</p>
+              <div className="mt-7 grid w-full max-w-xl gap-2 sm:grid-cols-2">
+                {[
+                  { label: "Plan a project", prompt: "Help me plan a new project step by step." },
+                  { label: "Build a website or app", prompt: "Help me start building a website or app." },
+                  { label: "Review an idea", prompt: "Review my idea and suggest ways to improve it." },
+                  { label: "Test what’s ready", prompt: "Help me test the features that are currently available in Klin." },
+                ].map((suggestion) => (
+                  <button key={suggestion.label} type="button" onClick={() => { setInput(suggestion.prompt); requestAnimationFrame(() => textareaRef.current?.focus()); }}
+                    className="rounded-xl border border-white/[0.09] bg-white/[0.025] px-4 py-3 text-left text-xs font-medium text-slate-300 transition hover:border-cyan-300/30 hover:bg-cyan-400/[0.06] hover:text-white">
+                    {suggestion.label}
+                  </button>
+                ))}
+              </div>
               {!loadingHistory && conversations.length > 0 && (
                 <div className="mt-9 w-full max-w-xl text-left">
                   <div className="mb-3 flex items-center justify-between">
