@@ -6,15 +6,21 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let email = "";
+  let userEmail = "";
+  let signedIn = false;
+
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) redirect("/login");
-    email = user.email ?? "";
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    if (data.user) {
+      signedIn = true;
+      userEmail = data.user.email ?? "";
+    }
   } catch {
     redirect("/login?error=configuration");
   }
 
-  return <AppShell userEmail={email}><KlinMainMenu /></AppShell>;
+  if (!signedIn) redirect("/login");
+  return <AppShell userEmail={userEmail}><KlinMainMenu /></AppShell>;
 }
