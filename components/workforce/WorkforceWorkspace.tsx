@@ -5,10 +5,10 @@ import { ArrowRight, BriefcaseBusiness, GraduationCap, Landmark, Search, Users }
 
 type Job={id:string;owner_user_id:string;business_name:string;title:string;description:string;location:string;employment_type:string;pay_range:string|null;status:string;is_promoted:boolean;is_mine:boolean};
 type Course={id:string;owner_user_id:string;title:string;description:string;course_url:string;meeting_url:string|null;session_at:string|null};
-type App={id:string;applicant_name:string;cover_note:string;status:string};
+type App={id:string;applicant_name:string;cover_note:string;status:string};\ntype BankRequest={id:string;bank_name:string;business_name:string;status:string};
 async function api(url:string,method="GET",body?:unknown){const r=await fetch(url,{method,credentials:"same-origin",headers:body?{"Content-Type":"application/json"}:undefined,body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Request failed.");return d;}
 export default function WorkforceWorkspace(){
- const [tab,setTab]=useState("find"),[jobs,setJobs]=useState<Job[]>([]),[courses,setCourses]=useState<Course[]>([]),[banks,setBanks]=useState<any[]>([]),[apps,setApps]=useState<Record<string,App[]>>({});
+ const [tab,setTab]=useState("find"),[jobs,setJobs]=useState<Job[]>([]),[courses,setCourses]=useState<Course[]>([]),[banks,setBanks]=useState<BankRequest[]>([]),[apps,setApps]=useState<Record<string,App[]>>({});
  const [busy,setBusy]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState(""),[applyId,setApplyId]=useState("");
  const [job,setJob]=useState({business_name:"",title:"",description:"",location:"Remote",employment_type:"Full-time",pay_range:"",is_promoted:false});
  const [applicant,setApplicant]=useState({applicant_name:"",cover_note:""});
