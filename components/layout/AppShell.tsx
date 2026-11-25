@@ -67,7 +67,9 @@ const allItems = [...primary, ...moreGroups.flatMap((group) => group.items)];
 export default function AppShell({ userEmail, children }: { userEmail: string; children: ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);\n  const [topMoreOpen, setTopMoreOpen] = useState(false);\n  const [showMeetings, setShowMeetings] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [topMoreOpen, setTopMoreOpen] = useState(false);
+  const [showMeetings, setShowMeetings] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
