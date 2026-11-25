@@ -1963,3 +1963,12 @@ body {
 .klin-home-business-card{display:flex;align-items:center;gap:15px;padding:18px;border:1px solid #ffffff18;border-radius:14px;background:#0d1119}.klin-home-business-card>svg{flex:none;color:#a5b4fc}.klin-home-business-card>div{flex:1;min-width:0}.klin-home-business-card strong{color:#fff}.klin-home-business-card p{margin:6px 0 0;color:#9ca3af;font-size:12px;line-height:1.5}
 @media(max-width:900px){.klin-topbar{flex-wrap:wrap}.klin-topbar-actions{width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:4px}.klin-topbar-actions .klin-history-link{white-space:nowrap}}
 @media(max-width:560px){.klin-home-stat-grid{grid-template-columns:1fr}.klin-home-business-card{align-items:flex-start;flex-wrap:wrap}.klin-home-business-card>a{margin-left:36px}}
+
+
+/* Detailed plan feature lists */
+.klin-plan-feature-list{display:grid;gap:8px;margin:15px 0 17px;padding:0;list-style:none;text-align:left}
+.klin-plan-feature-list li{display:flex;align-items:flex-start;gap:8px;color:#cbd5e1;font-size:11px;line-height:1.5}
+.klin-plan-feature-list li svg{flex:none;margin-top:2px;color:#86efac}
+.klin-plan-card{height:100%}
+.klin-plan-status{line-height:1.5}
+.klin-topbar-more-menu>a{display:block}
