@@ -2,51 +2,57 @@
 
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BriefcaseBusiness, CheckCircle2, FlaskConical,
-  FolderKanban, Gamepad2, Globe2, MessageCircle, MonitorSmartphone, Palette,
-  ShoppingBag, Sparkles,
+  ArrowRight, ArrowUpRight, CheckCircle2, FlaskConical, FolderKanban,
+  Gamepad2, Globe2, Hammer, Image, MessageCircle, Palette, Sparkles,
+  Video,
 } from "lucide-react";
 
-const startActions = [
+const workspaceHighlights = [
   {
-    title: "Talk with Klinie",
-    description: "Ask questions, plan a project, or get help with your next step.",
+    title: "Klinie",
+    description: "Your AI chat workspace, with saved conversations and chat history.",
+    detail: "CHAT WORKSPACE",
     href: "/chat",
     icon: MessageCircle,
-    tag: "AI ASSISTANT",
   },
   {
-    title: "Create something",
-    description: "Start a website, app, or game from one clear starting point.",
-    href: "/builder",
+    title: "Xzello",
+    description: "A separate creative assistant for ideas, visual direction, and planning.",
+    detail: "CREATIVE ASSISTANT",
+    href: "/chat/xzello",
     icon: Sparkles,
-    tag: "BUILD",
   },
   {
-    title: "Open your projects",
-    description: "Continue saved work and review your previous versions.",
+    title: "Build with Klin",
+    description: "Start a website, app, or game project from one workspace.",
+    detail: "PROJECT CREATION",
+    href: "/builder",
+    icon: Hammer,
+  },
+  {
+    title: "Projects and versions",
+    description: "Return to saved projects and review your work.",
+    detail: "YOUR WORK",
     href: "/projects",
     icon: FolderKanban,
-    tag: "YOUR WORK",
   },
 ];
 
-const workspaceLinks = [
-  { title: "Test Lab", description: "Review and test your projects.", href: "/testing", icon: FlaskConical },
-  { title: "Marketplace", description: "Explore projects and listings.", href: "/marketplace", icon: ShoppingBag },
-  { title: "Business Exchange", description: "Explore or start a business.", href: "/business", icon: BriefcaseBusiness },
-  { title: "Klin Social", description: "See what creators are sharing.", href: "/social", icon: Globe2 },
+const destinations = [
+  { title: "Test Lab", description: "Try available features and review project tests.", href: "/testing", icon: FlaskConical },
+  { title: "Marketplace", description: "Explore projects and listings.", href: "/marketplace", icon: Globe2 },
+  { title: "Creative Studio", description: "Open the creative workspace.", href: "/creative-studio", icon: Palette },
 ];
 
 export default function KlinMainMenu() {
   return (
-    <main className="klin-dashboard">
-      <section className="klin-dashboard-welcome">
+    <main className="klin-dashboard klin-welcome-dashboard">
+      <section className="klin-dashboard-welcome klin-welcome-back">
         <div className="klin-dashboard-welcome-copy">
-          <div className="klin-eyebrow"><span /> YOUR WORKSPACE</div>
-          <h1>Make room for your next idea.</h1>
-          <p>Everything you need to plan, create, test, and manage your work — organized in one place.</p>
-          <Link href="/builder" className="klin-welcome-cta">Start creating <ArrowRight size={16} /></Link>
+          <div className="klin-eyebrow"><span /> YOUR KLIN WORKSPACE</div>
+          <h1>Welcome back.</h1>
+          <p>Klin and Xzello are here when you are ready to continue. Pick up a conversation, return to a project, or test what is available before the next build.</p>
+          <Link href="/testing" className="klin-welcome-cta">Test the workspace <ArrowRight size={16} /></Link>
         </div>
         <div className="klin-welcome-side" aria-hidden="true">
           <div className="klin-welcome-orbit klin-welcome-orbit-one" />
@@ -55,50 +61,48 @@ export default function KlinMainMenu() {
         </div>
       </section>
 
-      <section className="klin-dashboard-section klin-start-section">
+      <section className="klin-dashboard-section">
         <div className="klin-section-heading">
-          <div><span>START HERE</span><h2>Choose your next step</h2></div>
-          <p>Three simple ways to get moving.</p>
+          <div><span>WORKSPACE HIGHLIGHTS</span><h2>What’s ready to pick up</h2></div>
+          <p>Klin + Xzello</p>
         </div>
-        <div className="klin-start-grid">
-          {startActions.map(({ title, description, href, icon: Icon, tag }, index) => (
-            <Link href={href} className={"klin-start-card klin-start-card-" + index} key={title}>
-              <div className="klin-start-card-top">
-                <span className="klin-action-icon"><Icon size={21} strokeWidth={1.8} /></span>
-                <span className="klin-start-tag">{tag}</span>
+        <div className="klin-highlight-grid">
+          {workspaceHighlights.map(({ title, description, detail, href, icon: Icon }) => (
+            <Link href={href} className="klin-highlight-card" key={title}>
+              <div className="klin-highlight-card-top">
+                <span className="klin-highlight-icon"><Icon size={20} /></span>
+                <span>{detail}</span>
               </div>
               <strong>{title}</strong>
               <p>{description}</p>
-              <span className="klin-start-card-link">Open <ArrowUpRight size={15} /></span>
+              <span className="klin-highlight-open">Open <ArrowUpRight size={14} /></span>
             </Link>
           ))}
         </div>
+      </section>
+
+      <section className="klin-test-invite">
+        <div className="klin-test-invite-icon"><CheckCircle2 size={21} /></div>
+        <div>
+          <span>BEFORE THE NEXT BUILD</span>
+          <strong>Would you like to test what’s ready?</strong>
+          <p>Open Test Lab to try the available workspace features and report anything that needs attention.</p>
+        </div>
+        <Link href="/testing">Open Test Lab <ArrowRight size={15} /></Link>
       </section>
 
       <section className="klin-dashboard-section">
         <div className="klin-section-heading">
-          <div><span>YOUR WORKSPACE</span><h2>Tools and destinations</h2></div>
-          <Link href="/settings">Manage workspace <ArrowUpRight size={14} /></Link>
+          <div><span>EXPLORE KLIN</span><h2>Your other destinations</h2></div>
         </div>
-        <div className="klin-workspace-grid">
-          {workspaceLinks.map(({ title, description, href, icon: Icon }) => (
-            <Link href={href} className="klin-workspace-card" key={title}>
-              <span className="klin-workspace-icon"><Icon size={19} strokeWidth={1.8} /></span>
-              <span className="klin-workspace-card-copy"><strong>{title}</strong><small>{description}</small></span>
-              <ArrowRight size={16} className="klin-workspace-arrow" />
+        <div className="klin-destination-grid">
+          {destinations.map(({ title, description, href, icon: Icon }) => (
+            <Link href={href} className="klin-destination-card" key={title}>
+              <Icon size={19} />
+              <span><strong>{title}</strong><small>{description}</small></span>
+              <ArrowUpRight size={15} />
             </Link>
           ))}
-        </div>
-      </section>
-
-      <section className="klin-dashboard-section klin-tools-section">
-        <div className="klin-section-heading">
-          <div><span>MORE FROM KLIN</span><h2>Additional tools</h2></div>
-        </div>
-        <div className="klin-secondary-tools">
-          <Link href="/chat/xzello"><Palette size={17} /><span><strong>Chat with Xzello</strong><small>Branding and creative direction</small></span><ArrowUpRight size={14} /></Link>
-          <Link href="/learning"><CheckCircle2 size={17} /><span><strong>Learning</strong><small>Build your skills and knowledge</small></span><ArrowUpRight size={14} /></Link>
-          <Link href="/creative-studio"><MonitorSmartphone size={17} /><span><strong>Creative Studio</strong><small>Creative workspace tools</small></span><ArrowUpRight size={14} /></Link>
         </div>
       </section>
 
