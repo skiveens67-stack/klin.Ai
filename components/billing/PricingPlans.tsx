@@ -102,7 +102,7 @@ export default function PricingPlans() {
             { name: "Studio Pro / Developer", jobs: "10 jobs", employees: "20–25 employees", ads: "No promoted ads" },
             { name: "Merchant & Enterprise", jobs: "15 jobs", employees: "50 employees", ads: "No promoted ads" },
             { name: "Business", jobs: "25 jobs", employees: "100 employees", ads: "Promoted job ads included" },
-            { name: "Enterprise", jobs: "Custom", employees: "Custom", ads: "Promoted job ads included" },
+            { name: "Enterprise", jobs: "Up to 100 jobs", employees: "Up to 500 employees", ads: "Promoted job ads included · custom terms" },
           ].map(tier => <article className="klin-plan-card" key={tier.name}>
             <div className="klin-plan-card-top"><strong>{tier.name}</strong></div>
             <div className="klin-plan-status">{tier.jobs} · {tier.employees}</div>
@@ -123,7 +123,7 @@ export default function PricingPlans() {
       </section>
 
       <section className="klin-plans-section klin-intelligence-plan">
-        <div className="klin-plans-section-title"><div><span>03 / INTELLIGENCE</span><h2>Klin V6 Ultra Smart</h2><p>A separate intelligence add-on. Worker capacity remains controlled by your Builder plan.</p></div></div>
+        <div className="klin-plans-section-title"><div><span>04 / INTELLIGENCE</span><h2>Klin V6 Ultra Smart</h2><p>A separate intelligence add-on. Worker capacity remains controlled by your Builder plan.</p></div></div>
         <div className="klin-intelligence-card"><span className="klin-action-icon violet"><Sparkles size={20} /></span><div><strong>V6 Ultra Smart intelligence</strong><p>Its own subscription; it does not replace the free V7 Ultra Safe layer.</p></div>{planButton("klin_v6_ultra")}</div>
         <p className="klin-plan-footnote">Klin V7 Ultra Safe is free and always on. It is not a paid upgrade.</p>
       </section>
