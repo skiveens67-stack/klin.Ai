@@ -90,7 +90,7 @@ export default function PricingPlans() {
     if (code === "enterprise") return <a className="klin-plan-button" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact support</a>;
     const enabled = enabledPlanCodes.includes(code);
     return <button className="klin-plan-button" type="button" disabled={busy !== "" || loadingPlans || !enabled} onClick={() => void checkout(code)}>
-      {busy === code ? "Opening checkout…" : loadingPlans ? "Checking…" : enabled ? "Choose plan" : "Not available yet"}
+      {busy === code ? "Opening checkout…" : loadingPlans ? "Checking…" : enabled ? "Choose plan" : "Stripe setup required"}
     </button>;
   };
 
