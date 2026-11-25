@@ -69,7 +69,6 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [topMoreOpen, setTopMoreOpen] = useState(false);
-  const [showMeetings, setShowMeetings] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
@@ -82,15 +81,6 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
   useEffect(() => {
     if (moreIsActive) setMoreOpen(true);
   }, [moreIsActive]);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/projects", { credentials: "same-origin", cache: "no-store" })
-      .then(async (response) => response.ok ? await response.json() as { projects?: Array<{ status?: string; visibility?: string }> } : null)
-      .then((result) => { if (active) setShowMeetings((result?.projects ?? []).some((project) => project.status === "published" || project.visibility === "public")); })
-      .catch(() => undefined);
-    return () => { active = false; };
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -218,16 +208,20 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
             <Link href="/marketplace" className="klin-history-link"><Store size={15} /> Shop</Link>
             <Link href="/business" className="klin-history-link"><BriefcaseBusiness size={15} /> Make a Business</Link>
             <Link href="/social" className="klin-history-link"><MessageCircle size={15} /> Messages</Link>
-            {showMeetings && <Link href="/meetings" className="klin-history-link"><CalendarDays size={15} /> Meetings</Link>}
+            <Link href="/meetings" className="klin-history-link"><CalendarDays size={15} /> Meetings</Link>
             <div className="klin-topbar-more">
               <button type="button" className="klin-history-link" aria-expanded={topMoreOpen} onClick={() => setTopMoreOpen((value) => !value)}>
                 More <ChevronDown size={14} />
               </button>
               {topMoreOpen && <div className="klin-topbar-more-menu">
-                <Link href="/workforce" onClick={() => setTopMoreOpen(false)}>Hiring</Link>
-                <Link href="/wallet" onClick={() => setTopMoreOpen(false)}>Wallet</Link>
-                <Link href="/plans" onClick={() => setTopMoreOpen(false)}>Plans</Link>
+                <Link href="/marketplace" onClick={() => setTopMoreOpen(false)}>My marketplace</Link>
+                <Link href="/projects" onClick={() => setTopMoreOpen(false)}>My projects</Link>
+                <Link href="/workforce" onClick={() => setTopMoreOpen(false)}>Hiring & team</Link>
+                <Link href="/wallet" onClick={() => setTopMoreOpen(false)}>Wallet & credits</Link>
+                <Link href="/plans" onClick={() => setTopMoreOpen(false)}>Plans & billing</Link>
                 <Link href="/integrations" onClick={() => setTopMoreOpen(false)}>Integrations</Link>
+                <Link href="/settings" onClick={() => setTopMoreOpen(false)}>Account settings</Link>
+                <a href="mailto:support@klin.help?subject=Klin%20Support%20Request">Support</a>
               </div>}
             </div>
           </nav>
