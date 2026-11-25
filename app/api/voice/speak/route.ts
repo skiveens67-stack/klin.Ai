@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Sign in to use voice playback." }, { status: 401 });
     }
 
-    const apiKey = process.env.DEEPGRAM_API_KEY;
+    const apiKey = process.env.DEEPGRAM_API_KEY || process.env.deepgram_api_key;
     if (!apiKey) {
       return NextResponse.json({ error: "Deepgram is not configured on this deployment." }, { status: 503 });
     }
