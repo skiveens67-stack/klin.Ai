@@ -24,12 +24,16 @@ export default function SettingsPanel({ email }: { email: string }) {
   const [emailBusy, setEmailBusy] = useState(false);
   const [emailStatus, setEmailStatus] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [emailChallengeId, setEmailChallengeId] = useState("");
+  const [emailCode, setEmailCode] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [passwordChallengeId, setPasswordChallengeId] = useState("");
+  const [passwordCode, setPasswordCode] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -110,13 +114,45 @@ export default function SettingsPanel({ email }: { email: string }) {
     try {
       const supabase = createSupabaseBrowserClient();
       await verifyCurrentPassword(supabase, emailPassword);
-      const { error: updateError } = await supabase.auth.updateUser({ email: normalizedEmail });
-      if (updateError) throw updateError;
-      setNewEmail("");
+      const response = await fetch("/api/account/security-change/request", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ changeType: "email", newEmail: normalizedEmail, currentPassword: emailPassword }),
+      });
+      const data = await response.json() as { challengeId?: string; message?: string; error?: string };
+      if (!response.ok || !data.challengeId) throw new Error(data.error || "Could not start email verification.");
+      setEmailChallengeId(data.challengeId);
+      setEmailCode("");
       setEmailPassword("");
-      setEmailStatus("Email change requested. Check your current and new email inboxes for confirmation links. Your sign-in email changes only after confirmation.");
+      setEmailStatus(data.message || "A verification code was sent. The email change is still pending.");
     } catch (caught) {
       setEmailError(caught instanceof Error ? caught.message : "Could not request an email change.");
+    } finally {
+      setEmailBusy(false);
+    }
+  };
+
+  const confirmEmailChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setEmailBusy(true);
+    setEmailError("");
+    setEmailStatus("");
+    try {
+      const response = await fetch("/api/account/security-change/confirm", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId: emailChallengeId, code: emailCode }),
+      });
+      const data = await response.json() as { message?: string; error?: string };
+      if (!response.ok) throw new Error(data.error || "Email verification failed.");
+      setEmailChallengeId("");
+      setEmailCode("");
+      setNewEmail("");
+      setEmailStatus(data.message || "Verification passed. Complete the confirmation links to finish changing your email.");
+    } catch (caught) {
+      setEmailError(caught instanceof Error ? caught.message : "Email verification failed.");
     } finally {
       setEmailBusy(false);
     }
@@ -130,8 +166,8 @@ export default function SettingsPanel({ email }: { email: string }) {
       setError("Enter your current password to confirm this change.");
       return;
     }
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (password.length < 8 || password.length > 128) {
+      setError("Use a password between 8 and 128 characters.");
       return;
     }
     if (password !== confirmPassword) {
@@ -142,14 +178,47 @@ export default function SettingsPanel({ email }: { email: string }) {
     try {
       const supabase = createSupabaseBrowserClient();
       await verifyCurrentPassword(supabase, currentPassword);
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      if (updateError) throw updateError;
+      const response = await fetch("/api/account/security-change/request", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ changeType: "password", currentPassword }),
+      });
+      const data = await response.json() as { challengeId?: string; message?: string; error?: string };
+      if (!response.ok || !data.challengeId) throw new Error(data.error || "Could not start password verification.");
+      setPasswordChallengeId(data.challengeId);
+      setPasswordCode("");
+      setCurrentPassword("");
+      setStatus(data.message || "A verification code was sent. Your password has not changed.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not request a password change.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmPasswordChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setStatus("");
+    try {
+      const response = await fetch("/api/account/security-change/confirm", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId: passwordChallengeId, code: passwordCode, newPassword: password }),
+      });
+      const data = await response.json() as { message?: string; error?: string };
+      if (!response.ok) throw new Error(data.error || "Password verification failed.");
+      setPasswordChallengeId("");
+      setPasswordCode("");
       setCurrentPassword("");
       setPassword("");
       setConfirmPassword("");
-      setStatus("Your password has been updated.");
+      setStatus(data.message || "Your password has been updated.");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not update your password.");
+      setError(caught instanceof Error ? caught.message : "Password verification failed.");
     } finally {
       setBusy(false);
     }
@@ -170,16 +239,27 @@ export default function SettingsPanel({ email }: { email: string }) {
       </section>
       <section className="settings-card" id="email">
         <div className="settings-card-heading"><Mail size={18} /><div><h2>Change email address</h2><p>Confirm your identity before changing the email used to sign in.</p></div></div>
-        <form className="settings-form" onSubmit={updateEmail}>
-          <label htmlFor="new-email">New email address</label>
-          <input id="new-email" type="email" autoComplete="email" maxLength={254} required value={newEmail} onChange={(event) => setNewEmail(event.target.value)} placeholder="you@example.com" />
-          <label htmlFor="email-current-password">Current password</label>
-          <input id="email-current-password" type="password" autoComplete="current-password" maxLength={128} required value={emailPassword} onChange={(event) => setEmailPassword(event.target.value)} />
-          <small className="settings-help">Klin will send confirmation links to your current and new email addresses. The change is not complete until the required confirmations are finished.</small>
-          {emailError && <p className="settings-error" role="alert">{emailError}</p>}
-          {emailStatus && <p className="settings-success" role="status">{emailStatus}</p>}
-          <button type="submit" disabled={emailBusy}><Mail size={14} /> {emailBusy ? "Requesting change…" : "Change email"}</button>
-        </form>
+        {!emailChallengeId ? (
+          <form className="settings-form" onSubmit={updateEmail}>
+            <label htmlFor="new-email">New email address</label>
+            <input id="new-email" type="email" autoComplete="email" maxLength={254} required value={newEmail} onChange={(event) => setNewEmail(event.target.value)} placeholder="you@example.com" />
+            <label htmlFor="email-current-password">Current password</label>
+            <input id="email-current-password" type="password" autoComplete="current-password" maxLength={128} required value={emailPassword} onChange={(event) => setEmailPassword(event.target.value)} />
+            <small className="settings-help">Klin sends a one-time code to your verified security email first. The email change is not submitted until you enter that code. Supabase then sends its separate email-change confirmation links.</small>
+            {emailError && <p className="settings-error" role="alert">{emailError}</p>}
+            {emailStatus && <p className="settings-success" role="status">{emailStatus}</p>}
+            <button type="submit" disabled={emailBusy}><Mail size={14} /> {emailBusy ? "Sending code…" : "Send verification code"}</button>
+          </form>
+        ) : (
+          <form className="settings-form" onSubmit={confirmEmailChange}>
+            <p className="settings-help">Your requested email change is on hold. Enter the six-digit code sent to your verified security email. Nothing has changed yet.</p>
+            <label htmlFor="email-security-code">Security verification code</label>
+            <input id="email-security-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={emailCode} onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, "").slice(0, 6))} />
+            {emailError && <p className="settings-error" role="alert">{emailError}</p>}
+            {emailStatus && <p className="settings-success" role="status">{emailStatus}</p>}
+            <button type="submit" disabled={emailBusy || emailCode.length !== 6}>{emailBusy ? "Verifying…" : "Verify and continue"}</button>
+          </form>
+        )}
       </section>
       <section className="settings-card" id="profile">
         <div className="settings-card-heading"><UserRound size={18} /><div><h2>Profile</h2><p>Update the profile fields permitted by Klin.</p></div></div>
@@ -204,17 +284,29 @@ export default function SettingsPanel({ email }: { email: string }) {
       </section>
       <section className="settings-card" id="security">
         <div className="settings-card-heading"><KeyRound size={18} /><div><h2>Change password</h2><p>Verify your current password before choosing a new one.</p></div></div>
-        <form className="settings-form" onSubmit={updatePassword}>
-          <label htmlFor="current-password">Current password</label>
-          <input id="current-password" type="password" autoComplete="current-password" maxLength={128} required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
-          <label htmlFor="new-password">New password</label>
-          <input id="new-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={password} onChange={(event) => setPassword(event.target.value)} />
-          <label htmlFor="confirm-password">Confirm new password</label>
-          <input id="confirm-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
-          {error && <p className="settings-error" role="alert">{error}</p>}
-          {status && <p className="settings-success" role="status">{status}</p>}
-          <button type="submit" disabled={busy}>{busy ? "Updating…" : "Update password"}</button>
-        </form>
+        {!passwordChallengeId ? (
+          <form className="settings-form" onSubmit={updatePassword}>
+            <label htmlFor="current-password">Current password</label>
+            <input id="current-password" type="password" autoComplete="current-password" maxLength={128} required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
+            <label htmlFor="new-password">New password</label>
+            <input id="new-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={password} onChange={(event) => setPassword(event.target.value)} />
+            <label htmlFor="confirm-password">Confirm new password</label>
+            <input id="confirm-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+            <small className="settings-help">Klin sends a one-time code to your verified security email. Your new password is not saved or sent to the server until you enter that code.</small>
+            {error && <p className="settings-error" role="alert">{error}</p>}
+            {status && <p className="settings-success" role="status">{status}</p>}
+            <button type="submit" disabled={busy}>{busy ? "Sending code…" : "Send verification code"}</button>
+          </form>
+        ) : (
+          <form className="settings-form" onSubmit={confirmPasswordChange}>
+            <p className="settings-help">Your password change is on hold. Enter the six-digit code sent to your verified security email. Your new password will only be applied after verification.</p>
+            <label htmlFor="password-security-code">Security verification code</label>
+            <input id="password-security-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={passwordCode} onChange={(event) => setPasswordCode(event.target.value.replace(/\D/g, "").slice(0, 6))} />
+            {error && <p className="settings-error" role="alert">{error}</p>}
+            {status && <p className="settings-success" role="status">{status}</p>}
+            <button type="submit" disabled={busy || passwordCode.length !== 6}>{busy ? "Verifying…" : "Verify and update password"}</button>
+          </form>
+        )}
       </section>
     </main>
   );
