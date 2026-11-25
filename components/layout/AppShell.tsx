@@ -165,8 +165,14 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
 
         <div className="klin-sidebar-bottom">
           <Link href="/settings" className="klin-nav-item"><Settings size={17} /><span>Settings</span></Link>
-          <a href="https://klin.help" target="_blank" rel="noopener noreferrer" className="klin-nav-item">
-            <CircleHelp size={17} /><span>Help & support</span>
+          <a href="mailto:support@klin.help?subject=Klin%20Support%20Request" className="klin-nav-item">
+            <CircleHelp size={17} /><span>Send support email</span>
+          </a>
+          <a href="mailto:support@klin.help?subject=Klin%20Product%20Feedback" className="klin-nav-item">
+            <MessageCircle size={17} /><span>Send feedback</span>
+          </a>
+          <a href="mailto:partnerships@klin.help?subject=Klin%20Partnership%20Inquiry&body=Hello%20Klin%20team%2C%0A%0AI%20would%20like%20to%20discuss%20a%20partnership%20with%20Klin.%0A%0AOrganization%3A%0APartnership%20idea%3A%0AContact%20information%3A" className="klin-nav-item">
+            <Users size={17} /><span>Partner with Klin</span>
           </a>
           <div className="klin-account-card">
             <div className="klin-account-avatar">{(accountProfile?.username || userEmail || "K").slice(0, 1).toUpperCase()}</div>
