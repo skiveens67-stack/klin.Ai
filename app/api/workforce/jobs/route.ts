@@ -27,7 +27,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Sign in to use Klin Hiring." }, { status: 401 });
   const { data, error } = await supabase.from("workforce_jobs").select("id,owner_user_id,business_name,title,description,location,employment_type,pay_range,status,is_promoted,created_at").or(`status.eq.published,owner_user_id.eq.${user.id}`).order("created_at", { ascending: false }).limit(100);
   if (error) return NextResponse.json({ error: "Could not load jobs." }, { status: 500 });
-  return NextResponse.json({ jobs: data ?? [] });
+  return NextResponse.json({ jobs: (data ?? []).map((job) => ({ ...job, is_mine: job.owner_user_id === user.id })) });
 }
 
 export async function POST(request: Request) {
