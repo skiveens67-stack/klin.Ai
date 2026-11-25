@@ -17,8 +17,6 @@ type Item = { label: string; href: string; icon: LucideIcon };
 
 const primary: Item[] = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Klinie", href: "/chat", icon: MessageCircle },
-  { label: "Xzello", href: "/chat/xzello", icon: Sparkles },
   { label: "Create", href: "/builder", icon: Hammer },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Test Lab", href: "/testing", icon: FlaskConical },
@@ -197,12 +195,14 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
             </button>
             <div className="klin-topbar-heading">
               <span className="klin-topbar-context">KLIN WORKSPACE</span>
-              <span className="klin-topbar-title">{activeItem?.label ?? "Workspace"}</span>
+              <span className="klin-topbar-title">{pathname === "/chat" ? "Klinie" : pathname.startsWith("/chat/xzello") ? "Xzello" : activeItem?.label ?? "Workspace"}</span>
             </div>
           </div>
           <div className="klin-topbar-actions">
+            <Link href="/chat" className="klin-history-link"><MessageCircle size={15} /> Klinie</Link>
+            <Link href="/chat/xzello" className="klin-history-link"><Sparkles size={15} /> Xzello</Link>
+            <Link href="/testing" className="klin-history-link"><FlaskConical size={15} /> Test Lab</Link>
             <Link href="/plans" className="klin-plans-link"><CreditCard size={15} /> Plans</Link>
-            <Link href="/chat" className="klin-history-link"><History size={15} /> Chat history</Link>
           </div>
         </header>
         <div className="klin-main-content">{children}</div>
