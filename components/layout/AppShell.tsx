@@ -28,6 +28,7 @@ const moreGroups: { title: string; items: Item[] }[] = [
     title: "Explore",
     items: [
       { label: "Business Exchange", href: "/business", icon: BriefcaseBusiness },
+      { label: "Klin Hiring", href: "/workforce", icon: Users },
       { label: "Social", href: "/social", icon: Users },
       { label: "Learning", href: "/learning", icon: BookOpen },
     ],
