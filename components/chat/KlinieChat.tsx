@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
-  Archive, History, MessageSquare, Plus, RefreshCw, Send, Sparkles, SquarePen, X,
+  Archive, History, MessageSquare, Mic, Plus, RefreshCw, Send, Sparkles, Square, SquarePen, Volume2, X,
 } from "lucide-react";
 
 type Conversation = {
@@ -62,6 +62,12 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [composerHeight, setComposerHeight] = useState(24);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioStreamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -206,6 +212,94 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
       ));
     } finally {
       setSending(false);
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setNotice("Voice input is not supported by this browser. Try a current version of Chrome, Edge, or Safari.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+      audioChunksRef.current = [];
+      const preferredType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus" : "";
+      const recorder = new MediaRecorder(stream, preferredType ? { mimeType: preferredType } : undefined);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        setNotice("Microphone recording failed. Check browser microphone permissions and try again.");
+        setRecording(false);
+      };
+      recorder.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+        audioStreamRef.current = null;
+        recorderRef.current = null;
+        if (!blob.size) return;
+        if (blob.size > 4 * 1024 * 1024) {
+          setNotice("That recording is too large. Record a shorter voice message (maximum 4 MB).");
+          return;
+        }
+        setTranscribing(true);
+        setNotice("Transcribing your voice with Deepgram Nova-3…");
+        try {
+          const form = new FormData();
+          form.append("audio", blob, "voice-message.webm");
+          const response = await fetch("/api/voice/transcribe", {
+            method: "POST", credentials: "same-origin", body: form, cache: "no-store",
+          });
+          const result = await response.json() as { transcript?: string; error?: string };
+          if (!response.ok || !result.transcript) throw new Error(result.error || "Deepgram could not transcribe that recording.");
+          onInputChange(input ? `${input} ${result.transcript}` : result.transcript);
+          setNotice("Voice transcription added to your message. Review it, then press Send.");
+          requestAnimationFrame(() => textareaRef.current?.focus());
+        } catch (error) {
+          setNotice(error instanceof Error ? error.message : "Voice transcription failed.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+      setNotice("Recording… press the microphone button again to stop.");
+    } catch {
+      setNotice("Microphone access was blocked. Allow microphone access for Klin and try again.");
+    }
+  };
+
+  const speakMessage = async (message: ChatMessage) => {
+    if (speakingId) return;
+    setSpeakingId(message.id);
+    try {
+      const response = await fetch("/api/voice/speak", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: message.content }),
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(result.error || "Deepgram speech generation failed.");
+      }
+      const audioUrl = URL.createObjectURL(await response.blob());
+      const audio = new Audio(audioUrl);
+      audio.onended = () => { URL.revokeObjectURL(audioUrl); setSpeakingId(null); };
+      audio.onerror = () => { URL.revokeObjectURL(audioUrl); setSpeakingId(null); setNotice("Audio playback failed."); };
+      await audio.play();
+    } catch (error) {
+      setSpeakingId(null);
+      setNotice(error instanceof Error ? error.message : "Could not play this response.");
     }
   };
 
@@ -359,7 +453,7 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
                   {message.role !== "user" && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500"><Sparkles size={15} /></div>}
                   <div className={`max-w-[85%] min-w-0 rounded-2xl px-4 py-3 ${message.role === "user" ? "rounded-br-md border border-cyan-300/15 bg-cyan-400/[0.09]" : "rounded-bl-md border border-white/[0.07] bg-white/[0.035]"}`}>
                     <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-200">{message.content}</p>
-                    <div className="mt-2 flex items-center justify-end gap-2 text-[10px] text-slate-600">{message.status === "failed" ? "Not saved" : formatTime(message.created_at)}</div>
+                    <div className="mt-2 flex items-center justify-between gap-3"><span className="text-[10px] text-slate-600">{message.status === "failed" ? "Not saved" : formatTime(message.created_at)}</span>{message.role === "assistant" && <button type="button" onClick={() => void speakMessage(message)} disabled={Boolean(speakingId)} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] text-cyan-300 transition hover:bg-cyan-300/10 disabled:opacity-50" aria-label="Read response aloud"><Volume2 size={12} />{speakingId === message.id ? "Playing…" : "Listen"}</button>}</div>
                   </div>
                   {message.role === "user" && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[10px] font-semibold text-slate-300">You</div>}
                 </article>
@@ -379,7 +473,7 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
                 className="block max-h-40 min-h-6 w-full resize-none bg-transparent px-3 py-2.5 text-sm leading-6 text-white outline-none placeholder:text-slate-600 disabled:opacity-60"
                 aria-label={`Message ${assistantName}`} />
               <div className="flex items-center justify-between px-1 pb-1">
-                <span className="pl-2 text-[10px] text-slate-600">Enter to send · Shift + Enter for a new line</span>
+                <div className="flex items-center gap-2"><button type="button" onClick={() => void toggleRecording()} disabled={transcribing || sending} className={`flex h-9 w-9 items-center justify-center rounded-xl border transition disabled:opacity-40 ${recording ? "border-rose-400/40 bg-rose-400/15 text-rose-300" : "border-white/10 text-slate-400 hover:bg-white/5 hover:text-cyan-300"}`} aria-label={recording ? "Stop recording" : "Record voice message"} title={recording ? "Stop recording" : "Record voice message"}>{transcribing ? <RefreshCw size={15} className="animate-spin" /> : recording ? <Square size={14} /> : <Mic size={16} />}</button><span className="pl-1 text-[10px] text-slate-600">Enter to send · Shift + Enter for a new line</span></div>
                 <button type="submit" disabled={!input.trim() || sending}
                   className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-30" aria-label="Send message">
                   {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
