@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp,
   ClipboardCheck, Compass, Cpu, CreditCard, FolderKanban, Hammer,
-  Home, LockKeyhole, LogOut, Menu, MessageCircle, Palette, Radio, Settings,
+  Home, LockKeyhole, LogOut, Menu, MessageCircle, Palette, Radio, Settings, Globe2,
   ShieldCheck, Sparkles, Users, WalletCards, X, FlaskConical, UserRound,
 } from "lucide-react";
 
@@ -36,6 +36,7 @@ const moreGroups: { title: string; items: Item[] }[] = [
     title: "Workspace tools",
     items: [
       { label: "Creative Studio", href: "/creative-studio", icon: Palette },
+      { label: "Domains & email", href: "/domains", icon: Globe2 },
       { label: "Agent capacity", href: "/agents", icon: Bot },
       { label: "Klin Modules", href: "/agents/modules", icon: Blocks },
       { label: "Integrations", href: "/integrations", icon: Blocks },
