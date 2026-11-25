@@ -1880,3 +1880,51 @@ body {
 .klin-destination-card>svg:last-child{color:#8295b0}
 @media(max-width:1050px){.klin-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.klin-welcome-side{width:90px;height:100px;opacity:.55}.klin-welcome-monogram{width:60px;height:60px;font-size:30px}.klin-highlight-grid,.klin-destination-grid{grid-template-columns:1fr}.klin-test-invite{align-items:flex-start;flex-wrap:wrap}.klin-test-invite>a{margin-left:54px}.klin-topbar-actions{gap:5px}.klin-topbar-actions a{padding:8px;font-size:9px}}
+
+
+/* Domains, email and social sign-in */
+.klin-domain-page{width:min(100%,1180px);margin:0 auto;padding:clamp(22px,3vw,38px) clamp(16px,3vw,34px) 42px;color:#f3f6fb}
+.klin-domain-header h1{margin:12px 0 8px;font-size:clamp(29px,4vw,42px);font-weight:750;letter-spacing:-.05em}
+.klin-domain-header p{max-width:680px;color:#9ba8bb;font-size:12px;line-height:1.7}
+.klin-domain-card{margin-top:22px;padding:20px;border:1px solid #263246;border-radius:15px;background:linear-gradient(150deg,#111a29,#0c1119)}
+.klin-domain-section-title{display:flex;align-items:center;gap:12px;color:#9ec1ff}
+.klin-domain-section-title>div{min-width:0}
+.klin-domain-section-title h2{color:#f1f5fb;font-size:15px;font-weight:700}
+.klin-domain-section-title p{margin-top:3px;color:#8e9caf;font-size:10px}
+.klin-domain-search{display:flex;gap:10px;margin-top:17px}
+.klin-domain-search input,.klin-email-form input,.klin-email-form textarea{width:100%;min-width:0;border:1px solid #2a3547;border-radius:9px;background:#0b111a;padding:11px 12px;color:#f4f7fc;font-size:12px;outline:none}
+.klin-domain-search input:focus,.klin-email-form input:focus,.klin-email-form textarea:focus{border-color:#4c80cf}
+.klin-domain-search button,.klin-email-form>button,.klin-connected-domain button{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;border:1px solid #3264aa;border-radius:9px;background:#153568;padding:10px 14px;color:#fff;font-size:11px;font-weight:700}
+.klin-domain-search button:disabled,.klin-email-form>button:disabled,.klin-connected-domain button:disabled{opacity:.55}
+.klin-domain-results{margin-top:18px;overflow-x:auto}
+.klin-domain-result-head,.klin-domain-result{display:grid;grid-template-columns:minmax(170px,1.5fr) repeat(3,minmax(100px,1fr));gap:12px;align-items:center;padding:11px 9px;border-bottom:1px solid #222c3b;font-size:10px}
+.klin-domain-result-head{color:#74849c;font-size:8px;font-weight:800;letter-spacing:.12em}
+.klin-domain-result strong{color:#e8eef8;font-size:11px}
+.klin-domain-result span{color:#aab7ca}
+.is-available{color:#8ce0b0!important}.is-taken{color:#e6b078!important}
+.klin-domain-source,.klin-domain-footnote{margin-top:12px;color:#77879c;font-size:9px;line-height:1.5}
+.klin-domain-error{margin-top:12px;color:#fda4af;font-size:11px}
+.klin-domain-status{margin-top:12px;color:#a7c9ff;font-size:11px}
+.klin-dns-list,.klin-connected-domains{margin-top:18px}
+.klin-dns-list h3,.klin-connected-domains h3{margin-bottom:9px;color:#e6edf8;font-size:11px;font-weight:700}
+.klin-dns-record{display:grid;grid-template-columns:65px minmax(100px,1fr) minmax(120px,2fr) 30px;gap:8px;align-items:center;padding:9px;border-bottom:1px solid #242e3c;font-size:9px}
+.klin-dns-record strong{color:#9dbfff}.klin-dns-record span{color:#a7b3c4;overflow-wrap:anywhere}.klin-dns-record code{color:#dce6f5;overflow-wrap:anywhere}
+.klin-dns-record button{color:#9dbfff}
+.klin-connected-domain{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #242e3c}
+.klin-connected-domain>span:first-child{display:grid;gap:3px;min-width:0;flex:1}
+.klin-connected-domain strong{font-size:11px;color:#f0f4fa}.klin-connected-domain small{font-size:9px;color:#8795a9}
+.klin-connected-domain button{padding:7px 10px;font-size:9px}
+.klin-email-form{display:grid;gap:12px;margin-top:17px}
+.klin-email-form label{display:grid;gap:6px;color:#aebbd0;font-size:10px;font-weight:650}
+.klin-email-form>button{justify-self:start}
+.klin-domain-footnote{display:flex;align-items:center;gap:7px}
+.auth-social{margin-top:20px}
+.auth-social-divider{display:flex;align-items:center;gap:12px;margin:14px 0;color:#728198;font-size:8px;font-weight:800;letter-spacing:.14em}
+.auth-social-divider:before,.auth-social-divider:after{content:"";height:1px;flex:1;background:#273244}
+.auth-social-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.auth-social-grid button{display:flex;min-height:39px;align-items:center;justify-content:center;gap:5px;padding:8px;border:1px solid #2b3545;border-radius:9px;background:#111821;color:#e6edf8;font-size:10px;font-weight:600}
+.auth-social-grid button:hover:not(:disabled){border-color:#4a75b7;background:#17243a}
+.auth-social-grid button:disabled{opacity:.5;cursor:not-allowed}
+.auth-social-grid button small{color:#a0b0c6;font-size:8px;font-weight:500}
+.auth-social-note{margin-top:9px;color:#718097;font-size:9px;line-height:1.5}
+@media(max-width:640px){.klin-domain-search{flex-direction:column}.klin-domain-search button{width:100%}.klin-domain-card{padding:15px}.klin-domain-result-head,.klin-domain-result{grid-template-columns:minmax(130px,1.3fr) repeat(3,minmax(75px,1fr));gap:8px}.klin-dns-record{grid-template-columns:50px minmax(80px,1fr) 30px}.klin-dns-record code{grid-column:2;grid-row:2}.klin-dns-record button{grid-column:3;grid-row:1/3}}
