@@ -13,7 +13,6 @@ export async function GET() {
       .select("plan_code,status")
       .eq("user_id", user.id)
       .eq("status", "active")
-      .order("is_promoted", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
