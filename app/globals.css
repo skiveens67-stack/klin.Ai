@@ -1845,3 +1845,38 @@ body {
   .klin-loading-indicator span { animation: none !important; }
   .klin-start-card,.klin-welcome-cta { transition: none !important; }
 }
+
+
+/* Welcome-back dashboard and top-bar quick destinations */
+.klin-topbar-actions{flex-wrap:wrap}
+.klin-welcome-back{min-height:190px}
+.klin-welcome-cta{display:inline-flex;align-items:center;gap:9px;margin-top:18px;padding:10px 14px;border:1px solid #3167b9;border-radius:10px;background:#12336a;color:#fff;text-decoration:none;font-size:11px;font-weight:700}
+.klin-welcome-side{position:relative;width:170px;height:145px;flex:none;display:grid;place-items:center}
+.klin-welcome-monogram{position:relative;z-index:1;width:82px;height:82px;display:grid;place-items:center;border:1px solid #3a68ad;border-radius:25px;background:linear-gradient(145deg,#193b73,#111b31);color:#dbeafe;font-size:42px;font-weight:800;box-shadow:0 18px 55px #0b5fff35}
+.klin-welcome-orbit{position:absolute;border:1px solid #4776bd55;border-radius:50%;transform:rotate(-24deg)}
+.klin-welcome-orbit-one{width:150px;height:75px}
+.klin-welcome-orbit-two{width:125px;height:125px;border-color:#6b72c455}
+.klin-highlight-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.klin-highlight-card{display:flex;min-height:180px;flex-direction:column;padding:16px;border:1px solid #243044;border-radius:14px;background:linear-gradient(160deg,#111b2b,#0c111a);color:#eef4ff;text-decoration:none;transition:border-color .16s,transform .16s}
+.klin-highlight-card:hover{transform:translateY(-2px);border-color:#416bb0}
+.klin-highlight-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.klin-highlight-card-top>span:last-child{color:#7f91ad;font-size:8px;font-weight:800;letter-spacing:.12em}
+.klin-highlight-icon{width:36px;height:36px;display:grid;place-items:center;border:1px solid #31558b;border-radius:11px;background:#17325b;color:#a9c8ff}
+.klin-highlight-card>strong{margin-top:15px;font-size:13px}
+.klin-highlight-card>p{margin:6px 0 12px;color:#9ba9bd;font-size:10px;line-height:1.6}
+.klin-highlight-open{display:flex;align-items:center;gap:5px;margin-top:auto;color:#8eb5ff;font-size:10px;font-weight:700}
+.klin-test-invite{display:flex;align-items:center;gap:14px;margin-top:24px;padding:17px;border:1px solid #2c528d;border-radius:14px;background:linear-gradient(100deg,#102348,#101722)}
+.klin-test-invite-icon{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:11px;background:#1b3d70;color:#9fc2ff}
+.klin-test-invite>div:nth-child(2){min-width:0;flex:1}
+.klin-test-invite>div:nth-child(2)>span{color:#8db6ff;font-size:8px;font-weight:800;letter-spacing:.15em}
+.klin-test-invite strong{display:block;margin-top:4px;color:#fff;font-size:13px}
+.klin-test-invite p{margin:4px 0 0;color:#a3b2c9;font-size:10px;line-height:1.5}
+.klin-test-invite>a{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:#fff;text-decoration:none;font-size:10px;font-weight:700}
+.klin-destination-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.klin-destination-card{display:flex;align-items:center;gap:12px;min-height:74px;padding:13px;border:1px solid #242d3b;border-radius:12px;background:#10151e;color:#9dbfff;text-decoration:none}
+.klin-destination-card>span{min-width:0;flex:1;display:grid;gap:4px}
+.klin-destination-card strong{color:#eef4ff;font-size:11px}
+.klin-destination-card small{color:#8d9aad;font-size:9px;line-height:1.4}
+.klin-destination-card>svg:last-child{color:#8295b0}
+@media(max-width:1050px){.klin-highlight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.klin-welcome-side{width:90px;height:100px;opacity:.55}.klin-welcome-monogram{width:60px;height:60px;font-size:30px}.klin-highlight-grid,.klin-destination-grid{grid-template-columns:1fr}.klin-test-invite{align-items:flex-start;flex-wrap:wrap}.klin-test-invite>a{margin-left:54px}.klin-topbar-actions{gap:5px}.klin-topbar-actions a{padding:8px;font-size:9px}}
