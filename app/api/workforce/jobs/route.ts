@@ -9,7 +9,7 @@ const limits: Record<string, { jobs: number; employees: number; promotedAds: boo
   galaxy: { jobs: 5, employees: 10, promotedAds: false },
   studio_pro: { jobs: 10, employees: 20, promotedAds: false },
   developer: { jobs: 10, employees: 25, promotedAds: false },
-  merchant_enterprise: { jobs: 15, employees: 50, promotedAds: true },
+  merchant_enterprise: { jobs: 15, employees: 50, promotedAds: false },
   business: { jobs: 25, employees: 100, promotedAds: true },
   enterprise: { jobs: 100, employees: 500, promotedAds: true },
 };
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   if (!["Full-time","Part-time","Contract","Temporary","Internship"].includes(employmentType)) return NextResponse.json({ error: "Choose a valid employment type." }, { status: 400 });
   const { count } = await supabase.from("workforce_jobs").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id).in("status", ["published","draft","paused"]);
   if ((count ?? 0) >= plan.jobs) return NextResponse.json({ error: `Your ${planCode} plan allows ${plan.jobs} active job listing(s). Upgrade your plan to post more.`, upgrade_required: true }, { status: 403 });
-  if (promoted && !plan.promotedAds) return NextResponse.json({ error: "Promoted job ads require the Business, Merchant & Enterprise, or Enterprise plan.", upgrade_required: true }, { status: 403 });
+  if (promoted && !plan.promotedAds) return NextResponse.json({ error: "Promoted job ads require the Business or Enterprise plan.", upgrade_required: true }, { status: 403 });
   const { data, error } = await supabase.from("workforce_jobs").insert({ owner_user_id: user.id, business_name: businessName, title, description, location, employment_type: employmentType, pay_range: payRange, is_promoted: promoted }).select().single();
   if (error) return NextResponse.json({ error: "Could not publish this job." }, { status: 500 });
   return NextResponse.json({ job: data, plan: { code: planCode, ...plan } }, { status: 201 });
