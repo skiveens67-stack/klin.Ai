@@ -37,7 +37,7 @@ export default function KlinMainMenu() {
       fetch("/api/dashboard/summary", { credentials: "same-origin", cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([projectData, walletData, jobData, summary]) => {
       if (!active) return;
-      setProjects((projectData?.projects ?? []).slice(0, 4));
+      setProjects((projectData?.projects ?? []).slice().sort((a: Project, b: Project) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, 4));
       setWallet(walletData?.wallet ?? null);
       setJobs((jobData?.jobs ?? []).filter((job: Job) => job.is_mine).slice(0, 4));
       setPlan(summary?.planCode ? String(summary.planCode).replaceAll("_", " ").replace(/\\b\\w/g, (letter: string) => letter.toUpperCase()) : "View plans");
@@ -46,6 +46,7 @@ export default function KlinMainMenu() {
   }, []);
 
   const businessNames = useMemo(() => Array.from(new Set(jobs.map(job => job.business_name).filter(Boolean))), [jobs]);
+  const lastActivity = projects.find(project => project.updated_at);
 
   return (
     <main className="klin-dashboard klin-welcome-dashboard klin-home-overview">
@@ -55,6 +56,7 @@ export default function KlinMainMenu() {
           <h1>Welcome back.</h1>
           <p>Pick up where you left off. Your projects, work, and business activity are gathered here.</p>
           {now && <div className="klin-home-clock"><Clock3 size={16}/><span>{formatTime(now)} · {formatDate(now)}</span></div>}
+          {lastActivity && <p className="klin-home-last-activity">Last activity: <strong>{lastActivity.title}</strong> · {formatDate(new Date(lastActivity.updated_at))}</p>}
         </div>
         <div className="klin-welcome-side" aria-hidden="true">
           <div className="klin-welcome-orbit klin-welcome-orbit-one" />
@@ -77,7 +79,7 @@ export default function KlinMainMenu() {
 
       <section className="klin-dashboard-section">
         <div className="klin-section-heading">
-          <div><span>CONTINUE WORKING</span><h2>Where you left off</h2></div>
+          <div><span>YOUR RECENT BUILDS</span><h2>What Klin has built</h2></div>
           <Link href="/projects">All projects <ArrowUpRight size={14}/></Link>
         </div>
         {projects.length ? (
