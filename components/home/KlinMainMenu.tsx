@@ -3,8 +3,7 @@
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, CheckCircle2, FlaskConical, FolderKanban,
-  Gamepad2, Globe2, Hammer, Image, MessageCircle, Palette, Sparkles,
-  Video,
+  Gamepad2, Globe2, Hammer, MessageCircle, Palette, Sparkles,
 } from "lucide-react";
 
 const workspaceHighlights = [
