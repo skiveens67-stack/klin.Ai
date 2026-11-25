@@ -21,7 +21,7 @@ const workspaceHighlights = [
     href: "/projects",
     icon: FolderKanban,
   },
-
+];
 
 const destinations = [
   { title: "Test Lab", description: "Try available features and review project tests.", href: "/testing", icon: FlaskConical },
