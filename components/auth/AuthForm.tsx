@@ -111,6 +111,29 @@ export default function AuthForm({ mode, initialError }: Props) {
           {mode === "signup" && verificationPending && <a className="auth-gmail-link" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener noreferrer">Open Gmail in a new tab</a>}
           {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ } }}>I forgot this email / I no longer use it — change email</button>}
         </form>
+        <div className="auth-social">
+          <div className="auth-social-divider"><span>OR CONTINUE WITH</span></div>
+          <div className="auth-social-grid">
+            {[
+              { label: "Google", provider: "google" },
+              { label: "Apple", provider: "apple" },
+              { label: "GitHub", provider: "github" },
+              { label: "X", provider: "twitter" },
+              { label: "Microsoft", provider: "azure" },
+            ].map((item) => (
+              <button type="button" key={item.provider} disabled={busy} onClick={() => void signInWithProvider(item.provider)}>
+                Continue with {item.label}
+              </button>
+            ))}
+            <button type="button" disabled={busy || !customChatGPTEnabled} onClick={() => void signInWithProvider("custom:openai-chatgpt")}>
+              Continue with ChatGPT {!customChatGPTEnabled && <small>Approval required</small>}
+            </button>
+            <button type="button" disabled={busy || !customVercelEnabled} onClick={() => void signInWithProvider("custom:vercel")}>
+              Continue with Vercel {!customVercelEnabled && <small>Setup required</small>}
+            </button>
+          </div>
+          <p className="auth-social-note">Social sign-in becomes active after each provider is configured in Klin’s authentication settings. ChatGPT requires OpenAI to approve Klin for Sign in with ChatGPT.</p>
+        </div>
         {mode === "signup" && verificationPending && <p className="auth-email-help">Can’t access this inbox? <Link href="/support">Contact Klin Support</Link> if you need help recovering access.</p>}
         {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Sign up for Klin" : "Sign in instead"}</Link></p>
