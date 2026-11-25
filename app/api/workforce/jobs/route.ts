@@ -18,7 +18,7 @@ async function getContext() {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return { supabase, user: null, planCode: "free" };
-  const { data: subscription } = await supabase.from("subscriptions").select("plan_code").eq("user_id", user.id).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const { data: subscription } = await supabase.from("subscriptions").select("plan_code").eq("user_id", user.id).eq("status", "active").order("is_promoted", { ascending: false }).order("created_at", { ascending: false }).limit(1).maybeSingle();
   return { supabase, user, planCode: subscription?.plan_code ?? "free" };
 }
 
