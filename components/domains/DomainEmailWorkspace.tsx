@@ -130,7 +130,7 @@ export default function DomainEmailWorkspace() {
           {sendStatus && <p className="klin-domain-status">{sendStatus}</p>}
           <button type="submit" disabled={sending}><Send size={15} /> {sending ? "Sending…" : "Send email"}</button>
         </form>
-        <p className="klin-domain-footnote"><CircleAlert size={14} /> Email delivery depends on successful DNS verification and the sending provider's policies.</p>
+        <p className="klin-domain-footnote"><CircleAlert size={14} /> Email delivery depends on successful DNS verification and the sending provider&apos;s policies.</p>
       </section>
     </main>
   );
