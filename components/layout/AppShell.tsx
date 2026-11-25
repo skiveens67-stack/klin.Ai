@@ -8,7 +8,7 @@ import OfflineSupport from "@/components/offline/OfflineSupport";
 import { usePathname } from "next/navigation";
 import {
   Bell, Blocks, BookOpen, Bot, BriefcaseBusiness, ChevronDown, CircleHelp,
-  ClipboardCheck, Compass, Cpu, CreditCard, FolderKanban, Hammer, History,
+  ClipboardCheck, Compass, Cpu, CreditCard, FolderKanban, Hammer,
   Home, LockKeyhole, LogOut, Menu, MessageCircle, Palette, Radio, Settings,
   ShieldCheck, Sparkles, Users, WalletCards, X, FlaskConical, UserRound,
 } from "lucide-react";
