@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
-  Archive, BriefcaseBusiness, History, MessageSquare, Plus, RefreshCw, Send, ShoppingBag, Sparkles, SquarePen, Users, X,
+  Archive, History, MessageSquare, Plus, RefreshCw, Send, Sparkles, SquarePen, X,
 } from "lucide-react";
 
 type Conversation = {
@@ -321,28 +320,6 @@ export default function KlinieChat({ assistantKey = "klinie", assistantName = "K
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">Klin AI</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">What can I help you build?</h1>
               <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Start a conversation with {assistantName}. Your chats will be saved in your history.</p>
-              <div className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Link href="/business" className="group rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-cyan-400/[0.06]">
-                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-200"><BriefcaseBusiness size={20} /></span>
-                  <strong className="block text-sm text-white">Start a business</strong>
-                  <span className="mt-1 block text-xs leading-5 text-slate-400">Plan and launch your next business.</span>
-                </Link>
-                <Link href="/marketplace" className="group rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-cyan-400/[0.06]">
-                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-200"><ShoppingBag size={20} /></span>
-                  <strong className="block text-sm text-white">Shop</strong>
-                  <span className="mt-1 block text-xs leading-5 text-slate-400">Explore products and creator listings.</span>
-                </Link>
-                <Link href="/social" className="group rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-cyan-400/[0.06]">
-                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-200"><Users size={20} /></span>
-                  <strong className="block text-sm text-white">Klin Social</strong>
-                  <span className="mt-1 block text-xs leading-5 text-slate-400">Try community apps, websites, games, and other creations before they are published.</span>
-                </Link>
-                <Link href="/chat" className="group rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.07] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-cyan-400/[0.11]">
-                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-100"><Sparkles size={20} /></span>
-                  <strong className="block text-sm text-white">Build in chat</strong>
-                  <span className="mt-1 block text-xs leading-5 text-slate-300">Create a website, app, game, and more by chatting with Klin.</span>
-                </Link>
-              </div>
               {!loadingHistory && conversations.length > 0 && (
                 <div className="mt-9 w-full max-w-xl text-left">
                   <div className="mb-3 flex items-center justify-between">
