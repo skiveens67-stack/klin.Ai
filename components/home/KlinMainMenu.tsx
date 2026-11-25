@@ -1,43 +1,60 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, CheckCircle2, FlaskConical, FolderKanban,
-  Gamepad2, Globe2, Hammer, MessageCircle, Palette, Sparkles,
+  ArrowRight, ArrowUpRight, BriefcaseBusiness, Clock3, Coins, FolderKanban,
+  Hammer, Sparkles, WalletCards,
 } from "lucide-react";
 
-const workspaceHighlights = [
-  {
-    title: "Build with Klin",
-    description: "Start a website, app, or game project from one workspace.",
-    detail: "PROJECT CREATION",
-    href: "/builder",
-    icon: Hammer,
-  },
-  {
-    title: "Projects and versions",
-    description: "Return to saved projects and review your work.",
-    detail: "YOUR WORK",
-    href: "/projects",
-    icon: FolderKanban,
-  },
-];
+type Project = { id: string; title: string; project_type: string; status: string; updated_at: string };
+type Wallet = { balance_gems?: number; currency?: string };
+type Job = { id: string; business_name: string; title: string; is_mine?: boolean };
 
-const destinations = [
-  { title: "Test Lab", description: "Try available features and review project tests.", href: "/testing", icon: FlaskConical },
-  { title: "Marketplace", description: "Explore projects and listings.", href: "/marketplace", icon: Globe2 },
-  { title: "Creative Studio", description: "Open the creative workspace.", href: "/creative-studio", icon: Palette },
-];
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(date);
+}
+function formatTime(date: Date) {
+  return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(date);
+}
 
 export default function KlinMainMenu() {
+  const [now, setNow] = useState<Date | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [plan, setPlan] = useState("Loading");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setNow(new Date());
+    const timer = window.setInterval(() => setNow(new Date()), 30_000);
+    let active = true;
+    Promise.all([
+      fetch("/api/projects", { credentials: "same-origin", cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/api/wallet", { credentials: "same-origin", cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/api/workforce/jobs", { credentials: "same-origin", cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/api/dashboard/summary", { credentials: "same-origin", cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([projectData, walletData, jobData, summary]) => {
+      if (!active) return;
+      setProjects((projectData?.projects ?? []).slice(0, 4));
+      setWallet(walletData?.wallet ?? null);
+      setJobs((jobData?.jobs ?? []).filter((job: Job) => job.is_mine).slice(0, 4));
+      setPlan(summary?.planCode ? String(summary.planCode).replaceAll("_", " ").replace(/\\b\\w/g, (letter: string) => letter.toUpperCase()) : "View plans");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+
+  const businessNames = useMemo(() => Array.from(new Set(jobs.map(job => job.business_name).filter(Boolean))), [jobs]);
+
   return (
-    <main className="klin-dashboard klin-welcome-dashboard">
+    <main className="klin-dashboard klin-welcome-dashboard klin-home-overview">
       <section className="klin-dashboard-welcome klin-welcome-back">
         <div className="klin-dashboard-welcome-copy">
           <div className="klin-eyebrow"><span /> YOUR KLIN WORKSPACE</div>
           <h1>Welcome back.</h1>
-          <p>Klin and Xzello are here when you are ready to continue. Pick up a conversation, return to a project, or test what is available before the next build.</p>
-          <Link href="/testing" className="klin-welcome-cta">Test the workspace <ArrowRight size={16} /></Link>
+          <p>Pick up where you left off. Your projects, work, and business activity are gathered here.</p>
+          {now && <div className="klin-home-clock"><Clock3 size={16}/><span>{formatTime(now)} · {formatDate(now)}</span></div>}
         </div>
         <div className="klin-welcome-side" aria-hidden="true">
           <div className="klin-welcome-orbit klin-welcome-orbit-one" />
@@ -46,62 +63,59 @@ export default function KlinMainMenu() {
         </div>
       </section>
 
-      <section className="klin-dashboard-section">
-        <div className="klin-section-heading">
-          <div><span>WORKSPACE HIGHLIGHTS</span><h2>What’s ready to pick up</h2></div>
-          <p>Klin + Xzello</p>
-        </div>
-        <div className="klin-highlight-grid">
-          {workspaceHighlights.map(({ title, description, detail, href, icon: Icon }) => (
-            <Link href={href} className="klin-highlight-card" key={title}>
-              <div className="klin-highlight-card-top">
-                <span className="klin-highlight-icon"><Icon size={20} /></span>
-                <span>{detail}</span>
-              </div>
-              <strong>{title}</strong>
-              <p>{description}</p>
-              <span className="klin-highlight-open">Open <ArrowUpRight size={14} /></span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="klin-test-invite">
-        <div className="klin-test-invite-icon"><CheckCircle2 size={21} /></div>
-        <div>
-          <span>BEFORE THE NEXT BUILD</span>
-          <strong>Would you like to test what’s ready?</strong>
-          <p>Open Test Lab to try the available workspace features and report anything that needs attention.</p>
-        </div>
-        <Link href="/testing">Open Test Lab <ArrowRight size={15} /></Link>
+      <section className="klin-home-stat-grid">
+        <Link href="/wallet" className="klin-home-stat-card">
+          <span><Coins size={18}/></span><small>AVAILABLE CREDITS</small>
+          <strong>{loading ? "…" : wallet ? (wallet.balance_gems ?? 0).toLocaleString() : "View wallet"}</strong>
+          <em>{wallet?.currency ?? "Klin credits"} · Manage wallet</em>
+        </Link>
+        <Link href="/plans" className="klin-home-stat-card">
+          <span><WalletCards size={18}/></span><small>YOUR PLAN</small>
+          <strong>{plan}</strong><em>View plan details</em>
+        </Link>
       </section>
 
       <section className="klin-dashboard-section">
         <div className="klin-section-heading">
-          <div><span>EXPLORE KLIN</span><h2>Your other destinations</h2></div>
+          <div><span>CONTINUE WORKING</span><h2>Where you left off</h2></div>
+          <Link href="/projects">All projects <ArrowUpRight size={14}/></Link>
         </div>
+        {projects.length ? (
+          <div className="klin-highlight-grid">
+            {projects.map(project => (
+              <Link href="/projects" className="klin-highlight-card" key={project.id}>
+                <div className="klin-highlight-card-top"><span className="klin-highlight-icon"><FolderKanban size={19}/></span><span>{project.project_type.toUpperCase()}</span></div>
+                <strong>{project.title}</strong><p>{project.status.replaceAll("_", " ")}</p>
+                <span className="klin-highlight-open">Continue <ArrowUpRight size={14}/></span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="klin-home-empty"><strong>{loading ? "Loading your work…" : "Your next project starts here."}</strong><p>Start a website, app, or game and it will appear here so you can return to it.</p><Link href="/builder">Create a project <ArrowRight size={15}/></Link></div>
+        )}
+      </section>
+
+      {businessNames.length > 0 && (
+        <section className="klin-dashboard-section klin-business-health">
+          <div className="klin-section-heading"><div><span>YOUR BUSINESS</span><h2>How’s your business doing?</h2></div><Link href="/business">Business Exchange <ArrowUpRight size={14}/></Link></div>
+          <div className="klin-home-business-card">
+            <BriefcaseBusiness size={22}/>
+            <div><strong>{businessNames.join(" · ")}</strong><p>You have {jobs.length} active or saved job listing{jobs.length === 1 ? "" : "s"} connected to your business. Open your business workspace to manage activity.</p></div>
+            <Link href="/workforce">Manage <ArrowRight size={15}/></Link>
+          </div>
+        </section>
+      )}
+
+      <section className="klin-dashboard-section">
+        <div className="klin-section-heading"><div><span>WHAT KLIN CAN HELP BUILD</span><h2>Make something new</h2></div></div>
         <div className="klin-destination-grid">
-          {destinations.map(({ title, description, href, icon: Icon }) => (
-            <Link href={href} className="klin-destination-card" key={title}>
-              <Icon size={19} />
-              <span><strong>{title}</strong><small>{description}</small></span>
-              <ArrowUpRight size={15} />
-            </Link>
-          ))}
+          <Link href="/builder?type=website" className="klin-destination-card"><Hammer size={19}/><span><strong>Website or app</strong><small>Start a new build with Klin.</small></span><ArrowUpRight size={15}/></Link>
+          <Link href="/builder?type=game" className="klin-destination-card"><Sparkles size={19}/><span><strong>Game or project</strong><small>Turn an idea into a project.</small></span><ArrowUpRight size={15}/></Link>
+          <Link href="/projects" className="klin-destination-card"><FolderKanban size={19}/><span><strong>Your work</strong><small>Review projects and versions.</small></span><ArrowUpRight size={15}/></Link>
         </div>
       </section>
 
-      <section className="klin-coming-panel">
-        <div className="klin-coming-panel-icon"><Gamepad2 size={20} /></div>
-        <div className="klin-coming-panel-copy">
-          <span>IN DEVELOPMENT</span>
-          <strong>Image and video creation</strong>
-          <p>These tools are coming soon and will appear in Klin when they are ready.</p>
-        </div>
-        <span className="klin-coming-pill">COMING SOON</span>
-      </section>
-
-      <footer className="klin-dashboard-footer">Klin · Your workspace for ideas, projects, and progress.</footer>
+      <footer className="klin-dashboard-footer">Klin · Your workspace for ideas, projects, and business.</footer>
     </main>
   );
 }
