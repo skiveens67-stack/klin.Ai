@@ -93,7 +93,26 @@ export default function PricingPlans() {
       </section>
 
       <section className="klin-plans-section">
-        <div className="klin-plans-section-title"><div><span>02 / BUILD CAPACITY</span><h2>Autonomous Builder plans</h2><p>These plans control build-worker capacity and the maximum build window.</p></div><span className="klin-plans-count">4 options</span></div>
+        <div className="klin-plans-section-title"><div><span>02 / HIRING & RECRUITMENT</span><h2>Business hiring limits</h2><p>More employees and promoted job ads require a higher business plan.</p></div></div>
+        <div className="klin-plans-grid">
+          {[
+            { name: "Starter", jobs: "1 job", employees: "1 employee", ads: "No promoted ads" },
+            { name: "Plus / Creator", jobs: "2 jobs", employees: "3 employees", ads: "No promoted ads" },
+            { name: "Pro / Galaxy", jobs: "5 jobs", employees: "10 employees", ads: "No promoted ads" },
+            { name: "Studio Pro / Developer", jobs: "10 jobs", employees: "20–25 employees", ads: "No promoted ads" },
+            { name: "Merchant & Enterprise", jobs: "15 jobs", employees: "50 employees", ads: "No promoted ads" },
+            { name: "Business", jobs: "25 jobs", employees: "100 employees", ads: "Promoted job ads included" },
+            { name: "Enterprise", jobs: "Custom", employees: "Custom", ads: "Promoted job ads included" },
+          ].map(tier => <article className="klin-plan-card" key={tier.name}>
+            <div className="klin-plan-card-top"><strong>{tier.name}</strong></div>
+            <div className="klin-plan-status">{tier.jobs} · {tier.employees}</div>
+            <p>{tier.ads}</p>
+          </article>)}
+        </div>
+      </section>
+
+      <section className="klin-plans-section">
+        <div className="klin-plans-section-title"><div><span>03 / BUILD CAPACITY</span><h2>Autonomous Builder plans</h2><p>These plans control build-worker capacity and the maximum build window.</p></div><span className="klin-plans-count">4 options</span></div>
         <div className="klin-plans-grid klin-builder-plans-grid">
           {builderPlans.map(plan => <article className="klin-plan-card" key={plan.code}>
             <div className="klin-plan-card-top"><strong>{plan.name}</strong></div><div className="klin-plan-price">{plan.price}</div>
