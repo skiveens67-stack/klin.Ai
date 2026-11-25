@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import KlinLoading from "@/components/brand/KlinLoading";
+import type { Provider } from "@supabase/supabase-js";
 
 type Props = { mode: "login" | "signup"; initialError?: string };
 
@@ -35,7 +36,29 @@ export default function AuthForm({ mode, initialError }: Props) {
   const [message, setMessage] = useState(initialError === "callback"
     ? "Your sign-in link could not be verified. Request a new link or sign in again."
     : "");
+
   const [error, setError] = useState("");
+  const customChatGPTEnabled = false;
+  const customVercelEnabled = false;
+
+  const signInWithProvider = async (provider: string) => {
+    setError("");
+    setBusy(true);
+    try {
+      if (provider.startsWith("custom:")) {
+        throw new Error("This sign-in provider is not enabled yet.");
+      }
+      const supabase = createSupabaseBrowserClient();
+      const { error: providerError } = await supabase.auth.signInWithOAuth({
+        provider: provider as Provider,
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (providerError) throw providerError;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to start social sign-in.");
+      setBusy(false);
+    }
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
