@@ -7,7 +7,6 @@ import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import KlinLoading from "@/components/brand/KlinLoading";
-import type { Provider } from "@supabase/supabase-js";
 
 type Props = { mode: "login" | "signup"; initialError?: string };
 
@@ -18,9 +17,16 @@ export default function AuthForm({ mode, initialError }: Props) {
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationPending, setVerificationPending] = useState(false);
+  const [rememberAccount, setRememberAccount] = useState(true);
 
   useEffect(() => {
-    if (mode !== "signup") return;
+    if (mode === "login") {
+      try {
+        const remembered = window.localStorage.getItem("klin.rememberedEmail");
+        if (remembered) setEmail(remembered);
+      } catch { /* Storage may be unavailable. */ }
+      return;
+    }
     try {
       const savedEmail = window.localStorage.getItem("klin.pendingSignupEmail");
       if (savedEmail) {
@@ -38,27 +44,6 @@ export default function AuthForm({ mode, initialError }: Props) {
     : "");
 
   const [error, setError] = useState("");
-  const customChatGPTEnabled = false;
-  const customVercelEnabled = false;
-
-  const signInWithProvider = async (provider: string) => {
-    setError("");
-    setBusy(true);
-    try {
-      if (provider.startsWith("custom:")) {
-        throw new Error("This sign-in provider is not enabled yet.");
-      }
-      const supabase = createSupabaseBrowserClient();
-      const { error: providerError } = await supabase.auth.signInWithOAuth({
-        provider: provider as Provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
-      });
-      if (providerError) throw providerError;
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to start social sign-in.");
-      setBusy(false);
-    }
-  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -70,6 +55,10 @@ export default function AuthForm({ mode, initialError }: Props) {
         const supabase = createSupabaseBrowserClient();
         const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (authError) throw authError;
+        try {
+          if (rememberAccount) window.localStorage.setItem("klin.rememberedEmail", email.trim());
+          else window.localStorage.removeItem("klin.rememberedEmail");
+        } catch { /* Supabase session cookies still keep the signed-in session. */ }
         redirectAfterLoading = true;
       } else if (verificationPending) {
         const supabase = createSupabaseBrowserClient();
@@ -119,6 +108,7 @@ export default function AuthForm({ mode, initialError }: Props) {
           {mode === "signup" && !verificationPending && <><label htmlFor="username">Username</label><div className="auth-input-wrap"><input id="username" type="text" autoComplete="username" required minLength={4} maxLength={49} value={username} onChange={e => setUsername(e.target.value)} placeholder="Choose a username" /></div><p className="auth-email-help">Use any name you like, from 4 to 49 characters.</p></>}
           <label htmlFor="email">Email address</label>
           <div className="auth-input-wrap"><Mail size={17} /><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" readOnly={mode === "signup" && verificationPending} /></div>
+          {mode === "login" && <label className="auth-remember-account"><input type="checkbox" checked={rememberAccount} onChange={event => setRememberAccount(event.target.checked)} /> <span>Remember my account on this device</span></label>}
           {mode === "signup" && verificationPending ? <>
             <label htmlFor="verification-code">Six-digit email code</label>
             <div className="auth-input-wrap"><LockKeyhole size={17} /><input id="verification-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} minLength={6} required value={verificationCode} onChange={e => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" /></div>
@@ -134,29 +124,6 @@ export default function AuthForm({ mode, initialError }: Props) {
           {mode === "signup" && verificationPending && <a className="auth-gmail-link" href="https://mail.google.com/mail/u/0/#inbox" target="_blank" rel="noopener noreferrer">Open Gmail in a new tab</a>}
           {mode === "signup" && verificationPending && <button className="auth-secondary" type="button" onClick={() => { setVerificationPending(false); setVerificationCode(""); setMessage(""); setError(""); try { window.localStorage.removeItem("klin.pendingSignupEmail"); } catch { /* Ignore storage cleanup errors. */ } }}>I forgot this email / I no longer use it — change email</button>}
         </form>
-        <div className="auth-social">
-          <div className="auth-social-divider"><span>OR CONTINUE WITH</span></div>
-          <div className="auth-social-grid">
-            {[
-              { label: "Google", provider: "google" },
-              { label: "Apple", provider: "apple" },
-              { label: "GitHub", provider: "github" },
-              { label: "X", provider: "twitter" },
-              { label: "Microsoft", provider: "azure" },
-            ].map((item) => (
-              <button type="button" key={item.provider} disabled={busy} onClick={() => void signInWithProvider(item.provider)}>
-                Continue with {item.label}
-              </button>
-            ))}
-            <button type="button" disabled={busy || !customChatGPTEnabled} onClick={() => void signInWithProvider("custom:openai-chatgpt")}>
-              Continue with ChatGPT {!customChatGPTEnabled && <small>Approval required</small>}
-            </button>
-            <button type="button" disabled={busy || !customVercelEnabled} onClick={() => void signInWithProvider("custom:vercel")}>
-              Continue with Vercel {!customVercelEnabled && <small>Setup required</small>}
-            </button>
-          </div>
-          <p className="auth-social-note">Social sign-in becomes active after each provider is configured in Klin’s authentication settings. ChatGPT requires OpenAI to approve Klin for Sign in with ChatGPT.</p>
-        </div>
         {mode === "signup" && verificationPending && <p className="auth-email-help">Can’t access this inbox? <Link href="/support">Contact Klin Support</Link> if you need help recovering access.</p>}
         {mode === "login" && <p className="auth-forgot"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="auth-switch">{mode === "login" ? "New to Klin?" : "Already have an account?"} <Link href={mode === "login" ? "/signup" : "/login"}>{mode === "login" ? "Sign up for Klin" : "Sign in instead"}</Link></p>
