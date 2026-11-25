@@ -18,11 +18,34 @@ const memberships = [
   { name: "Enterprise", code: "enterprise", price: "Custom", detail: "Custom deployment, security, and organization-wide support.", contactOnly: true },
 ] as const;
 
+const sharedFeatures = [
+  "Klinie AI chat and Xzello",
+  "Saved projects and version history",
+  "QA Test Lab",
+  "Marketplace and Social access",
+  "Wallet, credits, and account security",
+];
+
+const membershipFeatures: Record<string, string[]> = {
+  free: [...sharedFeatures, "1 job listing and 1 employee"],
+  plus: [...sharedFeatures, "2 job listings and up to 3 employees", "Expanded everyday workspace usage"],
+  pro: [...sharedFeatures, "5 job listings and up to 10 employees", "Higher-capacity project workflows", "Longer builds may require a deposit"],
+  creator: [...sharedFeatures, "Creator publishing workflows", "2 job listings and up to 3 employees"],
+  galaxy: [...sharedFeatures, "Expanded creative workspace access", "5 job listings and up to 10 employees"],
+  studio_pro: [...sharedFeatures, "Professional studio workflows", "10 job listings and up to 20 employees"],
+  family_fortress: [...sharedFeatures, "Family Hub and managed family profiles", "Guardian controls and safety check-ins", "Trusted contacts and communication rules", "Secure Vault and device management"],
+  developer: [...sharedFeatures, "Developer tools and agent capacity", "Domains and email workspace", "Integration workspace", "10 job listings and up to 25 employees"],
+  merchant_enterprise: [...sharedFeatures, "Business Exchange seller workflows", "Buyer, seller, partner, and investor messaging", "15 job listings and up to 50 employees"],
+  ultimate: [...sharedFeatures, "Highest standard membership tier", "Standard Klin workspace modules"],
+  business: [...sharedFeatures, "Business workspace and team operations", "25 job listings and up to 100 employees", "Promoted job ads"],
+  enterprise: [...sharedFeatures, "Organization-wide business workflows", "Up to 100 job listings and 500 employees", "Promoted job ads and custom terms"],
+};
+
 const builderPlans = [
   { name: "Free Builder", code: "free", price: "$0/mo", agents: "4 workers", duration: "30 minutes", discount: "No build discount" },
   { name: "Starter Builder", code: "builder_starter", price: "$29/mo", agents: "10 workers", duration: "24 hours", discount: "Standard build pricing" },
   { name: "Pro Builder", code: "builder_pro", price: "$79/mo", agents: "20 workers", duration: "5 days", discount: "10% build discount" },
-  { name: "Business Builder", code: "builder_business", price: "$199/mo", agents: "30+ workers", duration: "10 days", discount: "20% build discount" },
+  { name: "Business Builder", code: "builder_business", price: "$199/mo", agents: "30+ workers", duration: "7 days", discount: "20% build discount" },
 ] as const;
 
 export default function PricingPlans() {
@@ -63,7 +86,7 @@ export default function PricingPlans() {
   }
 
   const planButton = (code: string) => {
-    if (code === "free") return <span className="klin-plan-included">Included</span>;
+    if (code === "free") return <span className="klin-plan-included">Free · no payment</span>;
     if (code === "enterprise") return <a className="klin-plan-button" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact support</a>;
     const enabled = enabledPlanCodes.includes(code);
     return <button className="klin-plan-button" type="button" disabled={busy !== "" || loadingPlans || !enabled} onClick={() => void checkout(code)}>
@@ -78,7 +101,7 @@ export default function PricingPlans() {
         <div className="klin-plans-header-mark"><CreditCard size={27} /></div>
       </header>
       {error && <div className="klin-plan-error" role="alert">{error}</div>}
-      <section className="klin-plan-explainer"><ShieldCheck size={19} /><p><strong>Clear payment status.</strong> Prices are the current Klin plan proposal. A paid plan can only be purchased when its Stripe price and server-side checkout setting are enabled. Plans marked “Not available yet” will not charge you.</p></section>
+      <section className="klin-plan-explainer"><ShieldCheck size={19} /><p><strong>Clear payment status.</strong> Prices shown are the current Klin plan prices. A paid plan can only be purchased after its Stripe price and server-side checkout are configured. A disabled checkout cannot take a payment.</p></section>
 
       <section className="klin-plans-section">
         <div className="klin-plans-section-title"><div><span>01 / MEMBERSHIP</span><h2>Choose your Klin membership</h2><p>Monthly access for your main Klin workspace.</p></div><span className="klin-plans-count">12 options</span></div>
@@ -86,7 +109,8 @@ export default function PricingPlans() {
           {memberships.map(plan => <article className={"klin-plan-card" + (plan.code === "pro" ? " is-featured" : "")} key={plan.code}>
             <div className="klin-plan-card-top"><strong>{plan.name}</strong>{plan.code === "pro" && <span className="klin-plan-recommended">POPULAR</span>}</div>
             <div className="klin-plan-price">{plan.price}</div><p>{plan.detail}</p>
-            <div className="klin-plan-status">{plan.code === "free" ? "Available now" : plan.code === "enterprise" ? "Contact for details" : loadingPlans ? "Checking availability…" : enabledPlanCodes.includes(plan.code) ? "Checkout enabled" : "Early access / setup pending"}</div>
+            <div className="klin-plan-status">{plan.code === "free" ? "Free plan · active" : plan.code === "enterprise" ? "Contact for details" : loadingPlans ? "Checking Stripe setup…" : enabledPlanCodes.includes(plan.code) ? "Stripe checkout enabled" : "Stripe checkout not configured"}</div>
+            <ul className="klin-plan-feature-list">{(membershipFeatures[plan.code] ?? []).map(feature => <li key={feature}><Check size={14} /> <span>{feature}</span></li>)}</ul>
             {planButton(plan.code)}
           </article>)}
         </div>
@@ -116,7 +140,12 @@ export default function PricingPlans() {
         <div className="klin-plans-grid klin-builder-plans-grid">
           {builderPlans.map(plan => <article className="klin-plan-card" key={plan.code}>
             <div className="klin-plan-card-top"><strong>{plan.name}</strong></div><div className="klin-plan-price">{plan.price}</div>
-            <p>{plan.agents} · {plan.duration}</p><div className="klin-plan-status">{plan.discount}</div>
+            <p>{plan.agents} · maximum build window: {plan.duration}</p><div className="klin-plan-status">{plan.discount}</div>
+            <ul className="klin-plan-feature-list">
+              <li><Check size={14} /> <span>Builder worker capacity shown above</span></li>
+              <li><Check size={14} /> <span>Project progress and saved project history</span></li>
+              <li><Check size={14} /> <span>{plan.discount}</span></li>
+            </ul>
             {planButton(plan.code)}
           </article>)}
         </div>
@@ -125,13 +154,13 @@ export default function PricingPlans() {
       <section className="klin-plans-section klin-intelligence-plan">
         <div className="klin-plans-section-title"><div><span>04 / INTELLIGENCE</span><h2>Klin V6 Ultra Smart</h2><p>A separate intelligence add-on. Worker capacity remains controlled by your Builder plan.</p></div></div>
         <div className="klin-intelligence-card"><span className="klin-action-icon violet"><Sparkles size={20} /></span><div><strong>V6 Ultra Smart intelligence</strong><p>Its own subscription; it does not replace the free V7 Ultra Safe layer.</p></div>{planButton("klin_v6_ultra")}</div>
-        <p className="klin-plan-footnote">Klin V7 Ultra Safe is free and always on. It is not a paid upgrade.</p>
+        <p className="klin-plan-footnote">Klin V7 Ultra Safe is free and always on. It is not a paid upgrade. Image and video creation are Coming Soon and are not active features in any plan.</p>
       </section>
 
       <section className="klin-plans-section">
         <div className="klin-included-card"><div><Check size={18} /><strong>Included with every plan</strong></div><p>Klin V7 Ultra Safe · V7 Vault · core workspace · access to specialist modules within plan limits. Image and video creation remain marked Coming Soon.</p></div>
       </section>
-      <footer className="klin-plans-footer">No payment is taken just by viewing this page. You only proceed to payment after selecting an enabled plan and confirming through checkout.</footer>
+      <footer className="klin-plans-footer">Build policy: projects that take only a few hours are free. Longer builds on Free through Pro may require a deposit after the time and cost estimate is shown. Plans above Pro waive the build deposit. Builds may take up to 7 days. No recurring build charge should be made without showing the amount and getting the customer approval. No payment is taken by viewing this page.</footer>
     </main>
   );
 }
