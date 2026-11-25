@@ -8,20 +8,6 @@ import {
 
 const workspaceHighlights = [
   {
-    title: "Klinie",
-    description: "Your AI chat workspace, with saved conversations and chat history.",
-    detail: "CHAT WORKSPACE",
-    href: "/chat",
-    icon: MessageCircle,
-  },
-  {
-    title: "Xzello",
-    description: "A separate creative assistant for ideas, visual direction, and planning.",
-    detail: "CREATIVE ASSISTANT",
-    href: "/chat/xzello",
-    icon: Sparkles,
-  },
-  {
     title: "Build with Klin",
     description: "Start a website, app, or game project from one workspace.",
     detail: "PROJECT CREATION",
@@ -35,7 +21,7 @@ const workspaceHighlights = [
     href: "/projects",
     icon: FolderKanban,
   },
-];
+
 
 const destinations = [
   { title: "Test Lab", description: "Try available features and review project tests.", href: "/testing", icon: FlaskConical },
