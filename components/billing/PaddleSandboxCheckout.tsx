@@ -114,7 +114,7 @@ export default function PaddleSandboxCheckout({ planCode }: { planCode: string }
 
       const paddle = await getPaddle(config.client_token);
       paddle.Checkout.open({
-        items: [{ priceId, quantity: 1 }],
+        items: [{ priceId: priceId!, quantity: 1 }],
         customData: { klin_user_id: config.user_id, klin_plan_code: planCode },
         settings: { displayMode: "overlay", theme: "dark", allowLogout: false },
       });
