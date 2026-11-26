@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" role="img" aria-labelledby="title desc">
+<title id="title">Klin, a 3D cartoon boy wearing headphones</title>
+<desc id="desc">A polished monochrome 3D-style cartoon boy with black hair, oversized headphones, and a black-and-white hoodie.</desc>
+<defs>
+ <radialGradient id="skin" cx="34%" cy="24%" r="78%"><stop stop-color="#fff"/><stop offset=".48" stop-color="#bdbdbd"/><stop offset="1" stop-color="#555"/></radialGradient>
+ <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#555"/><stop offset=".28" stop-color="#171717"/><stop offset=".72" stop-color="#050505"/><stop offset="1" stop-color="#333"/></linearGradient>
+ <linearGradient id="hoodie" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".35" stop-color="#bfc3c8"/><stop offset=".7" stop-color="#555b63"/><stop offset="1" stop-color="#17191d"/></linearGradient>
+ <linearGradient id="sleeve" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f4f4"/><stop offset="1" stop-color="#555"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".25" stop-color="#9da3aa"/><stop offset=".58" stop-color="#30343a"/><stop offset="1" stop-color="#090a0c"/></linearGradient>
+ <radialGradient id="earcup" cx="30%" cy="25%" r="80%"><stop stop-color="#fff"/><stop offset=".3" stop-color="#aeb4bc"/><stop offset=".72" stop-color="#30343a"/><stop offset="1" stop-color="#08090b"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-30%" width="180%" height="190%"><feGaussianBlur stdDeviation="5"/></filter>
+ <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.5"/></filter>
+</defs>
+<ellipse cx="91" cy="207" rx="46" ry="7" fill="#000" opacity=".34" filter="url(#shadow)"/>
+<!-- shoes and legs -->
+<path d="M67 161l-5 30q-1 8 7 9l13 1 8-37zm38 0 5 30q1 8-7 9l-13 1-8-37z" fill="url(#metal)" stroke="#090a0c" stroke-width="2"/>
+<path d="M61 190q10 0 21 5l3 9H56q-8-4 5-14zm44 0q-10 0-21 5l-3 9h29q8-4-5-14z" fill="#f7f7f7" stroke="#222" stroke-width="2"/>
+<path d="M60 199h27m8 0h27" stroke="#777" stroke-width="2" stroke-linecap="round"/>
+<!-- body -->
+<path d="M53 91q13-13 37-13t39 13l16 70q-20 15-55 15t-55-15z" fill="url(#hoodie)" stroke="#17191d" stroke-width="2"/>
+<path d="M57 98q-13 11-21 31l-9 25q-2 7 5 10l10 4q7 2 10-6l17-39zm67 0q13 11 21 31l9 25q2 7-5 10l-10 4q-7 2-10-6l-17-39z" fill="url(#sleeve)" stroke="#292c31" stroke-width="2"/>
+<path d="M76 83v21q14 13 29 0V83" fill="url(#skin)" stroke="#666" stroke-width="1.5"/>
+<!-- hood and chest -->
+<path d="M62 94q29-19 58 0l-10 25q-19 13-38 0z" fill="#24272c" stroke="#08090b" stroke-width="2"/>
+<path d="M72 118q18 10 36 0l7 39q-25 10-50 0z" fill="#f0f0f0" opacity=".94"/>
+<path d="M88 119v37" stroke="#777" stroke-width="2" opacity=".65"/>
+<path d="M77 145q13 5 26 0" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"/>
+<!-- head and ears -->
+<path d="M53 43q0-32 37-32t38 32v34q0 35-38 42-37-7-37-42z" fill="url(#skin)" stroke="#555" stroke-width="1.5"/>
+<ellipse cx="52" cy="67" rx="9" ry="13" fill="url(#skin)"/><ellipse cx="129" cy="67" rx="9" ry="13" fill="url(#skin)"/>
+<!-- hair volume -->
+<path d="M48 56q-7-44 34-49 44-6 54 35l-4 22q-8-8-13-20-13 9-27 7-17 0-29-12-4 11-15 17z" fill="url(#hair)" stroke="#050505" stroke-width="2"/>
+<path d="M58 28q16-20 39-14M80 14q21-10 37 7M52 47q7-13 17-18" fill="none" stroke="#777" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+<!-- face -->
+<path d="M68 67q7-5 14 0m19 0q7-5 14 0" fill="none" stroke="#282321" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="76" cy="75" rx="3.8" ry="4.8" fill="#111"/><ellipse cx="107" cy="75" rx="3.8" ry="4.8" fill="#111"/>
+<circle cx="77" cy="73" r="1.2" fill="#fff"/><circle cx="108" cy="73" r="1.2" fill="#fff"/>
+<path d="M89 77q-4 10 2 11" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round"/>
+<path d="M80 96q10 9 21 0" fill="none" stroke="#444" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M84 97q7 4 14 0" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+<!-- headphone band, ear cups -->
+<path d="M43 70V51q0-47 47-47t47 47v19" fill="none" stroke="#050505" stroke-width="12" stroke-linecap="round"/>
+<path d="M43 57V47q4-35 47-35t47 35v10" fill="none" stroke="url(#metal)" stroke-width="5" stroke-linecap="round"/>
+<rect x="33" y="58" width="22" height="42" rx="10" fill="url(#earcup)" stroke="#050505" stroke-width="3"/>
+<rect x="37" y="63" width="14" height="32" rx="7" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>
+<rect x="125" y="58" width="22" height="42" rx="10" fill="url(#earcup)" stroke="#050505" stroke-width="3"/>
+<rect x="129" y="63" width="14" height="32" rx="7" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>
+<!-- 3D rim lighting -->
+<path d="M53 42q4-28 29-32M55 113q-6 23 2 39M127 112q7 22-1 38" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

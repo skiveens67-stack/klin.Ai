@@ -1,0 +1,489 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
+import {
+  Archive, History, MessageSquare, Mic, Plus, RefreshCw, Send, Sparkles, Square, SquarePen, Volume2, X,
+} from "lucide-react";
+
+type Conversation = {
+  id: string;
+  title: string;
+  assistant_key: string;
+  archived_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  status?: string;
+  created_at: string;
+};
+
+type ConversationResponse = { conversation: Conversation; messages: ChatMessage[] };
+type ApiError = { error?: string };
+
+async function api<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", ...(init?.headers as Record<string, string> | undefined) },
+    cache: "no-store",
+  });
+  const payload = await response.json().catch(() => ({})) as T & ApiError;
+  if (!response.ok) throw new Error(payload.error || `Request failed (${response.status}).`);
+  return payload;
+}
+
+function newLocalId() {
+  return `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+export default function KlinieChat({ assistantKey = "klinie", assistantName = "Klinie" }: { assistantKey?: "klinie" | "xzello"; assistantName?: string }) {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [loadingConversation, setLoadingConversation] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [creatingConversation, setCreatingConversation] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [composerHeight, setComposerHeight] = useState(24);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const loadHistory = useCallback(async (archived = false) => {
+    setLoadingHistory(true);
+    setHistoryError("");
+    try {
+      const result = await api<{ conversations: Conversation[] }>(
+        `/api/conversations?archived=${archived ? "true" : "false"}&assistant=${assistantKey}`,
+      );
+      setConversations(result.conversations ?? []);
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : "Could not load chat history.");
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [assistantKey]);
+
+  const openConversation = useCallback(async (id: string) => {
+    setLoadingConversation(true);
+    setHistoryError("");
+    setNotice("");
+    try {
+      const result = await api<ConversationResponse>(`/api/conversations/${id}`);
+      setActiveId(id);
+      setMessages(result.messages ?? []);
+      setMobileHistoryOpen(false);
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : "Could not open this conversation.");
+    } finally {
+      setLoadingConversation(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    }
+  }, [messages.length]);
+
+  const startConversation = async () => {
+    if (creatingConversation) return;
+    setCreatingConversation(true);
+    setHistoryError("");
+    setNotice("");
+    try {
+      const result = await api<{ conversation: Conversation }>("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ title: "New conversation", assistant_key: assistantKey }),
+      });
+      setConversations((current) => [result.conversation, ...current.filter((item) => item.id !== result.conversation.id)]);
+      setActiveId(result.conversation.id);
+      setMessages([]);
+      setMobileHistoryOpen(false);
+      requestAnimationFrame(() => textareaRef.current?.focus());
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : "Could not create a conversation.");
+    } finally {
+      setCreatingConversation(false);
+    }
+  };
+
+  const archiveConversation = async (conversation: Conversation) => {
+    try {
+      await api(`/api/conversations/${conversation.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ archived: !showArchived }),
+      });
+      setConversations((current) => current.filter((item) => item.id !== conversation.id));
+      if (activeId === conversation.id) {
+        setActiveId(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : "Could not update this conversation.");
+    }
+  };
+
+  const sendMessage = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const content = input.trim();
+    if (!content || sending) return;
+    setHistoryError("");
+    setNotice("");
+    setSending(true);
+    let conversationId = activeId;
+
+    try {
+      if (!conversationId) {
+        const created = await api<{ conversation: Conversation }>("/api/conversations", {
+          method: "POST",
+          body: JSON.stringify({ title: content.slice(0, 80) || "New conversation", assistant_key: assistantKey }),
+        });
+        conversationId = created.conversation.id;
+        setActiveId(conversationId);
+        setConversations((current) => [created.conversation, ...current]);
+      }
+
+      const optimistic: ChatMessage = {
+        id: newLocalId(),
+        role: "user",
+        content,
+        status: "sending",
+        created_at: new Date().toISOString(),
+      };
+      setMessages((current) => [...current, optimistic]);
+      setInput("");
+      setComposerHeight(24);
+      if (textareaRef.current) textareaRef.current.style.height = "24px";
+
+      const saved = await api<{
+        message: ChatMessage;
+        assistant?: { status?: string; detail?: string; message?: ChatMessage };
+      }>(`/api/conversations/${conversationId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      });
+
+      setMessages((current) => [
+        ...current.map((message) => message.id === optimistic.id ? saved.message : message),
+        ...(saved.assistant?.message ? [saved.assistant.message] : []),
+      ]);
+      if (saved.assistant?.status === "not_connected" || saved.assistant?.status === "failed") {
+        setNotice(saved.assistant.detail || "Your message was saved, but Klinie could not generate a reply.");
+      }
+      await loadHistory(showArchived);
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.style.height = "24px";
+        }
+      });
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : "Message could not be saved.");
+      setMessages((current) => current.map((message) =>
+        message.status === "sending" ? { ...message, status: "failed" } : message,
+      ));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setNotice("Voice input is not supported by this browser. Try a current version of Chrome, Edge, or Safari.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+      audioChunksRef.current = [];
+      const preferredType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus" : "";
+      const recorder = new MediaRecorder(stream, preferredType ? { mimeType: preferredType } : undefined);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        setNotice("Microphone recording failed. Check browser microphone permissions and try again.");
+        setRecording(false);
+      };
+      recorder.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+        audioStreamRef.current = null;
+        recorderRef.current = null;
+        if (!blob.size) return;
+        if (blob.size > 4 * 1024 * 1024) {
+          setNotice("That recording is too large. Record a shorter voice message (maximum 4 MB).");
+          return;
+        }
+        setTranscribing(true);
+        setNotice("Transcribing your voice with Deepgram Nova-3…");
+        try {
+          const form = new FormData();
+          form.append("audio", blob, "voice-message.webm");
+          const response = await fetch("/api/voice/transcribe", {
+            method: "POST", credentials: "same-origin", body: form, cache: "no-store",
+          });
+          const result = await response.json() as { transcript?: string; error?: string };
+          if (!response.ok || !result.transcript) throw new Error(result.error || "Deepgram could not transcribe that recording.");
+          onInputChange(input ? `${input} ${result.transcript}` : result.transcript);
+          setNotice("Voice transcription added to your message. Review it, then press Send.");
+          requestAnimationFrame(() => textareaRef.current?.focus());
+        } catch (error) {
+          setNotice(error instanceof Error ? error.message : "Voice transcription failed.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+      setNotice("Recording… press the microphone button again to stop.");
+    } catch {
+      setNotice("Microphone access was blocked. Allow microphone access for Klin and try again.");
+    }
+  };
+
+  const speakMessage = async (message: ChatMessage) => {
+    if (speakingId) return;
+    setSpeakingId(message.id);
+    try {
+      const response = await fetch("/api/voice/speak", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: message.content }),
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(result.error || "Deepgram speech generation failed.");
+      }
+      const audioUrl = URL.createObjectURL(await response.blob());
+      const audio = new Audio(audioUrl);
+      audio.onended = () => { URL.revokeObjectURL(audioUrl); setSpeakingId(null); };
+      audio.onerror = () => { URL.revokeObjectURL(audioUrl); setSpeakingId(null); setNotice("Audio playback failed."); };
+      await audio.play();
+    } catch (error) {
+      setSpeakingId(null);
+      setNotice(error instanceof Error ? error.message : "Could not play this response.");
+    }
+  };
+
+  const onComposerKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void sendMessage();
+    }
+  };
+
+  const onInputChange = (value: string) => {
+    setInput(value);
+    const element = textareaRef.current;
+    if (element) {
+      element.style.height = "24px";
+      const nextHeight = Math.min(element.scrollHeight, 160);
+      element.style.height = `${nextHeight}px`;
+      setComposerHeight(nextHeight);
+    }
+  };
+
+  const activeConversation = conversations.find((item) => item.id === activeId);
+  const visibleMessages = messages;
+
+  return (
+    <section className="klin-chat-workspace flex h-full min-h-0 w-full overflow-hidden bg-[#070B16] text-slate-100">
+      {mobileHistoryOpen && (
+        <button aria-label="Close chat history" onClick={() => setMobileHistoryOpen(false)}
+          className="fixed inset-0 z-30 bg-black/60 md:hidden" />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[290px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0A1020] transition-transform md:relative md:z-0 md:translate-x-0 ${mobileHistoryOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex h-[68px] items-center justify-between border-b border-white/[0.07] px-5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 shadow-lg shadow-cyan-500/20">
+              <Sparkles size={17} className="text-white" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold tracking-wide">{assistantName}</div>
+              <div className="text-[10px] text-slate-500">{assistantKey === "xzello" ? "Creative & visual assistant" : "Klin AI assistant"}</div>
+            </div>
+          </div>
+          <button onClick={() => setMobileHistoryOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/5 md:hidden" aria-label="Close history"><X size={18} /></button>
+        </div>
+
+        <div className="p-3">
+          <button type="button" onClick={() => void startConversation()} disabled={creatingConversation}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/[0.09] px-3 py-3 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/[0.15] disabled:opacity-60">
+            <Plus size={17} /> {creatingConversation ? "Creating chat…" : "New chat"}
+          </button>
+        </div>
+
+        {historyError && <div className="mx-3 mb-2 rounded-lg border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2 text-[11px] leading-5 text-rose-200" role="alert">{historyError}</div>}
+        <div className="flex items-center justify-between px-4 pb-2 pt-1">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            {showArchived ? "Archived chats" : "Recent chats"}
+          </span>
+          <button onClick={() => { setShowArchived((value) => !value); void loadHistory(!showArchived); }}
+            className="text-[11px] text-slate-500 transition hover:text-cyan-300">
+            {showArchived ? "Show recent" : "Archived"}
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+          {loadingHistory ? (
+            <div className="flex items-center gap-2 px-3 py-5 text-xs text-slate-500"><RefreshCw size={13} className="animate-spin" /> Loading history…</div>
+          ) : conversations.length === 0 ? (
+            <div className="px-3 py-6 text-xs leading-5 text-slate-500">Your saved conversations will appear here.</div>
+          ) : conversations.map((conversation) => (
+            <div key={conversation.id} className={`group mb-1 flex items-center gap-1 rounded-xl px-2 py-1 ${activeId === conversation.id ? "bg-white/[0.08]" : "hover:bg-white/[0.045]"}`}>
+              <button onClick={() => void openConversation(conversation.id)}
+                className="flex min-w-0 flex-1 items-center gap-2.5 px-1 py-2 text-left">
+                <MessageSquare size={15} className={activeId === conversation.id ? "shrink-0 text-cyan-300" : "shrink-0 text-slate-500"} />
+                <span className="truncate text-xs text-slate-300">{conversation.title || "New conversation"}</span>
+              </button>
+              <button title={showArchived ? "Restore conversation" : "Archive conversation"}
+                aria-label={showArchived ? "Restore conversation" : "Archive conversation"}
+                onClick={() => void archiveConversation(conversation)}
+                className="rounded-md p-1.5 text-slate-600 opacity-0 transition hover:bg-white/10 hover:text-slate-200 group-hover:opacity-100">
+                {showArchived ? <RefreshCw size={13} /> : <Archive size={13} />}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-white/[0.07] p-4">
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300"><Sparkles size={14} className="text-cyan-300" /> {assistantName} workspace</div>
+            <p className="mt-1.5 text-[10px] leading-4 text-slate-500">Your conversations are saved to your Klin account.</p>
+          </div>
+        </div>
+      </aside>
+
+      <main className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-white/[0.07] px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <button onClick={() => setMobileHistoryOpen(true)} className="klin-chat-history-trigger md:hidden" aria-label="Open chat history"><History size={16} /> <span>History</span></button>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-slate-100">{activeConversation?.title || "New conversation"}</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> AI connection pending</div>
+            </div>
+          </div>
+          <button type="button" onClick={() => void startConversation()} disabled={creatingConversation} className="flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs text-slate-200 hover:bg-white/10 disabled:opacity-50"><SquarePen size={14} /> <span className="hidden sm:inline">New chat</span></button>
+        </header>
+
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+          {loadingConversation ? (
+            <div className="flex h-full items-center justify-center gap-2 text-sm text-slate-500"><RefreshCw size={16} className="animate-spin" /> Opening conversation…</div>
+          ) : visibleMessages.length === 0 ? (
+            <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center px-5 py-12 text-center">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/15 to-indigo-500/15 shadow-2xl shadow-cyan-950/30"><Sparkles size={28} className="text-cyan-200" /></div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">Klin AI</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">What can I help you build?</h1>
+              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Start a conversation with {assistantName}. Your chats will be saved in your history.</p>
+              <div className="mt-7 grid w-full max-w-xl gap-2 sm:grid-cols-2">
+                {[
+                  { label: "Plan a project", prompt: "Help me plan a new project step by step." },
+                  { label: "Build a website or app", prompt: "Help me start building a website or app." },
+                  { label: "Review an idea", prompt: "Review my idea and suggest ways to improve it." },
+                  { label: "Test what’s ready", prompt: "Help me test the features that are currently available in Klin." },
+                ].map((suggestion) => (
+                  <button key={suggestion.label} type="button" onClick={() => { setInput(suggestion.prompt); requestAnimationFrame(() => textareaRef.current?.focus()); }}
+                    className="rounded-xl border border-white/[0.09] bg-white/[0.025] px-4 py-3 text-left text-xs font-medium text-slate-300 transition hover:border-cyan-300/30 hover:bg-cyan-400/[0.06] hover:text-white">
+                    {suggestion.label}
+                  </button>
+                ))}
+              </div>
+              {!loadingHistory && conversations.length > 0 && (
+                <div className="mt-9 w-full max-w-xl text-left">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Your recent chats</span>
+                    <button type="button" onClick={() => setMobileHistoryOpen(true)} className="text-[11px] text-cyan-300 hover:text-cyan-100">See all</button>
+                  </div>
+                  <div className="grid gap-2">
+                    {conversations.slice(0, 4).map((conversation) => (
+                      <button key={conversation.id} type="button" onClick={() => void openConversation(conversation.id)}
+                        className="flex w-full items-center gap-3 rounded-xl border border-cyan-300/15 bg-white/[0.025] px-4 py-3 text-left transition hover:border-cyan-300/25 hover:bg-cyan-400/[0.06]">
+                        <MessageSquare size={15} className="shrink-0 text-cyan-300" />
+                        <span className="min-w-0 flex-1 truncate text-xs text-slate-200">{conversation.title || "New conversation"}</span>
+                        <span className="shrink-0 text-[9px] text-slate-500">{formatTime(conversation.updated_at)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-7 px-4 py-8 sm:px-6">
+              {visibleMessages.map((message) => (
+                <article key={message.id} className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {message.role !== "user" && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500"><Sparkles size={15} /></div>}
+                  <div className={`max-w-[85%] min-w-0 rounded-2xl px-4 py-3 ${message.role === "user" ? "rounded-br-md border border-cyan-300/15 bg-cyan-400/[0.09]" : "rounded-bl-md border border-white/[0.07] bg-white/[0.035]"}`}>
+                    <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-200">{message.content}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3"><span className="text-[10px] text-slate-600">{message.status === "failed" ? "Not saved" : formatTime(message.created_at)}</span>{message.role === "assistant" && <button type="button" onClick={() => void speakMessage(message)} disabled={Boolean(speakingId)} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] text-cyan-300 transition hover:bg-cyan-300/10 disabled:opacity-50" aria-label="Read response aloud"><Volume2 size={12} />{speakingId === message.id ? "Playing…" : "Listen"}</button>}</div>
+                  </div>
+                  {message.role === "user" && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[10px] font-semibold text-slate-300">You</div>}
+                </article>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-white/[0.06] bg-[#070B16] px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-4 sm:px-6">
+          <div className="mx-auto max-w-3xl">
+            {(historyError || notice) && <div role="status" className={`mb-3 rounded-xl border px-3 py-2 text-xs leading-5 ${historyError ? "border-rose-400/20 bg-rose-400/[0.06] text-rose-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-100"}`}>{historyError || notice}</div>}
+            <form onSubmit={(event) => void sendMessage(event)} className="relative rounded-2xl border border-white/[0.12] bg-[#101827] p-2 shadow-xl shadow-black/20 transition focus-within:border-cyan-300/35">
+              <textarea ref={textareaRef} value={input} onChange={(event) => onInputChange(event.target.value)} onKeyDown={onComposerKeyDown}
+                placeholder={`Message ${assistantName}…`} rows={1}
+                style={{ height: composerHeight }}
+                className="block max-h-40 min-h-6 w-full resize-none bg-transparent px-3 py-2.5 text-sm leading-6 text-white outline-none placeholder:text-slate-600 disabled:opacity-60"
+                aria-label={`Message ${assistantName}`} />
+              <div className="flex items-center justify-between px-1 pb-1">
+                <div className="flex items-center gap-2"><button type="button" onClick={() => void toggleRecording()} disabled={transcribing || sending} className={`flex h-9 w-9 items-center justify-center rounded-xl border transition disabled:opacity-40 ${recording ? "border-rose-400/40 bg-rose-400/15 text-rose-300" : "border-white/10 text-slate-400 hover:bg-white/5 hover:text-cyan-300"}`} aria-label={recording ? "Stop recording" : "Record voice message"} title={recording ? "Stop recording" : "Record voice message"}>{transcribing ? <RefreshCw size={15} className="animate-spin" /> : recording ? <Square size={14} /> : <Mic size={16} />}</button><span className="pl-1 text-[10px] text-slate-600">Enter to send · Shift + Enter for a new line</span></div>
+                <button type="submit" disabled={!input.trim() || sending}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-30" aria-label="Send message">
+                  {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
+                </button>
+              </div>
+            </form>
+            <p className="mt-2 text-center text-[10px] text-slate-600">{assistantName} can make mistakes. Check important information.</p>
+          </div>
+        </div>
+      </main>
+    </section>
+  );
+}
