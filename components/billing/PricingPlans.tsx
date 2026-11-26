@@ -15,8 +15,16 @@ const memberships = [
   { name: "Merchant & Enterprise", code: "merchant_enterprise", price: "$79.99/mo", detail: "Merchant tools and business workflows." },
   { name: "Ultimate", code: "ultimate", price: "$149.99/mo", detail: "Highest standard membership tier." },
   { name: "Business", code: "business", price: "From $299/mo", detail: "Business workspaces and team operations." },
-  { name: "Enterprise", code: "enterprise", price: "Custom", detail: "Custom deployment, security, and organization-wide support.", contactOnly: true },
 ] as const;
+
+// Enterprise remains an internal, contact-assisted plan. It is intentionally
+// excluded from the customer-facing membership and hiring comparison sections.
+// Klin determines the quote after reviewing the organization's requirements.
+const enterprisePlan = {
+  code: "enterprise",
+  features: ["Organization-wide business workflows", "Up to 100 job listings and 500 employees", "Promoted job ads and custom terms"],
+  quoteManagedByKlin: true,
+} as const;
 
 const sharedFeatures = [
   "Klinie AI chat and Xzello",
@@ -38,7 +46,7 @@ const membershipFeatures: Record<string, string[]> = {
   merchant_enterprise: [...sharedFeatures, "Business Exchange seller workflows", "Buyer, seller, partner, and investor messaging", "15 job listings and up to 50 employees"],
   ultimate: [...sharedFeatures, "Highest standard membership tier", "Standard Klin workspace modules"],
   business: [...sharedFeatures, "Business workspace and team operations", "25 job listings and up to 100 employees", "Promoted job ads"],
-  enterprise: [...sharedFeatures, "Organization-wide business workflows", "Up to 100 job listings and 500 employees", "Promoted job ads and custom terms"],
+  enterprise: [...sharedFeatures, ...enterprisePlan.features],
 };
 
 const builderPlans = [
@@ -104,12 +112,12 @@ export default function PricingPlans() {
       <section className="klin-plan-explainer"><ShieldCheck size={19} /><p><strong>Clear payment status.</strong> Prices shown are the current Klin plan prices. A paid plan can only be purchased after its Stripe price and server-side checkout are configured. A disabled checkout cannot take a payment.</p></section>
 
       <section className="klin-plans-section">
-        <div className="klin-plans-section-title"><div><span>01 / MEMBERSHIP</span><h2>Choose your Klin membership</h2><p>Monthly access for your main Klin workspace.</p></div><span className="klin-plans-count">12 options</span></div>
+        <div className="klin-plans-section-title"><div><span>01 / MEMBERSHIP</span><h2>Choose your Klin membership</h2><p>Monthly access for your main Klin workspace.</p></div><span className="klin-plans-count">11 options</span></div>
         <div className="klin-plans-grid">
           {memberships.map(plan => <article className={"klin-plan-card" + (plan.code === "pro" ? " is-featured" : "")} key={plan.code}>
             <div className="klin-plan-card-top"><strong>{plan.name}</strong>{plan.code === "pro" && <span className="klin-plan-recommended">POPULAR</span>}</div>
             <div className="klin-plan-price">{plan.price}</div><p>{plan.detail}</p>
-            <div className="klin-plan-status">{plan.code === "free" ? "Free plan · active" : plan.code === "enterprise" ? "Contact for details" : loadingPlans ? "Checking Stripe setup…" : enabledPlanCodes.includes(plan.code) ? "Stripe checkout enabled" : "Stripe checkout not configured"}</div>
+            <div className="klin-plan-status">{plan.code === "free" ? "Free plan · active" : loadingPlans ? "Checking Stripe setup…" : enabledPlanCodes.includes(plan.code) ? "Stripe checkout enabled" : "Stripe checkout not configured"}</div>
             <ul className="klin-plan-feature-list">{(membershipFeatures[plan.code] ?? []).map(feature => <li key={feature}><Check size={14} /> <span>{feature}</span></li>)}</ul>
             {planButton(plan.code)}
           </article>)}
@@ -126,7 +134,6 @@ export default function PricingPlans() {
             { name: "Studio Pro / Developer", jobs: "10 jobs", employees: "20–25 employees", ads: "No promoted ads" },
             { name: "Merchant & Enterprise", jobs: "15 jobs", employees: "50 employees", ads: "No promoted ads" },
             { name: "Business", jobs: "25 jobs", employees: "100 employees", ads: "Promoted job ads included" },
-            { name: "Enterprise", jobs: "Up to 100 jobs", employees: "Up to 500 employees", ads: "Promoted job ads included · custom terms" },
           ].map(tier => <article className="klin-plan-card" key={tier.name}>
             <div className="klin-plan-card-top"><strong>{tier.name}</strong></div>
             <div className="klin-plan-status">{tier.jobs} · {tier.employees}</div>
