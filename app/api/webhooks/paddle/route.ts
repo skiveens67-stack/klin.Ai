@@ -79,6 +79,7 @@ export async function POST(request: Request) {
   }
 
   const { error: insertError } = await admin.from("payment_events").insert({
+    provider: "paddle",
     provider_event_id: eventId,
     event_type: eventType,
     processing_status: "processing",
