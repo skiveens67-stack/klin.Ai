@@ -184,6 +184,8 @@ export async function POST(request: Request) {
       const firstItem = asRecord(items[0]);
       const price = asRecord(firstItem.price);
       const unitPrice = asRecord(price.unit_price);
+      const details = asRecord(data.details);
+      const totals = asRecord(details.totals);
       const priceId = typeof price.id === "string" ? price.id : null;
       const quantity = firstItem.quantity;
       const pack = priceId ? PADDLE_GEM_PACKS[priceId] : null;
@@ -206,7 +208,9 @@ export async function POST(request: Request) {
         pack.packCode === packCode &&
         customData.klin_wallet_bucket === "purchased" &&
         data.status === "completed" &&
+        data.origin === "api" &&
         data.currency_code === "USD" &&
+        (totals.discount === "0" || totals.discount === 0) &&
         unitPrice.amount === pack.amountCents &&
         unitPrice.currency_code === "USD" &&
         expectedSignature &&
