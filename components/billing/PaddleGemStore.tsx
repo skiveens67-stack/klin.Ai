@@ -59,8 +59,10 @@ export default function PaddleGemStore({
         token: clientToken,
         eventCallback: (event) => {
           if (event.name === "checkout.completed") {
+            setBusyPack("");
             setNotice("Payment completed. Purchased Gems will appear after the verified payment notification is processed.");
           }
+          if (event.name === "checkout.closed") setBusyPack("");
         },
       });
       window.__klinPaddleInitialized = true;
