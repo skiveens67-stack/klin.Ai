@@ -10,8 +10,8 @@ export async function GET() {
     if (authError || !user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
     const [{ data: wallet, error: walletError }, { data: transactions, error: txError }] = await Promise.all([
-      supabase.from("wallets").select("balance_gems,currency,updated_at").eq("user_id", user.id).maybeSingle(),
-      supabase.from("wallet_transactions").select("id,delta_gems,balance_after,transaction_type,status,description,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(25),
+      supabase.from("wallets").select("balance_gems,purchased_gems,subscription_gems,currency,updated_at").eq("user_id", user.id).maybeSingle(),
+      supabase.from("wallet_transactions").select("id,delta_gems,balance_after,transaction_type,wallet_bucket,status,description,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(25),
     ]);
     if (walletError || txError) return NextResponse.json({ error: "Unable to load wallet." }, { status: 500 });
 
