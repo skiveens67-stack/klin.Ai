@@ -191,7 +191,7 @@ export async function POST(request: Request) {
       const pack = priceId ? PADDLE_GEM_PACKS[priceId] : null;
       const signingSecret = process.env.PADDLE_WEBHOOK_SECRET;
       const expectedSignature = userId && packCode && signingSecret
-        ? createHmac("sha256", signingSecret).update(`${userId}:${packCode}`).digest()
+        ? createHmac("sha256", signingSecret).update(`klin-gem-pack-v1:${userId}:${packCode}`).digest()
         : null;
       const suppliedSignature = /^[a-f0-9]{64}$/i.test(signatureValue)
         ? Buffer.from(signatureValue, "hex")
