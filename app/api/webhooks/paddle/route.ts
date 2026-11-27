@@ -7,6 +7,14 @@ export const dynamic = "force-dynamic";
 
 type JsonRecord = Record<string, unknown>;
 
+const PADDLE_GEM_PACKS: Record<string, { packCode: string; gems: number }> = {
+  "pri_01m8d58pxfn1gfkc1nr9drcpsw": { packCode: "starter", gems: 150 },
+  "pri_01m8d59p5mh8ywtr4gzgdg0z7g": { packCode: "basic", gems: 450 },
+  "pri_01m8d5b78g5kerj6djnmmgg854": { packCode: "popular", gems: 1000 },
+  "pri_01m8d5c7b10z11w3wc19mj0x6c": { packCode: "pro", gems: 2400 },
+  "pri_01m8d5dw7742ngzb5mmt9n549k": { packCode: "ultimate", gems: 6000 },
+};
+
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? value as JsonRecord : {};
 }
@@ -165,6 +173,62 @@ export async function POST(request: Request) {
       "transaction.payment_failed",
       "transaction.canceled",
     ]);
+    if (eventType === "transaction.completed") {
+      const customData = asRecord(data.custom_data);
+      const userId = typeof customData.klin_user_id === "string" ? customData.klin_user_id : null;
+      const packCode = typeof customData.klin_pack_code === "string" ? customData.klin_pack_code : null;
+      const signatureValue = typeof customData.klin_signature === "string" ? customData.klin_signature : "";
+      const transactionId = typeof data.id === "string" ? data.id : null;
+      const items = Array.isArray(data.items) ? data.items : [];
+      const firstItem = asRecord(items[0]);
+      const price = asRecord(firstItem.price);
+      const priceId = typeof price.id === "string" ? price.id : null;
+      const quantity = firstItem.quantity;
+      const pack = priceId ? PADDLE_GEM_PACKS[priceId] : null;
+      const signingSecret = process.env.PADDLE_WEBHOOK_SECRET;
+      const expectedSignature = userId && packCode && signingSecret
+        ? createHmac("sha256", signingSecret).update(`${userId}:${packCode}`).digest()
+        : null;
+      const suppliedSignature = /^[a-f0-9]{64}$/i.test(signatureValue)
+        ? Buffer.from(signatureValue, "hex")
+        : Buffer.alloc(0);
+
+      if (
+        !userId ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
+        !transactionId ||
+        !/^txn_[a-z0-9]{26}$/i.test(transactionId) ||
+        items.length !== 1 ||
+        quantity !== 1 ||
+        !pack ||
+        pack.packCode !== packCode ||
+        customData.klin_wallet_bucket !== "purchased" ||
+        data.status !== "completed" ||
+        data.currency_code !== "USD" ||
+        !expectedSignature ||
+        suppliedSignature.length !== expectedSignature.length ||
+        !timingSafeEqual(expectedSignature, suppliedSignature)
+      ) {
+        throw new Error("Completed Paddle transaction failed Gem pack verification.");
+      }
+
+      const { error: walletError } = await admin.rpc("post_wallet_transaction", {
+        p_user_id: userId,
+        p_delta_gems: pack.gems,
+        p_transaction_type: "purchase",
+        p_idempotency_key: `paddle_transaction_${transactionId}`,
+        p_description: `${pack.gems.toLocaleString("en-US")} Purchased Gems`,
+        p_provider_reference: transactionId,
+        p_metadata: {
+          paddle_event_id: eventId,
+          pack_code: pack.packCode,
+          paddle_price_id: priceId,
+          wallet_bucket: "purchased",
+        },
+      });
+      if (walletError) throw walletError;
+    }
+
     const finalStatus = subscriptionEvents.has(eventType) || transactionEvents.has(eventType)
       ? "processed"
       : "ignored";
