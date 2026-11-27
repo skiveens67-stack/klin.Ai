@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 
 type JsonRecord = Record<string, unknown>;
 
-const PADDLE_GEM_PACKS: Record<string, { packCode: string; gems: number }> = {
-  "pri_01m8d58pxfn1gfkc1nr9drcpsw": { packCode: "starter", gems: 150 },
-  "pri_01m8d59p5mh8ywtr4gzgdg0z7g": { packCode: "basic", gems: 450 },
-  "pri_01m8d5b78g5kerj6djnmmgg854": { packCode: "popular", gems: 1000 },
-  "pri_01m8d5c7b10z11w3wc19mj0x6c": { packCode: "pro", gems: 2400 },
-  "pri_01m8d5dw7742ngzb5mmt9n549k": { packCode: "ultimate", gems: 6000 },
+const PADDLE_GEM_PACKS: Record<string, { packCode: string; gems: number; amountCents: string }> = {
+  "pri_01m8d58pxfn1gfkc1nr9drcpsw": { packCode: "starter", gems: 150, amountCents: "199" },
+  "pri_01m8d59p5mh8ywtr4gzgdg0z7g": { packCode: "basic", gems: 450, amountCents: "499" },
+  "pri_01m8d5b78g5kerj6djnmmgg854": { packCode: "popular", gems: 1000, amountCents: "999" },
+  "pri_01m8d5c7b10z11w3wc19mj0x6c": { packCode: "pro", gems: 2400, amountCents: "1999" },
+  "pri_01m8d5dw7742ngzb5mmt9n549k": { packCode: "ultimate", gems: 6000, amountCents: "4999" },
 };
 
 function asRecord(value: unknown): JsonRecord {
@@ -182,6 +182,7 @@ export async function POST(request: Request) {
       const items = Array.isArray(data.items) ? data.items : [];
       const firstItem = asRecord(items[0]);
       const price = asRecord(firstItem.price);
+      const unitPrice = asRecord(price.unit_price);
       const priceId = typeof price.id === "string" ? price.id : null;
       const quantity = firstItem.quantity;
       const pack = priceId ? PADDLE_GEM_PACKS[priceId] : null;
@@ -205,6 +206,8 @@ export async function POST(request: Request) {
         customData.klin_wallet_bucket !== "purchased" ||
         data.status !== "completed" ||
         data.currency_code !== "USD" ||
+        unitPrice.amount !== pack.amountCents ||
+        unitPrice.currency_code !== "USD" ||
         !expectedSignature ||
         suppliedSignature.length !== expectedSignature.length ||
         !timingSafeEqual(expectedSignature, suppliedSignature)
