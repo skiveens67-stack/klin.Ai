@@ -18,23 +18,27 @@ function asIso(value: unknown): string | null {
 }
 
 function verifyPaddleSignature(rawBody: string, signatureHeader: string, secret: string): boolean {
-  const parts = Object.fromEntries(
-    signatureHeader.split(";").map((part) => {
-      const separator = part.indexOf("=");
-      return separator < 0 ? ["", ""] : [part.slice(0, separator).trim(), part.slice(separator + 1).trim()];
-    }),
-  );
-  const timestamp = parts.ts;
-  const suppliedHash = parts.h1;
-  if (!timestamp || !suppliedHash || !/^\d+$/.test(timestamp)) return false;
+  let timestamp = "";
+  const suppliedHashes: string[] = [];
+  for (const part of signatureHeader.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator < 0) continue;
+    const key = part.slice(0, separator).trim();
+    const value = part.slice(separator + 1).trim();
+    if (key === "ts") timestamp = value;
+    if (key === "h1" && /^[a-f0-9]{64}$/i.test(value)) suppliedHashes.push(value);
+  }
+  if (!timestamp || suppliedHashes.length === 0 || !/^\\d+$/.test(timestamp)) return false;
 
   const timestampSeconds = Number(timestamp);
+  // Paddle's documented SDK default is a five-second replay-protection window.
   if (!Number.isSafeInteger(timestampSeconds) || Math.abs(Date.now() / 1000 - timestampSeconds) > 5) return false;
 
-  const expectedHash = createHmac("sha256", secret).update(`${timestamp}:${rawBody}`).digest("hex");
-  const expected = Buffer.from(expectedHash, "hex");
-  const supplied = Buffer.from(suppliedHash, "hex");
-  return expected.length === supplied.length && timingSafeEqual(expected, supplied);
+  const expectedHash = createHmac("sha256", secret).update(`${timestamp}:${rawBody}`).digest();
+  return suppliedHashes.some((hash) => {
+    const supplied = Buffer.from(hash, "hex");
+    return expectedHash.length === supplied.length && timingSafeEqual(expectedHash, supplied);
+  });
 }
 
 export async function POST(request: Request) {
@@ -148,7 +152,21 @@ export async function POST(request: Request) {
       if (subscriptionError) throw subscriptionError;
     }
 
-    const finalStatus = subscriptionEvents.has(eventType) ? "processed" : "ignored";
+    // Transaction notifications are retained as verified payment records for audit/reconciliation.
+    // They do not grant entitlements or credit wallets; subscription lifecycle events remain authoritative.
+    const transactionEvents = new Set([
+      "transaction.created",
+      "transaction.updated",
+      "transaction.ready",
+      "transaction.billed",
+      "transaction.completed",
+      "transaction.past_due",
+      "transaction.payment_failed",
+      "transaction.canceled",
+    ]);
+    const finalStatus = subscriptionEvents.has(eventType) || transactionEvents.has(eventType)
+      ? "processed"
+      : "ignored";
     const { error: updateError } = await admin.from("payment_events")
       .update({ processing_status: finalStatus, processed_at: new Date().toISOString() })
       .eq("provider_event_id", eventId);
