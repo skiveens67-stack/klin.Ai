@@ -30,13 +30,24 @@ Subscribe to these subscription events:
 - `subscription.resumed`
 - `subscription.canceled`
 
+Also subscribe to these transaction events for payment audit and reconciliation:
+
+- `transaction.completed`
+- `transaction.payment_failed`
+- `transaction.past_due`
+- `transaction.created`
+- `transaction.updated`
+- `transaction.canceled`
+
+Transaction notifications are signature-verified and stored in `payment_events`. They do not independently grant a plan, credit Gems, or fulfill a Store order. Subscription lifecycle events remain authoritative for subscription status and access.
+
 Copy that destination's endpoint secret key into `PADDLE_WEBHOOK_SECRET` in Vercel Preview. Do not paste the secret into chat or commit it to Git.
 
 ## Checkout behavior
 
 - The Paddle buttons use the supplied `pri_...` price IDs.
 - Checkout custom data includes the authenticated Klin user ID and plan code so the signed webhook can associate the subscription with the account.
-- The webhook verifies the `Paddle-Signature` header against the raw request body, applies a five-second timestamp tolerance, and records event IDs idempotently in `payment_events`.
+- The webhook verifies the `Paddle-Signature` header against the raw request body, applies Paddle's documented five-second timestamp tolerance, and records event IDs idempotently in `payment_events`.
 - Verified subscription events are upserted into the existing `subscriptions` table with provider `paddle`.
 - A successful browser checkout is not itself proof of payment or entitlement. The server-side webhook is authoritative.
 - Keep this integration in sandbox until end-to-end webhook delivery, database persistence, plan entitlements, cancellations, and renewals have been tested. Do not switch to a live token as part of this change.
