@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BriefcaseBusiness, Clock3, Coins, FolderKanban,
-  Hammer, Sparkles, WalletCards,
+  WalletCards,
 } from "lucide-react";
 
 type Project = { id: string; title: string; project_type: string; status: string; updated_at: string };
@@ -107,15 +107,6 @@ export default function KlinMainMenu() {
           </div>
         </section>
       )}
-
-      <section className="klin-dashboard-section">
-        <div className="klin-section-heading"><div><span>WHAT KLIN CAN HELP BUILD</span><h2>Make something new</h2></div></div>
-        <div className="klin-destination-grid">
-          <Link href="/builder?type=website" className="klin-destination-card"><Hammer size={19}/><span><strong>Website or app</strong><small>Start a new build with Klin.</small></span><ArrowUpRight size={15}/></Link>
-          <Link href="/builder?type=game" className="klin-destination-card"><Sparkles size={19}/><span><strong>Game or project</strong><small>Turn an idea into a project.</small></span><ArrowUpRight size={15}/></Link>
-          <Link href="/projects" className="klin-destination-card"><FolderKanban size={19}/><span><strong>Your work</strong><small>Review projects and versions.</small></span><ArrowUpRight size={15}/></Link>
-        </div>
-      </section>
 
       <footer className="klin-dashboard-footer">Klin · Your workspace for ideas, projects, and business.</footer>
     </main>
