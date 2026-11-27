@@ -19,7 +19,6 @@ export default function LuckyGemSpinPage() {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
-  const [spinId, setSpinId] = useState(0);
 
   function spin() {
     if (spinning) return;
@@ -28,11 +27,10 @@ export default function LuckyGemSpinPage() {
     const winningIndex = Math.floor(Math.random() * prizes.length);
     const targetAngle = 360 * 6 + (360 - winningIndex * segment - segment / 2);
     setRotation(current => current + targetAngle);
-    const id = window.setTimeout(() => {
+    window.setTimeout(() => {
       setResult(prizes[winningIndex].gems);
       setSpinning(false);
     }, 5200);
-    setSpinId(id);
   }
 
   return (
