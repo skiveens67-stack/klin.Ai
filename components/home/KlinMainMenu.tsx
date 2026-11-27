@@ -61,7 +61,7 @@ export default function KlinMainMenu() {
         <div className="klin-welcome-side" aria-hidden="true">
           <div className="klin-welcome-orbit klin-welcome-orbit-one" />
           <div className="klin-welcome-orbit klin-welcome-orbit-two" />
-          <div className="klin-welcome-monogram">K</div>
+          <img src="/klin-logo.svg" alt="Klin" className="klin-welcome-logo" />
         </div>
       </section>
 
