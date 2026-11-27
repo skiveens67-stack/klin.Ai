@@ -161,8 +161,8 @@ export async function POST(request: Request) {
       if (subscriptionError) throw subscriptionError;
     }
 
-    // Transaction notifications are retained as verified payment records for audit/reconciliation.
-    // They do not grant entitlements or credit wallets; subscription lifecycle events remain authoritative.
+    // Transaction notifications are retained for audit/reconciliation. Only a valid, signed
+    // one-time Gem-pack transaction can credit Purchased Gems; subscription events stay separate.
     const transactionEvents = new Set([
       "transaction.created",
       "transaction.updated",
@@ -173,6 +173,7 @@ export async function POST(request: Request) {
       "transaction.payment_failed",
       "transaction.canceled",
     ]);
+    let ignoreTransaction = false;
     if (eventType === "transaction.completed") {
       const customData = asRecord(data.custom_data);
       const userId = typeof customData.klin_user_id === "string" ? customData.klin_user_id : null;
@@ -194,47 +195,53 @@ export async function POST(request: Request) {
         ? Buffer.from(signatureValue, "hex")
         : Buffer.alloc(0);
 
-      if (
-        !userId ||
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) ||
-        !transactionId ||
-        !/^txn_[a-z0-9]{26}$/i.test(transactionId) ||
-        items.length !== 1 ||
-        quantity !== 1 ||
-        !pack ||
-        pack.packCode !== packCode ||
-        customData.klin_wallet_bucket !== "purchased" ||
-        data.status !== "completed" ||
-        data.currency_code !== "USD" ||
-        unitPrice.amount !== pack.amountCents ||
-        unitPrice.currency_code !== "USD" ||
-        !expectedSignature ||
-        suppliedSignature.length !== expectedSignature.length ||
-        !timingSafeEqual(expectedSignature, suppliedSignature)
-      ) {
-        throw new Error("Completed Paddle transaction failed Gem pack verification.");
-      }
+      const validGemPurchase = Boolean(
+        userId &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId) &&
+        transactionId &&
+        /^txn_[a-z0-9]{26}$/i.test(transactionId) &&
+        items.length === 1 &&
+        quantity === 1 &&
+        pack &&
+        pack.packCode === packCode &&
+        customData.klin_wallet_bucket === "purchased" &&
+        data.status === "completed" &&
+        data.currency_code === "USD" &&
+        unitPrice.amount === pack.amountCents &&
+        unitPrice.currency_code === "USD" &&
+        expectedSignature &&
+        suppliedSignature.length === expectedSignature.length &&
+        timingSafeEqual(expectedSignature, suppliedSignature)
+      );
 
-      const { error: walletError } = await admin.rpc("post_wallet_transaction", {
-        p_user_id: userId,
-        p_delta_gems: pack.gems,
-        p_transaction_type: "purchase",
-        p_idempotency_key: `paddle_transaction_${transactionId}`,
-        p_description: `${pack.gems.toLocaleString("en-US")} Purchased Gems`,
-        p_provider_reference: transactionId,
-        p_metadata: {
-          paddle_event_id: eventId,
-          pack_code: pack.packCode,
-          paddle_price_id: priceId,
-          wallet_bucket: "purchased",
-        },
-      });
-      if (walletError) throw walletError;
+      if (!validGemPurchase || !pack || !userId || !transactionId || !priceId) {
+        // Other completed Paddle transactions (including subscriptions) are audit-only.
+        ignoreTransaction = true;
+      }
+      if (validGemPurchase && pack && userId && transactionId && priceId) {
+        const { error: walletError } = await admin.rpc("post_wallet_transaction", {
+          p_user_id: userId,
+          p_delta_gems: pack.gems,
+          p_transaction_type: "purchase",
+          p_idempotency_key: `paddle_transaction_${transactionId}`,
+          p_description: `${pack.gems.toLocaleString("en-US")} Purchased Gems`,
+          p_provider_reference: transactionId,
+          p_metadata: {
+            paddle_event_id: eventId,
+            pack_code: pack.packCode,
+            paddle_price_id: priceId,
+            wallet_bucket: "purchased",
+          },
+        });
+        if (walletError) throw walletError;
+      }
     }
 
-    const finalStatus = subscriptionEvents.has(eventType) || transactionEvents.has(eventType)
-      ? "processed"
-      : "ignored";
+    const finalStatus = ignoreTransaction
+      ? "ignored"
+      : subscriptionEvents.has(eventType) || transactionEvents.has(eventType)
+        ? "processed"
+        : "ignored";
     const { error: updateError } = await admin.from("payment_events")
       .update({ processing_status: finalStatus, processed_at: new Date().toISOString() })
       .eq("provider_event_id", eventId);
