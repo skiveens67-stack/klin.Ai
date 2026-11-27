@@ -28,7 +28,7 @@ function verifyPaddleSignature(rawBody: string, signatureHeader: string, secret:
     if (key === "ts") timestamp = value;
     if (key === "h1" && /^[a-f0-9]{64}$/i.test(value)) suppliedHashes.push(value);
   }
-  if (!timestamp || suppliedHashes.length === 0 || !/^\\d+$/.test(timestamp)) return false;
+  if (!timestamp || suppliedHashes.length === 0 || !/^\d+$/.test(timestamp)) return false;
 
   const timestampSeconds = Number(timestamp);
   // Paddle's documented SDK default is a five-second replay-protection window.
