@@ -2123,3 +2123,48 @@ body {
   background: #5796f5 !important;
   box-shadow: 0 0 12px #5796f5 !important;
 }
+
+/* Mobile workspace top navigation: keep the top bar actions visible instead of hiding them. */
+@media (max-width: 700px) {
+  .klin-topbar {
+    height: auto !important;
+    min-height: 58px;
+    flex-wrap: wrap !important;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 8px 12px !important;
+  }
+  .klin-topbar-left {
+    min-height: 38px;
+    flex: 1 0 100%;
+  }
+  .klin-topbar-actions {
+    display: flex !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 100%;
+    justify-content: flex-start !important;
+    gap: 7px;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    padding: 2px 0 6px;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .klin-topbar-actions .klin-history-link {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+  .klin-topbar-more {
+    flex: 0 0 auto;
+  }
+  .klin-topbar-actions .klin-create-trigger {
+    min-height: 34px;
+    white-space: nowrap;
+  }
+}
