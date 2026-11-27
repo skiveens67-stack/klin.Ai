@@ -1,6 +1,9 @@
 -- Keep Purchased Gems and Subscription Gems in separate balances.
 -- balance_gems remains the aggregate total for compatibility with existing readers.
 
+alter table public.wallet_transactions
+  add column if not exists wallet_bucket text not null default 'purchased';
+
 alter table public.wallets
   add column if not exists purchased_gems bigint not null default 0,
   add column if not exists subscription_gems bigint not null default 0;
@@ -36,9 +39,6 @@ begin
   end if;
 end
 $$;
-
-alter table public.wallet_transactions
-  add column if not exists wallet_bucket text not null default 'purchased';
 
 -- Existing aggregate balances are preserved as Purchased Gems. The preview
 -- database currently has no existing balances or transactions.
