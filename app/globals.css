@@ -1983,3 +1983,18 @@ body {
 .klin-create-menu-panel a small{color:#9ca3af;font-size:11px;line-height:1.4}
 .klin-create-menu-panel a:hover small{color:#cbd5e1}
 @media(max-width:900px){.klin-create-menu-panel{left:0;right:auto}}
+
+
+/* Keep one identical Klin logo treatment before and after authentication. */
+.auth-brand img,
+.klin-sidebar-brand img {
+  display: block !important;
+  width: 112px !important;
+  max-width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  filter: none !important;
+}
