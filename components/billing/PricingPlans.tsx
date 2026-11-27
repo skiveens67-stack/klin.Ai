@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import PaddleSandboxCheckout from "@/components/billing/PaddleSandboxCheckout";
 
 const memberships = [
   { name: "Starter", code: "free", price: "$0", detail: "Core Klin workspace and V7 Ultra Safe protection." },
@@ -97,9 +98,12 @@ export default function PricingPlans() {
     if (code === "free") return <span className="klin-plan-included">Free · no payment</span>;
     if (code === "enterprise") return <a className="klin-plan-button" href="https://klin.help" target="_blank" rel="noopener noreferrer">Contact support</a>;
     const enabled = enabledPlanCodes.includes(code);
-    return <button className="klin-plan-button" type="button" disabled={busy !== "" || loadingPlans || !enabled} onClick={() => void checkout(code)}>
-      {busy === code ? "Opening checkout…" : loadingPlans ? "Checking…" : enabled ? "Choose plan" : "Stripe setup required"}
-    </button>;
+    return <div style={{ display: "grid", gap: "8px" }}>
+      <button className="klin-plan-button" type="button" disabled={busy !== "" || loadingPlans || !enabled} onClick={() => void checkout(code)}>
+        {busy === code ? "Opening checkout…" : loadingPlans ? "Checking…" : enabled ? "Choose plan with Stripe" : "Stripe setup required"}
+      </button>
+      <PaddleSandboxCheckout planCode={code} />
+    </div>;
   };
 
   return (
@@ -109,7 +113,7 @@ export default function PricingPlans() {
         <div className="klin-plans-header-mark"><CreditCard size={27} /></div>
       </header>
       {error && <div className="klin-plan-error" role="alert">{error}</div>}
-      <section className="klin-plan-explainer"><ShieldCheck size={19} /><p><strong>Clear payment status.</strong> Prices shown are the current Klin plan prices. A paid plan can only be purchased after its Stripe price and server-side checkout are configured. A disabled checkout cannot take a payment.</p></section>
+      <section className="klin-plan-explainer"><ShieldCheck size={19} /><p><strong>Clear payment status.</strong> Prices shown are the current Klin plan prices. Stripe checkout remains separately controlled by its server-side configuration. Paddle is available here only as a sandbox test; a completed sandbox checkout does not activate a membership.</p></section>
 
       <section className="klin-plans-section">
         <div className="klin-plans-section-title"><div><span>01 / MEMBERSHIP</span><h2>Choose your Klin membership</h2><p>Monthly access for your main Klin workspace.</p></div><span className="klin-plans-count">11 options</span></div>

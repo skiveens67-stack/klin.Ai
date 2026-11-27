@@ -69,6 +69,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [topMoreOpen, setTopMoreOpen] = useState(false);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const [accountProfile, setAccountProfile] = useState<{ username: string; account_number: string } | null>(null);
@@ -204,7 +205,17 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
               <span className="klin-topbar-title">{pathname === "/chat" ? "Klinie" : pathname.startsWith("/chat/xzello") ? "Xzello" : activeItem?.label ?? "Workspace"}</span>
             </div>
           </div>
-          <nav className="klin-topbar-actions" aria-label="Business actions">
+          <nav className="klin-topbar-actions" aria-label="Workspace actions">
+            <div className="klin-topbar-more klin-create-menu">
+              <button type="button" className="klin-create-trigger" aria-expanded={createMenuOpen} onClick={() => setCreateMenuOpen((value) => !value)}>
+                <Hammer size={15} /> Make something new <ChevronDown size={14} />
+              </button>
+              {createMenuOpen && <div className="klin-topbar-more-menu klin-create-menu-panel">
+                <Link href="/builder?type=website" onClick={() => setCreateMenuOpen(false)}><strong>Website or app</strong><small>Start a new build with Klin.</small></Link>
+                <Link href="/builder?type=game" onClick={() => setCreateMenuOpen(false)}><strong>Game or project</strong><small>Turn an idea into a project.</small></Link>
+                <Link href="/projects" onClick={() => setCreateMenuOpen(false)}><strong>Your work</strong><small>Review projects and versions.</small></Link>
+              </div>}
+            </div>
             <Link href="/marketplace" className="klin-history-link"><Store size={15} /> Shop</Link>
             <Link href="/business" className="klin-history-link"><BriefcaseBusiness size={15} /> Make a Business</Link>
             <Link href="/social" className="klin-history-link"><MessageCircle size={15} /> Messages</Link>
