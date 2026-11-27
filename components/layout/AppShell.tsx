@@ -207,7 +207,7 @@ export default function AppShell({ userEmail, children }: { userEmail: string; c
           </div>
           <nav className="klin-topbar-actions" aria-label="Workspace actions">
             <div className="klin-topbar-more klin-create-menu">
-              <button type="button" className="klin-history-link" aria-expanded={createMenuOpen} onClick={() => setCreateMenuOpen((value) => !value)}>
+              <button type="button" className="klin-create-trigger" aria-expanded={createMenuOpen} onClick={() => setCreateMenuOpen((value) => !value)}>
                 <Hammer size={15} /> Make something new <ChevronDown size={14} />
               </button>
               {createMenuOpen && <div className="klin-topbar-more-menu klin-create-menu-panel">
