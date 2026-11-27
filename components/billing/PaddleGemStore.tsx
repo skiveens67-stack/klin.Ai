@@ -17,13 +17,13 @@ type PaddleWindow = Window & {
   __klinPaddleInitialized?: boolean;
 };
 
-const PACKS = [
+const PACKS: Array<{ code: string; name: string; gems: number; price: string; featured?: boolean }> = [
   { code: "starter", name: "Starter", gems: 150, price: "$1.99" },
   { code: "basic", name: "Basic", gems: 450, price: "$4.99" },
   { code: "popular", name: "Popular", gems: 1000, price: "$9.99", featured: true },
   { code: "pro", name: "Pro", gems: 2400, price: "$19.99" },
   { code: "ultimate", name: "Ultimate", gems: 6000, price: "$49.99" },
-] as const;
+];
 
 export default function PaddleGemStore({
   clientToken,
