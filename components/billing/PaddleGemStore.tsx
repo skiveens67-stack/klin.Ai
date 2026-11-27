@@ -43,7 +43,8 @@ export default function PaddleGemStore({
       setError("Paddle Sandbox client token is missing from this preview.");
       return;
     }
-    if (!paddleWindow.Paddle) {
+    const paddle = paddleWindow.Paddle;
+    if (!paddle) {
       setError("Paddle Checkout could not load. Refresh and try again.");
       return;
     }
@@ -53,8 +54,8 @@ export default function PaddleGemStore({
     }
 
     try {
-      paddleWindow.Paddle.Environment.set("sandbox");
-      paddleWindow.Paddle.Initialize({
+      paddle.Environment.set("sandbox");
+      paddle.Initialize({
         token: clientToken,
         eventCallback: (event) => {
           if (event.name === "checkout.completed") {
@@ -78,7 +79,8 @@ export default function PaddleGemStore({
 
   const buyPack = async (packCode: string) => {
     const paddleWindow = window as PaddleWindow;
-    if (!ready || !paddleWindow.Paddle || busyPack) return;
+    const paddle = paddleWindow.Paddle;
+    if (!ready || !paddle || busyPack) return;
     setBusyPack(packCode);
     setError("");
     setNotice("");
@@ -98,7 +100,7 @@ export default function PaddleGemStore({
         throw new Error(data.error || "Unable to start Paddle checkout.");
       }
 
-      paddleWindow.Paddle.Checkout.open({
+      paddle.Checkout.open({
         transactionId: data.transaction_id,
         settings: { theme: "dark", locale: "en" },
         ...(userEmail ? { customer: { email: userEmail } } : {}),
