@@ -12,12 +12,10 @@ type PaddleApi = {
   };
 };
 
-declare global {
-  interface Window {
-    Paddle?: PaddleApi;
-    __klinPaddleInitialized?: boolean;
-  }
-}
+type PaddleWindow = Window & {
+  Paddle?: PaddleApi;
+  __klinPaddleInitialized?: boolean;
+};
 
 const PACKS = [
   { code: "starter", name: "Starter", gems: 150, price: "$1.99" },
@@ -40,22 +38,23 @@ export default function PaddleGemStore({
   const [notice, setNotice] = useState("");
 
   const initializePaddle = () => {
+    const paddleWindow = window as PaddleWindow;
     if (!clientToken) {
       setError("Paddle Sandbox client token is missing from this preview.");
       return;
     }
-    if (!window.Paddle) {
+    if (!paddleWindow.Paddle) {
       setError("Paddle Checkout could not load. Refresh and try again.");
       return;
     }
-    if (window.__klinPaddleInitialized) {
+    if (paddleWindow.__klinPaddleInitialized) {
       setReady(true);
       return;
     }
 
     try {
-      window.Paddle.Environment.set("sandbox");
-      window.Paddle.Initialize({
+      paddleWindow.Paddle.Environment.set("sandbox");
+      paddleWindow.Paddle.Initialize({
         token: clientToken,
         eventCallback: (event) => {
           if (event.name === "checkout.completed") {
@@ -69,7 +68,7 @@ export default function PaddleGemStore({
           }
         },
       });
-      window.__klinPaddleInitialized = true;
+      paddleWindow.__klinPaddleInitialized = true;
       setReady(true);
       setError("");
     } catch {
@@ -78,7 +77,8 @@ export default function PaddleGemStore({
   };
 
   const buyPack = async (packCode: string) => {
-    if (!ready || !window.Paddle || busyPack) return;
+    const paddleWindow = window as PaddleWindow;
+    if (!ready || !paddleWindow.Paddle || busyPack) return;
     setBusyPack(packCode);
     setError("");
     setNotice("");
@@ -98,7 +98,7 @@ export default function PaddleGemStore({
         throw new Error(data.error || "Unable to start Paddle checkout.");
       }
 
-      window.Paddle.Checkout.open({
+      paddleWindow.Paddle.Checkout.open({
         transactionId: data.transaction_id,
         settings: { theme: "dark", locale: "en" },
         ...(userEmail ? { customer: { email: userEmail } } : {}),
