@@ -1998,3 +1998,128 @@ body {
   background: transparent !important;
   filter: none !important;
 }
+
+
+/* Final shared brand and mobile quick-create corrections. */
+.auth-brand,
+.klin-sidebar-brand a {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 34px !important;
+}
+.auth-brand img,
+.klin-sidebar-brand img,
+.klin-welcome-logo {
+  display: block !important;
+  width: 112px !important;
+  max-width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  object-fit: contain !important;
+  filter: none !important;
+}
+.klin-welcome-logo {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+.klin-create-trigger {
+  display: inline-flex !important;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #2a5bb0 !important;
+  border-radius: 10px;
+  background: #17345a !important;
+  color: #eaf2ff !important;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.klin-create-trigger:hover,
+.klin-create-trigger[aria-expanded="true"] {
+  border-color: #6da4ff !important;
+  background: #204879 !important;
+}
+@media(max-width:460px) {
+  .klin-topbar-actions .klin-create-trigger {
+    display: inline-flex !important;
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+}
+
+/* Keep sign-in and sign-up on the same deep-blue theme as the workspace. */
+.auth-page,
+.auth-page-signup,
+.auth-page-login {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(38, 93, 171, .34), transparent 58%),
+    linear-gradient(145deg, #0b1729 0%, #08111e 58%, #070d17 100%) !important;
+  color: #f3f7ff !important;
+}
+.auth-panel,
+.auth-page-signup .auth-panel,
+.auth-page-login .auth-panel {
+  border: 1px solid #29456c !important;
+  border-top: 3px solid #4d8ff5 !important;
+  border-radius: 22px !important;
+  background: linear-gradient(155deg, #14243a 0%, #0b1525 72%, #09111d 100%) !important;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, .42) !important;
+}
+.auth-page-signup .auth-panel:after {
+  border-color: #345b8e !important;
+  color: #b8d2fa !important;
+}
+.auth-page-signup .auth-panel:before {
+  border-color: rgba(132, 177, 245, .13) !important;
+}
+.auth-page .auth-kicker,
+.auth-page .auth-intro,
+.auth-page .auth-switch,
+.auth-page .auth-support-link {
+  color: #b8c9e2 !important;
+}
+.auth-page .auth-kicker,
+.auth-page .auth-switch a,
+.auth-page .auth-forgot a,
+.auth-page .auth-support-link a {
+  color: #9fc4ff !important;
+}
+.auth-page .auth-input-wrap {
+  border-color: #314a6c !important;
+  background: #081321 !important;
+}
+.auth-page .auth-input-wrap:focus-within {
+  border-color: #5796f5 !important;
+  box-shadow: 0 0 0 3px rgba(64, 133, 231, .18) !important;
+}
+.auth-page .auth-input-wrap input {
+  color: #f4f8ff !important;
+}
+.auth-page .auth-submit {
+  border: 1px solid #4b8ff4 !important;
+  background: linear-gradient(110deg, #2866bd, #397fe0) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 30px rgba(36, 105, 202, .25) !important;
+}
+.auth-page .auth-submit:hover {
+  background: linear-gradient(110deg, #3477d1, #4b91f3) !important;
+}
+.auth-page .auth-side {
+  border-color: #29456c !important;
+  background: linear-gradient(145deg, #132b4a, #0a1423) !important;
+}
+.auth-page .auth-side-label span {
+  background: #5796f5 !important;
+  box-shadow: 0 0 12px #5796f5 !important;
+}
