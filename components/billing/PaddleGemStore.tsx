@@ -57,7 +57,7 @@ export default function PaddleGemStore({
       paddle.Environment.set("sandbox");
       paddle.Initialize({
         token: clientToken,
-        eventCallback: (event) => {
+        eventCallback: (event: PaddleEvent) => {
           if (event.name === "checkout.completed") {
             setBusyPack("");
             setNotice("Payment completed. Purchased Gems will appear after the verified payment notification is processed.");
