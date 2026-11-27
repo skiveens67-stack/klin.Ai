@@ -4,7 +4,18 @@ import Script from "next/script";
 import { useState } from "react";
 
 type PaddleEvent = { name?: string };
+type PricePreviewResult = {
+  data?: {
+    details?: {
+      lineItems?: Array<{
+        price?: { id?: string };
+        formattedTotals?: { subtotal?: string };
+      }>;
+    };
+  };
+};
 type PaddleApi = {
+  PricePreview: (request: { items: Array<{ priceId: string; quantity: number }> }) => Promise<PricePreviewResult>;
   Environment: { set: (environment: "sandbox" | "production") => void };
   Initialize: (options: { token: string; eventCallback?: (event: PaddleEvent) => void }) => void;
   Checkout: {
@@ -18,11 +29,11 @@ type PaddleWindow = Window & {
 };
 
 const PACKS: Array<{ code: string; name: string; gems: number; price: string; featured?: boolean }> = [
-  { code: "starter", name: "Starter", gems: 150, price: "$1.99" },
-  { code: "basic", name: "Basic", gems: 450, price: "$4.99" },
-  { code: "popular", name: "Popular", gems: 1000, price: "$9.99", featured: true },
-  { code: "pro", name: "Pro", gems: 2400, price: "$19.99" },
-  { code: "ultimate", name: "Ultimate", gems: 6000, price: "$49.99" },
+  { code: "starter", priceId: "pri_01m8d58pxfn1gfkc1nr9drcpsw", name: "Starter", gems: 150, price: "$1.99" },
+  { code: "basic", priceId: "pri_01m8d59p5mh8ywtr4gzgdg0z7g", name: "Basic", gems: 450, price: "$4.99" },
+  { code: "popular", priceId: "pri_01m8d5b78g5kerj6djnmmgg854", name: "Popular", gems: 1000, price: "$9.99", featured: true },
+  { code: "pro", priceId: "pri_01m8d5c7b10z11w3wc19mj0x6c", name: "Pro", gems: 2400, price: "$19.99" },
+  { code: "ultimate", priceId: "pri_01m8d5dw7742ngzb5mmt9n549k", name: "Ultimate", gems: 6000, price: "$49.99" },
 ];
 
 export default function PaddleGemStore({
@@ -36,6 +47,7 @@ export default function PaddleGemStore({
   const [busyPack, setBusyPack] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [localizedPrices, setLocalizedPrices] = useState<Record<string, string>>({});
 
   const initializePaddle = () => {
     const paddleWindow = window as PaddleWindow;
@@ -70,6 +82,20 @@ export default function PaddleGemStore({
         },
       });
       paddleWindow.__klinPaddleInitialized = true;
+      void paddle.PricePreview({
+        items: PACKS.map((pack) => ({ priceId: pack.priceId, quantity: 1 })),
+      }).then((result) => {
+        const codesByPriceId = new Map(PACKS.map((pack) => [pack.priceId, pack.code]));
+        const nextPrices: Record<string, string> = {};
+        for (const item of result.data?.details?.lineItems ?? []) {
+          const code = item.price?.id ? codesByPriceId.get(item.price.id) : undefined;
+          const formatted = item.formattedTotals?.subtotal;
+          if (code && typeof formatted === "string") nextPrices[code] = formatted;
+        }
+        if (Object.keys(nextPrices).length > 0) setLocalizedPrices(nextPrices);
+      }).catch(() => {
+        // Keep the configured USD prices if localized preview is unavailable.
+      });
       setReady(true);
       setError("");
     } catch {
@@ -132,7 +158,7 @@ export default function PaddleGemStore({
             <div className="module-record-title">
               {pack.name}{pack.featured ? " · Popular" : ""}
             </div>
-            <p><strong>{pack.gems.toLocaleString()} Gems</strong> · {pack.price}</p>
+            <p><strong>{pack.gems.toLocaleString()} Gems</strong> · {localizedPrices[pack.code] ?? pack.price}</p>
             <button
               type="button"
               className="module-submit"
