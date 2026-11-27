@@ -8,7 +8,7 @@ type PaddleApi = {
   Environment: { set: (environment: "sandbox" | "production") => void };
   Initialize: (options: { token: string; eventCallback?: (event: PaddleEvent) => void }) => void;
   Checkout: {
-    open: (options: { transactionId: string; customer?: { email: string } }) => void;
+    open: (options: { transactionId: string; customer?: { email: string }; settings?: { theme: "light" | "dark"; locale: string } }) => void;
   };
 };
 
@@ -63,6 +63,10 @@ export default function PaddleGemStore({
             setNotice("Payment completed. Purchased Gems will appear after the verified payment notification is processed.");
           }
           if (event.name === "checkout.closed") setBusyPack("");
+          if (event.name === "checkout.error") {
+            setBusyPack("");
+            setError("Paddle could not open this checkout. Try again.");
+          }
         },
       });
       window.__klinPaddleInitialized = true;
@@ -85,7 +89,6 @@ export default function PaddleGemStore({
         credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": crypto.randomUUID(),
         },
         body: JSON.stringify({ pack_code: packCode }),
         cache: "no-store",
@@ -97,6 +100,7 @@ export default function PaddleGemStore({
 
       window.Paddle.Checkout.open({
         transactionId: data.transaction_id,
+        settings: { theme: "dark", locale: "en" },
         ...(userEmail ? { customer: { email: userEmail } } : {}),
       });
     } catch (caught) {
