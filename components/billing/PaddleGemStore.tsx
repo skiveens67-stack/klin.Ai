@@ -60,7 +60,7 @@ export default function PaddleGemStore({
         eventCallback: (event: PaddleEvent) => {
           if (event.name === "checkout.completed") {
             setBusyPack("");
-            setNotice("Payment completed. Purchased Gems will appear after the verified payment notification is processed.");
+            setNotice("Payment completed. Wait for the verified payment notification, then refresh your wallet.");
           }
           if (event.name === "checkout.closed") setBusyPack("");
           if (event.name === "checkout.error") {
@@ -146,7 +146,7 @@ export default function PaddleGemStore({
       </div>
       {!clientToken && <p className="module-alert module-alert-error">Paddle Sandbox client token is not configured for this preview.</p>}
       {error && <p className="module-alert module-alert-error" role="alert">{error}</p>}
-      {notice && <p className="module-alert module-alert-info" role="status">{notice}</p>}
+      {notice && <><p className="module-alert module-alert-info" role="status">{notice}</p><button type="button" className="module-submit" onClick={() => window.location.reload()}>Refresh Wallet</button></>}
       <p className="module-empty">Sandbox testing only. No live payments are enabled.</p>
     </section>
   );
