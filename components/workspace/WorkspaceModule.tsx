@@ -88,10 +88,10 @@ const configs: Record<ModuleKey, ModuleConfig> = {
   },
   wallet: {
     title: "Klin Wallet",
-    description: "Review your Klin Gems balance, ledger history, and subscription status. Seller earnings and payouts will use Stripe Connect when enabled.",
+    description: "Review your Purchased Gems, Subscription Gems, transaction history, and subscription status.",
     endpoint: "/api/wallet",
     collection: "transactions",
-    note: "This page currently displays Klin Gems and subscription records, not a bank account or cash balance. Marketplace seller onboarding, earnings transfers and withdrawals require Stripe Connect and are not active yet. Credits are issued only by verified server-side payment events.",
+    note: "Purchased Gems can be used for eligible Klin Store purchases. Subscription and promotional Gems are kept separate and cannot be spent in the Store. Credits are issued only by verified server-side payment events. Marketplace seller onboarding, earnings transfers and withdrawals are not active yet.",
   },
   notifications: {
     title: "Notifications",
@@ -323,7 +323,9 @@ export default function WorkspaceModule({ module }: { module: ModuleKey }) {
 
       {module === "wallet" && (
         <>
-          <section className="module-balance-card"><span>Gems balance</span><strong>{pretty(wallet?.balance_gems ?? 0)} <small>GEMS</small></strong><p>Wallet currency: {pretty(wallet?.currency ?? "GEMS")}</p></section>
+          <section className="module-balance-card"><span>Total Gems</span><strong>{pretty(wallet?.balance_gems ?? 0)} <small>GEMS</small></strong><p>Combined wallet balance</p></section>
+          <section className="module-balance-card"><span>Purchased Gems</span><strong>{pretty(wallet?.purchased_gems ?? 0)} <small>GEMS</small></strong><p>Available for eligible Klin Store purchases</p></section>
+          <section className="module-balance-card"><span>Subscription Gems</span><strong>{pretty(wallet?.subscription_gems ?? 0)} <small>GEMS</small></strong><p>For eligible AI and Klin features; not spendable in the Store</p></section>
           <section className="module-card"><div className="module-card-title"><h2>Subscriptions</h2></div>{subscriptions.length === 0 ? <p className="module-empty">No subscription records yet.</p> : <RecordList rows={subscriptions} />}</section>
         </>
       )}
