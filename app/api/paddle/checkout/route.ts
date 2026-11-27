@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     // Sign the account and pack metadata so a browser cannot change the recipient
     // or upgrade a lower-priced item by editing checkout custom_data.
     const signature = createHmac("sha256", webhookSecret)
-      .update(`${user.id}:${packCode}`)
+      .update(`klin-gem-pack-v1:${user.id}:${packCode}`)
       .digest("hex");
 
     const paddleResponse = await fetch("https://sandbox-api.paddle.com/transactions", {
