@@ -234,6 +234,8 @@ export async function POST(request: Request) {
             paddle_event_id: eventId,
             pack_code: pack.packCode,
             paddle_price_id: priceId,
+            transaction_currency_code: data.currency_code ?? null,
+            transaction_total: totals.total ?? null,
             wallet_bucket: "purchased",
           },
         });
